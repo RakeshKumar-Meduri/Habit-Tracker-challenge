@@ -116,7 +116,7 @@ export interface DailyLog {
   points_earned?: number;
 }
 
-export type ReasonTag = 'Tired' | 'Work' | 'Travel' | 'Lazy' | 'Sick' | 'Weather' | 'Other';
+export type ReasonTag = 'Tired' | 'Work' | 'Travel' | 'Lazy' | 'Sick' | 'Weather' | 'Sore' | 'Cheat Day' | 'Other';
 
 export interface MissedReason {
   id: string;

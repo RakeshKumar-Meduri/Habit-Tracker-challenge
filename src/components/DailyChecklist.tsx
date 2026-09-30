@@ -29,11 +29,16 @@ import {
   Pill,
   Lock,
   Trash2,
-  ListCheck
+  ListCheck,
+  Users,
+  Eye
 } from 'lucide-react';
 
 interface DailyChecklistProps {
   currentUser: User;
+  allUsers?: User[];
+  allDailyLogs?: DailyLog[];
+  allWorkouts?: Workout[];
   selectedDate: string;
   setSelectedDate: (date: string) => void;
   dailyLog: DailyLog;
@@ -57,6 +62,9 @@ interface DailyChecklistProps {
 
 export const DailyChecklist: React.FC<DailyChecklistProps> = ({
   currentUser,
+  allUsers,
+  allDailyLogs,
+  allWorkouts,
   selectedDate,
   setSelectedDate,
   dailyLog,
@@ -77,6 +85,10 @@ export const DailyChecklist: React.FC<DailyChecklistProps> = ({
   onDeleteCustomHabit,
   onToggleCustomHabitLog,
 }) => {
+  const [selectedMemberId, setSelectedMemberId] = useState<string>(currentUser.id);
+  const isViewingOther = selectedMemberId !== currentUser.id;
+  const targetUser = allUsers?.find(u => u.id === selectedMemberId) || currentUser;
+
   const [activeMissedGoal, setActiveMissedGoal] = useState<GoalType | null>(null);
   const [selectedTag, setSelectedTag] = useState<ReasonTag>('Tired');
   const [customReasonText, setCustomReasonText] = useState('');
@@ -97,6 +109,31 @@ export const DailyChecklist: React.FC<DailyChecklistProps> = ({
   const sleepMax = adminSettings?.sleep_max_hours || 9.0;
   const waterTarget = adminSettings?.water_target_ml || 2500;
 
+  // The daily log to display: if viewing other member, find their log for selectedDate
+  const displayedDailyLog: DailyLog = isViewingOther
+    ? (allDailyLogs?.find(l => l.user_id === selectedMemberId && l.date === selectedDate) || {
+        id: `view_${selectedMemberId}_${selectedDate}`,
+        user_id: selectedMemberId,
+        date: selectedDate,
+        gym_done: false,
+        steps_done: false,
+        sleep_done: false,
+        junk_food_avoided: false,
+        water_done: false,
+        steps_value: 0,
+        steps_target: stepTarget,
+        sleep_start: '23:00',
+        sleep_end: '07:00',
+        sleep_duration: 8,
+        water_intake_ml: 0,
+        created_at: selectedDate,
+      })
+    : dailyLog;
+
+  const targetWorkoutsCount = allWorkouts
+    ? allWorkouts.filter(w => w.user_id === targetUser.id && w.date === selectedDate).length
+    : (isViewingOther ? 0 : gymWorkoutsCount);
+
   const todayStr = new Date().toISOString().split('T')[0];
 
   const handleDateChange = (offset: number) => {
@@ -107,6 +144,7 @@ export const DailyChecklist: React.FC<DailyChecklistProps> = ({
   };
 
   const handleToggleGoal = (goal: GoalType, currentValue: boolean) => {
+    if (isViewingOther) return;
     const newValue = !currentValue;
 
     if (goal === 'gym') {
@@ -114,26 +152,21 @@ export const DailyChecklist: React.FC<DailyChecklistProps> = ({
       onUpdateDailyLog(updatedLog);
       if (newValue) {
         onOpenWorkoutModal();
-      } else {
-        setActiveMissedGoal('gym');
       }
     } else if (goal === 'steps') {
       onUpdateDailyLog({ ...dailyLog, steps_done: newValue, steps_target: stepTarget });
-      if (!newValue) setActiveMissedGoal('steps');
     } else if (goal === 'sleep') {
       onUpdateDailyLog({ ...dailyLog, sleep_done: newValue });
-      if (!newValue) setActiveMissedGoal('sleep');
     } else if (goal === 'junk_food') {
       onUpdateDailyLog({ ...dailyLog, junk_food_avoided: newValue });
-      if (!newValue) setActiveMissedGoal('junk_food');
     } else if (goal === 'water') {
       const newWaterMl = newValue ? waterTarget : 0;
       onUpdateDailyLog({ ...dailyLog, water_done: newValue, water_intake_ml: newWaterMl, water_target_ml: waterTarget });
-      if (!newValue) setActiveMissedGoal('water');
     }
   };
 
   const handleSleepTimeChange = (startTime?: string, endTime?: string) => {
+    if (isViewingOther) return;
     const sStart = startTime !== undefined ? startTime : (dailyLog.sleep_start || '23:00');
     const sEnd = endTime !== undefined ? endTime : (dailyLog.sleep_end || '07:00');
     const duration = calculateSleepDuration(sStart, sEnd);
@@ -149,6 +182,7 @@ export const DailyChecklist: React.FC<DailyChecklistProps> = ({
   };
 
   const handleAddWater = (ml: number) => {
+    if (isViewingOther) return;
     const currentMl = dailyLog.water_intake_ml || 0;
     const newMl = Math.min(6000, currentMl + ml);
     const isDone = newMl >= waterTarget;
@@ -216,26 +250,86 @@ export const DailyChecklist: React.FC<DailyChecklistProps> = ({
     setIsAddHabitOpen(false);
   };
 
-  const userSupplements = supplements.filter(s => s.user_id === currentUser.id);
-  const userHabits = customHabits.filter(h => h.user_id === currentUser.id);
+  const userSupplements = supplements.filter(s => s.user_id === targetUser.id);
+  const userHabits = customHabits.filter(h => h.user_id === targetUser.id);
 
   const completedCount = [
-    dailyLog.gym_done,
-    dailyLog.steps_done,
-    dailyLog.sleep_done,
-    dailyLog.junk_food_avoided,
-    dailyLog.water_done,
+    displayedDailyLog.gym_done,
+    displayedDailyLog.steps_done,
+    displayedDailyLog.sleep_done,
+    displayedDailyLog.junk_food_avoided,
+    displayedDailyLog.water_done,
   ].filter(Boolean).length;
 
   const completionPercent = Math.round((completedCount / 5) * 100);
 
   const getGoalMissedReason = (goal: GoalType) => {
-    return missedReasons.find(r => r.goal_type === goal && (r.daily_log_id === dailyLog.id || r.date === selectedDate));
+    return missedReasons.find(
+      r => r.goal_type === goal && r.user_id === targetUser.id && (r.daily_log_id === displayedDailyLog.id || r.date === selectedDate)
+    );
   };
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto font-sans">
       
+      {/* Member Accountability Selector */}
+      {allUsers && allUsers.length > 1 && (
+        <div className="bg-[#26201b] border border-[#3d322a] rounded-2xl p-4 shadow-xl flex flex-col sm:flex-row items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-xl bg-[#c68b59]/20 text-[#d4a373] border border-[#c68b59]/30">
+              <Users className="w-5 h-5" />
+            </div>
+            <div>
+              <h3 className="text-sm font-bold text-[#f5efe6] flex items-center gap-2">
+                Member Checklist Viewer
+                {isViewingOther && (
+                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-950/40 text-amber-400 border border-amber-800/60 font-semibold flex items-center gap-1">
+                    <Eye className="w-3 h-3" /> Read-Only
+                  </span>
+                )}
+              </h3>
+              <p className="text-xs text-[#c5b4a5]">Inspect your own or your teammates' daily habits & accountability</p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 w-full sm:w-auto">
+            <span className="text-xs font-semibold text-[#c5b4a5] shrink-0">Member:</span>
+            <select
+              value={selectedMemberId}
+              onChange={(e) => setSelectedMemberId(e.target.value)}
+              className="w-full sm:w-auto bg-[#1c1815] text-[#f5efe6] font-bold text-xs border border-[#3d322a] rounded-xl px-3 py-2 focus:outline-none focus:border-[#c68b59] cursor-pointer"
+            >
+              {allUsers.map((u) => (
+                <option key={u.id} value={u.id}>
+                  {u.id === currentUser.id ? `👤 You (${u.name})` : `👥 ${u.name} (@${u.username})`}
+                </option>
+              ))}
+            </select>
+            {isViewingOther && (
+              <button
+                type="button"
+                onClick={() => setSelectedMemberId(currentUser.id)}
+                className="px-2.5 py-2 bg-[#c68b59]/20 hover:bg-[#c68b59]/30 text-[#d4a373] text-xs font-bold rounded-xl border border-[#c68b59]/30 transition shrink-0 cursor-pointer"
+              >
+                Reset to Me
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Read-Only Notice when viewing another member */}
+      {isViewingOther && (
+        <div className="bg-amber-950/30 border border-amber-800/50 rounded-xl p-3 flex items-center justify-between text-xs text-amber-300">
+          <div className="flex items-center gap-2">
+            <Eye className="w-4 h-4 text-amber-400 shrink-0" />
+            <span>
+              Viewing <strong>{targetUser.name}</strong>'s daily checklist for <strong>{selectedDate}</strong>. Check out their logged goals, steps, sleep, and reasons below!
+            </span>
+          </div>
+        </div>
+      )}
+
       {/* Date Navigation & Calendar Picker Bar */}
       <div className="bg-[#26201b] border border-[#3d322a] rounded-2xl p-4 sm:p-6 shadow-xl flex flex-col md:flex-row items-center justify-between gap-4">
         
@@ -294,9 +388,9 @@ export const DailyChecklist: React.FC<DailyChecklistProps> = ({
             <span className="absolute text-xs font-black text-[#f5efe6]">{completionPercent}%</span>
           </div>
           <div>
-            <h3 className="text-sm font-bold text-[#f5efe6]">Daily Goal Completion</h3>
+            <h3 className="text-sm font-bold text-[#f5efe6]">{isViewingOther ? `${targetUser.name}'s Goals` : 'Daily Goal Completion'}</h3>
             <p className="text-xs text-[#c5b4a5] mt-0.5">
-              {completedCount} of 5 core goals logged for {selectedDate}
+              {completedCount} of 5 core goals completed for {selectedDate}
             </p>
           </div>
         </div>
@@ -306,10 +400,10 @@ export const DailyChecklist: React.FC<DailyChecklistProps> = ({
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         
         {/* Goal 1: Gym Routine */}
-        <div className={`relative bg-[#26201b] border rounded-2xl p-5 transition-all ${dailyLog.gym_done ? 'border-[#c68b59]/50 bg-[#c68b59]/10' : 'border-[#3d322a]'}`}>
-          <div className="flex items-start justify-between">
+        <div className={`relative bg-[#26201b] border rounded-2xl p-5 transition-all ${displayedDailyLog.gym_done ? 'border-emerald-500/40 bg-emerald-950/10' : 'border-[#3d322a]'}`}>
+          <div className="flex items-start justify-between gap-3">
             <div className="flex items-center gap-3">
-              <div className={`p-3 rounded-xl ${dailyLog.gym_done ? 'bg-[#c68b59]/20 text-[#d4a373]' : 'bg-[#1c1815] text-[#c5b4a5]'}`}>
+              <div className={`p-3 rounded-xl ${displayedDailyLog.gym_done ? 'bg-emerald-500/20 text-emerald-400' : 'bg-[#1c1815] text-[#c5b4a5]'}`}>
                 <Dumbbell className="w-6 h-6" />
               </div>
               <div>
@@ -318,144 +412,291 @@ export const DailyChecklist: React.FC<DailyChecklistProps> = ({
               </div>
             </div>
 
-            <button
-              onClick={() => handleToggleGoal('gym', dailyLog.gym_done)}
-              className={`p-2 rounded-xl transition flex items-center gap-1.5 text-xs font-bold cursor-pointer ${
-                dailyLog.gym_done
-                  ? 'bg-[#c68b59] text-[#1c1815] shadow-md shadow-[#c68b59]/20'
-                  : 'bg-[#1c1815] text-[#c5b4a5] hover:text-[#f5efe6] border border-[#3d322a]'
-              }`}
-            >
-              {dailyLog.gym_done ? <CheckCircle2 className="w-5 h-5" /> : <XCircle className="w-5 h-5" />}
-              <span>{dailyLog.gym_done ? 'Completed' : 'Mark Done'}</span>
-            </button>
+            {/* Action Buttons: Mark Done and Failed */}
+            {isViewingOther ? (
+              <span className={`px-2.5 py-1 rounded-full text-xs font-bold flex items-center gap-1.5 ${
+                displayedDailyLog.gym_done
+                  ? 'bg-emerald-950/40 text-emerald-400 border border-emerald-800/60'
+                  : 'bg-[#1c1815] text-[#c5b4a5] border border-[#3d322a]'
+              }`}>
+                {displayedDailyLog.gym_done ? <CheckCircle2 className="w-4 h-4 text-emerald-400" /> : <XCircle className="w-4 h-4 text-[#c5b4a5]" />}
+                <span>{displayedDailyLog.gym_done ? 'Completed' : 'Not Done'}</span>
+              </span>
+            ) : (
+              <div className="flex items-center gap-2">
+                {displayedDailyLog.gym_done ? (
+                  <button
+                    onClick={() => handleToggleGoal('gym', true)}
+                    className="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center gap-1.5 shadow-md shadow-emerald-900/30 transition cursor-pointer"
+                    title="Click to unmark as completed"
+                  >
+                    <CheckCircle2 className="w-4 h-4" />
+                    <span>Completed</span>
+                  </button>
+                ) : (
+                  <>
+                    <button
+                      onClick={() => handleToggleGoal('gym', false)}
+                      className="px-3 py-1.5 rounded-xl bg-[#c68b59] hover:bg-[#b87b4b] text-[#1c1815] font-bold text-xs flex items-center gap-1.5 shadow-md shadow-[#c68b59]/20 transition cursor-pointer"
+                    >
+                      <CheckCircle2 className="w-4 h-4" />
+                      <span>Mark Done</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setActiveMissedGoal('gym')}
+                      className={`px-2.5 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition cursor-pointer border ${
+                        getGoalMissedReason('gym')
+                          ? 'bg-amber-950/40 text-amber-400 border-amber-800/60 hover:bg-amber-900/60'
+                          : 'bg-red-950/40 text-red-400 border-red-800/60 hover:bg-red-900/60'
+                      }`}
+                      title="Unable to complete gym workout? Log reason"
+                    >
+                      <AlertCircle className="w-3.5 h-3.5" />
+                      <span>{getGoalMissedReason('gym') ? 'Reason Logged' : 'Failed'}</span>
+                    </button>
+                  </>
+                )}
+              </div>
+            )}
           </div>
 
           <div className="mt-4 pt-3 border-t border-[#3d322a] flex items-center justify-between">
             <span className="text-xs text-[#c5b4a5]">
-              Workouts Logged: <strong className="text-[#d4a373]">{gymWorkoutsCount} entries</strong>
+              Workouts Logged: <strong className="text-[#d4a373]">{targetWorkoutsCount} entries</strong>
             </span>
-            <button
-              onClick={onOpenWorkoutModal}
-              className="text-xs font-bold text-[#d4a373] hover:text-[#f5efe6] flex items-center gap-1 py-1 px-2.5 rounded-lg bg-[#c68b59]/10 border border-[#c68b59]/30 transition cursor-pointer"
-            >
-              <Plus className="w-3.5 h-3.5" /> Log Workout Details
-            </button>
+            {!isViewingOther && (
+              <button
+                onClick={onOpenWorkoutModal}
+                className="text-xs font-bold text-[#d4a373] hover:text-[#f5efe6] flex items-center gap-1 py-1 px-2.5 rounded-lg bg-[#c68b59]/10 border border-[#c68b59]/30 transition cursor-pointer"
+              >
+                <Plus className="w-3.5 h-3.5" /> Log Workout Details
+              </button>
+            )}
           </div>
 
-          {!dailyLog.gym_done && getGoalMissedReason('gym') && (
-            <div className="mt-3 p-2.5 bg-[#1c1815] rounded-xl text-xs text-[#d4a373] flex items-center gap-2 border border-[#3d322a]">
-              <AlertCircle className="w-4 h-4 text-[#c68b59] shrink-0" />
-              <span>
-                <strong>Reason logged:</strong> [{getGoalMissedReason('gym')?.reason_tag}]{' '}
-                {getGoalMissedReason('gym')?.reason_text}
-              </span>
+          {/* Logged Failure Reason Banner */}
+          {!displayedDailyLog.gym_done && getGoalMissedReason('gym') && (
+            <div className="mt-3 p-2.5 bg-red-950/30 rounded-xl text-xs text-red-300 flex items-center justify-between border border-red-800/40">
+              <div className="flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 text-red-400 shrink-0" />
+                <span>
+                  <strong>Reason:</strong> [{getGoalMissedReason('gym')?.reason_tag}]{' '}
+                  {getGoalMissedReason('gym')?.reason_text}
+                </span>
+              </div>
+              {!isViewingOther && (
+                <button
+                  onClick={() => setActiveMissedGoal('gym')}
+                  className="text-[11px] underline text-red-400 hover:text-red-300 font-semibold cursor-pointer shrink-0 ml-2"
+                >
+                  Edit
+                </button>
+              )}
             </div>
           )}
         </div>
 
         {/* Goal 2: Daily Steps & Points Allocation */}
-        <div className={`relative bg-[#26201b] border rounded-2xl p-5 transition-all ${dailyLog.steps_done ? 'border-[#c68b59]/50 bg-[#c68b59]/10' : 'border-[#3d322a]'}`}>
-          <div className="flex items-start justify-between">
+        <div className={`relative bg-[#26201b] border rounded-2xl p-5 transition-all ${displayedDailyLog.steps_done ? 'border-emerald-500/40 bg-emerald-950/10' : 'border-[#3d322a]'}`}>
+          <div className="flex items-start justify-between gap-3">
             <div className="flex items-center gap-3">
-              <div className={`p-3 rounded-xl ${dailyLog.steps_done ? 'bg-[#c68b59]/20 text-[#d4a373]' : 'bg-[#1c1815] text-[#c5b4a5]'}`}>
+              <div className={`p-3 rounded-xl ${displayedDailyLog.steps_done ? 'bg-emerald-500/20 text-emerald-400' : 'bg-[#1c1815] text-[#c5b4a5]'}`}>
                 <Footprints className="w-6 h-6" />
               </div>
               <div>
-                <h4 className="font-bold text-[#f5efe6] text-base">2. Daily Steps & Points</h4>
-                <p className="text-xs text-[#c5b4a5]">Enter steps (6k – 10k+ for bonus points)</p>
+                <h4 className="font-bold text-[#f5efe6] text-base">2. Daily Steps</h4>
+                <p className="text-xs text-[#c5b4a5]">Target: {stepTarget.toLocaleString()} steps</p>
               </div>
             </div>
 
-            <div className="text-right">
-              {(() => {
-                const s = dailyLog.steps_value || 0;
-                let tierLabel = 'Under 6k (0 pts)';
-                let tierBg = 'bg-[#1c1815] text-[#c5b4a5] border-[#3d322a]';
-                if (s >= 10000) {
-                  tierLabel = 'Gold Tier (+3 pts)';
-                  tierBg = 'bg-[#c68b59] text-[#1c1815] shadow-md shadow-[#c68b59]/20 font-black';
-                } else if (s >= 8000) {
-                  tierLabel = 'Silver Tier (+2 pts)';
-                  tierBg = 'bg-[#c68b59]/30 text-[#d4a373] border border-[#c68b59]/50 font-bold';
-                } else if (s >= 6000) {
-                  tierLabel = 'Bronze Tier (+1 pt)';
-                  tierBg = 'bg-[#c68b59]/20 text-[#d4a373] border border-[#c68b59]/30 font-semibold';
-                }
-                return (
-                  <span className={`inline-block px-2.5 py-1 rounded-full text-xs transition ${tierBg}`}>
-                    {tierLabel}
-                  </span>
-                );
-              })()}
-            </div>
+            {/* Action Buttons: Mark Done and Failed */}
+            {isViewingOther ? (
+              <span className={`px-2.5 py-1 rounded-full text-xs font-bold flex items-center gap-1.5 ${
+                displayedDailyLog.steps_done
+                  ? 'bg-emerald-950/40 text-emerald-400 border border-emerald-800/60'
+                  : 'bg-[#1c1815] text-[#c5b4a5] border border-[#3d322a]'
+              }`}>
+                {displayedDailyLog.steps_done ? <CheckCircle2 className="w-4 h-4 text-emerald-400" /> : <XCircle className="w-4 h-4 text-[#c5b4a5]" />}
+                <span>{displayedDailyLog.steps_done ? `${(displayedDailyLog.steps_value || 0).toLocaleString()} steps (Hit)` : 'Off Target'}</span>
+              </span>
+            ) : (
+              <div className="flex items-center gap-2">
+                {displayedDailyLog.steps_done ? (
+                  <button
+                    onClick={() => handleToggleGoal('steps', true)}
+                    className="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center gap-1.5 shadow-md shadow-emerald-900/30 transition cursor-pointer"
+                    title="Click to unmark"
+                  >
+                    <CheckCircle2 className="w-4 h-4" />
+                    <span>Completed</span>
+                  </button>
+                ) : (
+                  <>
+                    <button
+                      onClick={() => {
+                        const val = Math.max(stepTarget, dailyLog.steps_value || 0);
+                        onUpdateDailyLog({ ...dailyLog, steps_done: true, steps_value: val, steps_target: stepTarget });
+                      }}
+                      className="px-3 py-1.5 rounded-xl bg-[#c68b59] hover:bg-[#b87b4b] text-[#1c1815] font-bold text-xs flex items-center gap-1.5 shadow-md shadow-[#c68b59]/20 transition cursor-pointer"
+                    >
+                      <CheckCircle2 className="w-4 h-4" />
+                      <span>Mark Done</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setActiveMissedGoal('steps')}
+                      className={`px-2.5 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition cursor-pointer border ${
+                        getGoalMissedReason('steps')
+                          ? 'bg-amber-950/40 text-amber-400 border-amber-800/60 hover:bg-amber-900/60'
+                          : 'bg-red-950/40 text-red-400 border-red-800/60 hover:bg-red-900/60'
+                      }`}
+                      title="Unable to hit step goal? Log reason"
+                    >
+                      <AlertCircle className="w-3.5 h-3.5" />
+                      <span>{getGoalMissedReason('steps') ? 'Reason Logged' : 'Failed'}</span>
+                    </button>
+                  </>
+                )}
+              </div>
+            )}
           </div>
 
-          {/* Interactive Step Input */}
+          {/* Interactive Step Input (Only editable if viewing own checklist) */}
           <div className="mt-4 bg-[#1c1815] p-3 rounded-xl border border-[#3d322a] space-y-2">
             <div className="flex items-center justify-between gap-3">
               <label className="text-xs font-semibold text-[#c5b4a5]">Total Steps Logged:</label>
               <div className="flex items-center gap-2">
-                <input
-                  type="number"
-                  step="500"
-                  min="0"
-                  max="100000"
-                  value={dailyLog.steps_value || 0}
-                  onChange={(e) => {
-                    const num = Math.max(0, parseInt(e.target.value) || 0);
-                    onUpdateDailyLog({
-                      ...dailyLog,
-                      steps_value: num,
-                      steps_done: num >= 6000,
-                      steps_target: stepTarget,
-                    });
-                  }}
-                  className="w-28 px-2.5 py-1 bg-[#26201b] text-[#f5efe6] font-mono font-bold text-sm rounded-lg border border-[#3d322a] focus:outline-none focus:border-[#c68b59] text-right"
-                />
+                {isViewingOther ? (
+                  <span className="font-mono font-bold text-sm text-[#f5efe6]">{displayedDailyLog.steps_value || 0}</span>
+                ) : (
+                  <input
+                    type="number"
+                    step="500"
+                    min="0"
+                    max="100000"
+                    value={dailyLog.steps_value || 0}
+                    onChange={(e) => {
+                      const num = Math.max(0, parseInt(e.target.value) || 0);
+                      onUpdateDailyLog({
+                        ...dailyLog,
+                        steps_value: num,
+                        steps_done: num >= stepTarget,
+                        steps_target: stepTarget,
+                      });
+                    }}
+                    className="w-28 px-2.5 py-1 bg-[#26201b] text-[#f5efe6] font-mono font-bold text-sm rounded-lg border border-[#3d322a] focus:outline-none focus:border-[#c68b59] text-right"
+                  />
+                )}
                 <span className="text-xs font-bold text-[#c5b4a5]">steps</span>
               </div>
             </div>
 
-            {/* Quick Step Buttons */}
-            <div className="flex flex-wrap gap-1.5 pt-1">
-              {[6000, 8000, 10000].map((stepCount) => (
-                <button
-                  key={stepCount}
-                  type="button"
-                  onClick={() => {
-                    onUpdateDailyLog({
-                      ...dailyLog,
-                      steps_value: stepCount,
-                      steps_done: true,
-                      steps_target: stepTarget,
-                    });
-                  }}
-                  className="px-2.5 py-1 rounded-lg bg-[#26201b] hover:bg-[#322a24] text-[#d4a373] text-[11px] font-bold border border-[#3d322a] transition cursor-pointer"
-                >
-                  +{stepCount.toLocaleString()}
-                </button>
-              ))}
-            </div>
+            {!isViewingOther && (
+              <div className="flex flex-wrap gap-1.5 pt-1">
+                {[6000, 8000, 10000].map((stepCount) => (
+                  <button
+                    key={stepCount}
+                    type="button"
+                    onClick={() => {
+                      onUpdateDailyLog({
+                        ...dailyLog,
+                        steps_value: stepCount,
+                        steps_done: stepCount >= stepTarget,
+                        steps_target: stepTarget,
+                      });
+                    }}
+                    className="px-2.5 py-1 rounded-lg bg-[#26201b] hover:bg-[#322a24] text-[#d4a373] text-[11px] font-bold border border-[#3d322a] transition cursor-pointer"
+                  >
+                    +{stepCount.toLocaleString()}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
+
+          {/* Logged Failure Reason Banner */}
+          {!displayedDailyLog.steps_done && getGoalMissedReason('steps') && (
+            <div className="mt-3 p-2.5 bg-red-950/30 rounded-xl text-xs text-red-300 flex items-center justify-between border border-red-800/40">
+              <div className="flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 text-red-400 shrink-0" />
+                <span>
+                  <strong>Reason:</strong> [{getGoalMissedReason('steps')?.reason_tag}]{' '}
+                  {getGoalMissedReason('steps')?.reason_text}
+                </span>
+              </div>
+              {!isViewingOther && (
+                <button
+                  onClick={() => setActiveMissedGoal('steps')}
+                  className="text-[11px] underline text-red-400 hover:text-red-300 font-semibold cursor-pointer shrink-0 ml-2"
+                >
+                  Edit
+                </button>
+              )}
+            </div>
+          )}
         </div>
 
-        {/* Goal 3: Sleep Tracker (Start & End Time Calculation) */}
-        <div className={`relative bg-[#26201b] border rounded-2xl p-5 transition-all ${dailyLog.sleep_done ? 'border-[#c68b59]/50 bg-[#c68b59]/10' : 'border-[#3d322a]'}`}>
-          <div className="flex items-start justify-between">
+        {/* Goal 3: Sleep Tracker */}
+        <div className={`relative bg-[#26201b] border rounded-2xl p-5 transition-all ${displayedDailyLog.sleep_done ? 'border-emerald-500/40 bg-emerald-950/10' : 'border-[#3d322a]'}`}>
+          <div className="flex items-start justify-between gap-3">
             <div className="flex items-center gap-3">
-              <div className={`p-3 rounded-xl ${dailyLog.sleep_done ? 'bg-[#c68b59]/20 text-[#d4a373]' : 'bg-[#1c1815] text-[#c5b4a5]'}`}>
+              <div className={`p-3 rounded-xl ${displayedDailyLog.sleep_done ? 'bg-emerald-500/20 text-emerald-400' : 'bg-[#1c1815] text-[#c5b4a5]'}`}>
                 <Moon className="w-6 h-6" />
               </div>
               <div>
                 <h4 className="font-bold text-[#f5efe6] text-base">3. Sleep Routine</h4>
-                <p className="text-xs text-[#c5b4a5]">Auto-calculated duration from start & end time</p>
+                <p className="text-xs text-[#c5b4a5]">Target: {sleepMin} – {sleepMax} hrs</p>
               </div>
             </div>
 
-            <span className={`px-2.5 py-1 rounded-full text-xs font-bold ${dailyLog.sleep_done ? 'bg-[#c68b59]/20 text-[#d4a373] border border-[#c68b59]/30' : 'bg-[#322a24] text-[#c5b4a5] border border-[#3d322a]'}`}>
-              {dailyLog.sleep_done ? 'Target Hit' : 'Off Target'}
-            </span>
+            {/* Action Buttons: Mark Done and Failed */}
+            {isViewingOther ? (
+              <span className={`px-2.5 py-1 rounded-full text-xs font-bold flex items-center gap-1.5 ${
+                displayedDailyLog.sleep_done
+                  ? 'bg-emerald-950/40 text-emerald-400 border border-emerald-800/60'
+                  : 'bg-[#1c1815] text-[#c5b4a5] border border-[#3d322a]'
+              }`}>
+                {displayedDailyLog.sleep_done ? <CheckCircle2 className="w-4 h-4 text-emerald-400" /> : <XCircle className="w-4 h-4 text-[#c5b4a5]" />}
+                <span>{displayedDailyLog.sleep_done ? 'Target Hit' : 'Off Target'}</span>
+              </span>
+            ) : (
+              <div className="flex items-center gap-2">
+                {displayedDailyLog.sleep_done ? (
+                  <button
+                    onClick={() => handleToggleGoal('sleep', true)}
+                    className="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center gap-1.5 shadow-md shadow-emerald-900/30 transition cursor-pointer"
+                    title="Click to unmark"
+                  >
+                    <CheckCircle2 className="w-4 h-4" />
+                    <span>Target Hit</span>
+                  </button>
+                ) : (
+                  <>
+                    <button
+                      onClick={() => handleToggleGoal('sleep', false)}
+                      className="px-3 py-1.5 rounded-xl bg-[#c68b59] hover:bg-[#b87b4b] text-[#1c1815] font-bold text-xs flex items-center gap-1.5 shadow-md shadow-[#c68b59]/20 transition cursor-pointer"
+                    >
+                      <CheckCircle2 className="w-4 h-4" />
+                      <span>Mark Done</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setActiveMissedGoal('sleep')}
+                      className={`px-2.5 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition cursor-pointer border ${
+                        getGoalMissedReason('sleep')
+                          ? 'bg-amber-950/40 text-amber-400 border-amber-800/60 hover:bg-amber-900/60'
+                          : 'bg-red-950/40 text-red-400 border-red-800/60 hover:bg-red-900/60'
+                      }`}
+                      title="Missed sleep schedule? Log reason"
+                    >
+                      <AlertCircle className="w-3.5 h-3.5" />
+                      <span>{getGoalMissedReason('sleep') ? 'Reason Logged' : 'Failed'}</span>
+                    </button>
+                  </>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Sleep Time Inputs */}
@@ -464,37 +705,66 @@ export const DailyChecklist: React.FC<DailyChecklistProps> = ({
               <label className="block text-[11px] font-semibold text-[#c5b4a5] mb-1 flex items-center gap-1">
                 <Clock className="w-3 h-3 text-[#c68b59]" /> Sleep Start
               </label>
-              <input
-                type="time"
-                value={dailyLog.sleep_start || '23:00'}
-                onChange={(e) => handleSleepTimeChange(e.target.value, undefined)}
-                className="w-full bg-[#26201b] text-[#f5efe6] text-xs px-2 py-1.5 rounded-lg border border-[#3d322a] focus:outline-none focus:border-[#c68b59]"
-              />
+              {isViewingOther ? (
+                <span className="font-mono text-xs text-[#f5efe6]">{displayedDailyLog.sleep_start || '23:00'}</span>
+              ) : (
+                <input
+                  type="time"
+                  value={dailyLog.sleep_start || '23:00'}
+                  onChange={(e) => handleSleepTimeChange(e.target.value, undefined)}
+                  className="w-full bg-[#26201b] text-[#f5efe6] text-xs px-2 py-1.5 rounded-lg border border-[#3d322a] focus:outline-none focus:border-[#c68b59]"
+                />
+              )}
             </div>
             <div>
               <label className="block text-[11px] font-semibold text-[#c5b4a5] mb-1 flex items-center gap-1">
                 <Clock className="w-3 h-3 text-[#d4a373]" /> Wake Time
               </label>
-              <input
-                type="time"
-                value={dailyLog.sleep_end || '07:00'}
-                onChange={(e) => handleSleepTimeChange(undefined, e.target.value)}
-                className="w-full bg-[#26201b] text-[#f5efe6] text-xs px-2 py-1.5 rounded-lg border border-[#3d322a] focus:outline-none focus:border-[#c68b59]"
-              />
+              {isViewingOther ? (
+                <span className="font-mono text-xs text-[#f5efe6]">{displayedDailyLog.sleep_end || '07:00'}</span>
+              ) : (
+                <input
+                  type="time"
+                  value={dailyLog.sleep_end || '07:00'}
+                  onChange={(e) => handleSleepTimeChange(undefined, e.target.value)}
+                  className="w-full bg-[#26201b] text-[#f5efe6] text-xs px-2 py-1.5 rounded-lg border border-[#3d322a] focus:outline-none focus:border-[#c68b59]"
+                />
+              )}
             </div>
           </div>
 
           <div className="mt-3 flex items-center justify-between text-xs">
             <span className="text-[#c5b4a5]">Calculated Sleep Duration:</span>
-            <strong className="text-[#f5efe6] font-mono text-sm">{dailyLog.sleep_duration || 0} hrs</strong>
+            <strong className="text-[#f5efe6] font-mono text-sm">{displayedDailyLog.sleep_duration || 0} hrs</strong>
           </div>
+
+          {/* Logged Failure Reason Banner */}
+          {!displayedDailyLog.sleep_done && getGoalMissedReason('sleep') && (
+            <div className="mt-3 p-2.5 bg-red-950/30 rounded-xl text-xs text-red-300 flex items-center justify-between border border-red-800/40">
+              <div className="flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 text-red-400 shrink-0" />
+                <span>
+                  <strong>Reason:</strong> [{getGoalMissedReason('sleep')?.reason_tag}]{' '}
+                  {getGoalMissedReason('sleep')?.reason_text}
+                </span>
+              </div>
+              {!isViewingOther && (
+                <button
+                  onClick={() => setActiveMissedGoal('sleep')}
+                  className="text-[11px] underline text-red-400 hover:text-red-300 font-semibold cursor-pointer shrink-0 ml-2"
+                >
+                  Edit
+                </button>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Goal 4: Junk Food Tracker */}
-        <div className={`relative bg-[#26201b] border rounded-2xl p-5 transition-all ${dailyLog.junk_food_avoided ? 'border-[#c68b59]/50 bg-[#c68b59]/10' : 'border-[#3d322a]'}`}>
-          <div className="flex items-start justify-between">
+        <div className={`relative bg-[#26201b] border rounded-2xl p-5 transition-all ${displayedDailyLog.junk_food_avoided ? 'border-emerald-500/40 bg-emerald-950/10' : 'border-[#3d322a]'}`}>
+          <div className="flex items-start justify-between gap-3">
             <div className="flex items-center gap-3">
-              <div className={`p-3 rounded-xl ${dailyLog.junk_food_avoided ? 'bg-[#c68b59]/20 text-[#d4a373]' : 'bg-[#1c1815] text-[#c5b4a5]'}`}>
+              <div className={`p-3 rounded-xl ${displayedDailyLog.junk_food_avoided ? 'bg-emerald-500/20 text-emerald-400' : 'bg-[#1c1815] text-[#c5b4a5]'}`}>
                 <UtensilsCrossed className="w-6 h-6" />
               </div>
               <div>
@@ -503,31 +773,88 @@ export const DailyChecklist: React.FC<DailyChecklistProps> = ({
               </div>
             </div>
 
-            <button
-              onClick={() => handleToggleGoal('junk_food', dailyLog.junk_food_avoided)}
-              className={`p-2 rounded-xl transition flex items-center gap-1.5 text-xs font-bold cursor-pointer ${
-                dailyLog.junk_food_avoided
-                  ? 'bg-[#c68b59] text-[#1c1815] shadow-md shadow-[#c68b59]/20'
-                  : 'bg-[#1c1815] text-[#c5b4a5] hover:text-[#f5efe6] border border-[#3d322a]'
-              }`}
-            >
-              {dailyLog.junk_food_avoided ? <CheckCircle2 className="w-5 h-5" /> : <XCircle className="w-5 h-5" />}
-              <span>{dailyLog.junk_food_avoided ? 'Completed' : 'Mark Done'}</span>
-            </button>
+            {/* Action Buttons: Mark Done and Failed */}
+            {isViewingOther ? (
+              <span className={`px-2.5 py-1 rounded-full text-xs font-bold flex items-center gap-1.5 ${
+                displayedDailyLog.junk_food_avoided
+                  ? 'bg-emerald-950/40 text-emerald-400 border border-emerald-800/60'
+                  : 'bg-[#1c1815] text-[#c5b4a5] border border-[#3d322a]'
+              }`}>
+                {displayedDailyLog.junk_food_avoided ? <CheckCircle2 className="w-4 h-4 text-emerald-400" /> : <XCircle className="w-4 h-4 text-[#c5b4a5]" />}
+                <span>{displayedDailyLog.junk_food_avoided ? 'Clean Nutrition' : 'Had Junk Food'}</span>
+              </span>
+            ) : (
+              <div className="flex items-center gap-2">
+                {displayedDailyLog.junk_food_avoided ? (
+                  <button
+                    onClick={() => handleToggleGoal('junk_food', true)}
+                    className="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center gap-1.5 shadow-md shadow-emerald-900/30 transition cursor-pointer"
+                    title="Click to unmark"
+                  >
+                    <CheckCircle2 className="w-4 h-4" />
+                    <span>Avoided</span>
+                  </button>
+                ) : (
+                  <>
+                    <button
+                      onClick={() => handleToggleGoal('junk_food', false)}
+                      className="px-3 py-1.5 rounded-xl bg-[#c68b59] hover:bg-[#b87b4b] text-[#1c1815] font-bold text-xs flex items-center gap-1.5 shadow-md shadow-[#c68b59]/20 transition cursor-pointer"
+                    >
+                      <CheckCircle2 className="w-4 h-4" />
+                      <span>Mark Done</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setActiveMissedGoal('junk_food')}
+                      className={`px-2.5 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition cursor-pointer border ${
+                        getGoalMissedReason('junk_food')
+                          ? 'bg-amber-950/40 text-amber-400 border-amber-800/60 hover:bg-amber-900/60'
+                          : 'bg-red-950/40 text-red-400 border-red-800/60 hover:bg-red-900/60'
+                      }`}
+                      title="Ate junk food / cheat meal? Log reason"
+                    >
+                      <AlertCircle className="w-3.5 h-3.5" />
+                      <span>{getGoalMissedReason('junk_food') ? 'Reason Logged' : 'Failed'}</span>
+                    </button>
+                  </>
+                )}
+              </div>
+            )}
           </div>
 
           <div className="mt-4 pt-3 border-t border-[#3d322a]">
             <span className="text-xs text-[#c5b4a5]">
-              Goal: <strong className="text-[#f5efe6]">Clean nutrition maintained</strong>
+              Goal: <strong className="text-[#f5efe6]">Strict nutrition discipline</strong>
             </span>
           </div>
+
+          {/* Logged Failure Reason Banner */}
+          {!displayedDailyLog.junk_food_avoided && getGoalMissedReason('junk_food') && (
+            <div className="mt-3 p-2.5 bg-red-950/30 rounded-xl text-xs text-red-300 flex items-center justify-between border border-red-800/40">
+              <div className="flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 text-red-400 shrink-0" />
+                <span>
+                  <strong>Reason:</strong> [{getGoalMissedReason('junk_food')?.reason_tag}]{' '}
+                  {getGoalMissedReason('junk_food')?.reason_text}
+                </span>
+              </div>
+              {!isViewingOther && (
+                <button
+                  onClick={() => setActiveMissedGoal('junk_food')}
+                  className="text-[11px] underline text-red-400 hover:text-red-300 font-semibold cursor-pointer shrink-0 ml-2"
+                >
+                  Edit
+                </button>
+              )}
+            </div>
+          )}
         </div>
 
-        {/* Goal 5: Water Hydration Tracker (With Delete / Undo Option) */}
-        <div className={`relative bg-[#26201b] border rounded-2xl p-5 transition-all col-span-1 md:col-span-2 ${dailyLog.water_done ? 'border-[#c68b59]/50 bg-[#c68b59]/10' : 'border-[#3d322a]'}`}>
-          <div className="flex items-start justify-between">
+        {/* Goal 5: Water Hydration Tracker */}
+        <div className={`relative bg-[#26201b] border rounded-2xl p-5 transition-all col-span-1 md:col-span-2 ${displayedDailyLog.water_done ? 'border-emerald-500/40 bg-emerald-950/10' : 'border-[#3d322a]'}`}>
+          <div className="flex items-start justify-between gap-3">
             <div className="flex items-center gap-3">
-              <div className={`p-3 rounded-xl ${dailyLog.water_done ? 'bg-[#c68b59]/20 text-[#d4a373]' : 'bg-[#1c1815] text-[#c5b4a5]'}`}>
+              <div className={`p-3 rounded-xl ${displayedDailyLog.water_done ? 'bg-emerald-500/20 text-emerald-400' : 'bg-[#1c1815] text-[#c5b4a5]'}`}>
                 <Droplets className="w-6 h-6 text-[#d4a373]" />
               </div>
               <div>
@@ -536,80 +863,138 @@ export const DailyChecklist: React.FC<DailyChecklistProps> = ({
               </div>
             </div>
 
-            <button
-              onClick={() => handleToggleGoal('water', dailyLog.water_done)}
-              className={`p-2 rounded-xl transition flex items-center gap-1.5 text-xs font-bold cursor-pointer ${
-                dailyLog.water_done
-                  ? 'bg-[#c68b59] text-[#1c1815] shadow-md shadow-[#c68b59]/20'
-                  : 'bg-[#1c1815] text-[#c5b4a5] hover:text-[#f5efe6] border border-[#3d322a]'
-              }`}
-            >
-              {dailyLog.water_done ? <CheckCircle2 className="w-5 h-5" /> : <XCircle className="w-5 h-5" />}
-              <span>{dailyLog.water_done ? 'Target Hit' : 'Mark Done'}</span>
-            </button>
+            {/* Action Buttons: Mark Done and Failed */}
+            {isViewingOther ? (
+              <span className={`px-2.5 py-1 rounded-full text-xs font-bold flex items-center gap-1.5 ${
+                displayedDailyLog.water_done
+                  ? 'bg-emerald-950/40 text-emerald-400 border border-emerald-800/60'
+                  : 'bg-[#1c1815] text-[#c5b4a5] border border-[#3d322a]'
+              }`}>
+                {displayedDailyLog.water_done ? <CheckCircle2 className="w-4 h-4 text-emerald-400" /> : <XCircle className="w-4 h-4 text-[#c5b4a5]" />}
+                <span>{displayedDailyLog.water_done ? `${(waterTarget / 1000).toFixed(1)}L Target Hit` : `${((displayedDailyLog.water_intake_ml || 0) / 1000).toFixed(1)}L Logged`}</span>
+              </span>
+            ) : (
+              <div className="flex items-center gap-2">
+                {displayedDailyLog.water_done ? (
+                  <button
+                    onClick={() => handleToggleGoal('water', true)}
+                    className="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center gap-1.5 shadow-md shadow-emerald-900/30 transition cursor-pointer"
+                    title="Click to unmark"
+                  >
+                    <CheckCircle2 className="w-4 h-4" />
+                    <span>Target Hit</span>
+                  </button>
+                ) : (
+                  <>
+                    <button
+                      onClick={() => handleToggleGoal('water', false)}
+                      className="px-3 py-1.5 rounded-xl bg-[#c68b59] hover:bg-[#b87b4b] text-[#1c1815] font-bold text-xs flex items-center gap-1.5 shadow-md shadow-[#c68b59]/20 transition cursor-pointer"
+                    >
+                      <CheckCircle2 className="w-4 h-4" />
+                      <span>Mark Done</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setActiveMissedGoal('water')}
+                      className={`px-2.5 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition cursor-pointer border ${
+                        getGoalMissedReason('water')
+                          ? 'bg-amber-950/40 text-amber-400 border-amber-800/60 hover:bg-amber-900/60'
+                          : 'bg-red-950/40 text-red-400 border-red-800/60 hover:bg-red-900/60'
+                      }`}
+                      title="Missed hydration target? Log reason"
+                    >
+                      <AlertCircle className="w-3.5 h-3.5" />
+                      <span>{getGoalMissedReason('water') ? 'Reason Logged' : 'Failed'}</span>
+                    </button>
+                  </>
+                )}
+              </div>
+            )}
           </div>
 
           <div className="mt-4 flex flex-col sm:flex-row items-center justify-between gap-3 bg-[#1c1815] p-3 rounded-xl border border-[#3d322a]">
             <div className="flex items-center gap-2">
               <span className="text-xs text-[#c5b4a5]">Water Logged:</span>
-              <strong className="text-[#d4a373] font-mono text-sm">{dailyLog.water_intake_ml || 0} ml / {waterTarget} ml</strong>
+              <strong className="text-[#d4a373] font-mono text-sm">{displayedDailyLog.water_intake_ml || 0} ml / {waterTarget} ml</strong>
             </div>
 
             {/* Water Action Buttons (Add, Subtract, Reset) */}
-            <div className="flex flex-wrap items-center gap-2">
-              <button
-                type="button"
-                onClick={() => handleAddWater(250)}
-                className="px-2.5 py-1.5 rounded-lg bg-[#c68b59]/20 hover:bg-[#c68b59]/30 text-[#d4a373] text-xs font-bold border border-[#c68b59]/30 transition cursor-pointer"
-              >
-                +250ml
-              </button>
-              <button
-                type="button"
-                onClick={() => handleAddWater(500)}
-                className="px-2.5 py-1.5 rounded-lg bg-[#c68b59]/20 hover:bg-[#c68b59]/30 text-[#d4a373] text-xs font-bold border border-[#c68b59]/30 transition cursor-pointer"
-              >
-                +500ml
-              </button>
+            {!isViewingOther && (
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => handleAddWater(250)}
+                  className="px-2.5 py-1.5 rounded-lg bg-[#c68b59]/20 hover:bg-[#c68b59]/30 text-[#d4a373] text-xs font-bold border border-[#c68b59]/30 transition cursor-pointer"
+                >
+                  +250ml
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleAddWater(500)}
+                  className="px-2.5 py-1.5 rounded-lg bg-[#c68b59]/20 hover:bg-[#c68b59]/30 text-[#d4a373] text-xs font-bold border border-[#c68b59]/30 transition cursor-pointer"
+                >
+                  +500ml
+                </button>
 
-              {/* Undo / Delete accidental water clicks */}
-              <button
-                type="button"
-                onClick={() => {
-                  const currentMl = dailyLog.water_intake_ml || 0;
-                  const newMl = Math.max(0, currentMl - 250);
-                  onUpdateDailyLog({
-                    ...dailyLog,
-                    water_intake_ml: newMl,
-                    water_done: newMl >= waterTarget,
-                    water_target_ml: waterTarget,
-                  });
-                }}
-                disabled={(dailyLog.water_intake_ml || 0) === 0}
-                className="px-2.5 py-1.5 rounded-lg bg-[#322a24] hover:bg-[#3d322a] text-[#c5b4a5] hover:text-[#f5efe6] text-xs font-bold border border-[#3d322a] transition cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
-                title="Subtract 250ml (Undo accidental click)"
-              >
-                -250ml
-              </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const currentMl = dailyLog.water_intake_ml || 0;
+                    const newMl = Math.max(0, currentMl - 250);
+                    onUpdateDailyLog({
+                      ...dailyLog,
+                      water_intake_ml: newMl,
+                      water_done: newMl >= waterTarget,
+                      water_target_ml: waterTarget,
+                    });
+                  }}
+                  disabled={(dailyLog.water_intake_ml || 0) === 0}
+                  className="px-2.5 py-1.5 rounded-lg bg-[#322a24] hover:bg-[#3d322a] text-[#c5b4a5] hover:text-[#f5efe6] text-xs font-bold border border-[#3d322a] transition cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+                  title="Subtract 250ml (Undo accidental click)"
+                >
+                  -250ml
+                </button>
 
-              <button
-                type="button"
-                onClick={() => {
-                  onUpdateDailyLog({
-                    ...dailyLog,
-                    water_intake_ml: 0,
-                    water_done: false,
-                    water_target_ml: waterTarget,
-                  });
-                }}
-                disabled={(dailyLog.water_intake_ml || 0) === 0}
-                className="p-1.5 rounded-lg bg-rose-950/40 hover:bg-rose-900/60 text-rose-300 border border-rose-800/40 transition cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
-                title="Reset Water Entry"
-              >
-                <Trash2 className="w-4 h-4" />
-              </button>
-            </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    onUpdateDailyLog({
+                      ...dailyLog,
+                      water_intake_ml: 0,
+                      water_done: false,
+                      water_target_ml: waterTarget,
+                    });
+                  }}
+                  disabled={(dailyLog.water_intake_ml || 0) === 0}
+                  className="p-1.5 rounded-lg bg-rose-950/40 hover:bg-rose-900/60 text-rose-300 border border-rose-800/40 transition cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+                  title="Reset Water Entry"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
+            )}
           </div>
+
+          {/* Logged Failure Reason Banner */}
+          {!displayedDailyLog.water_done && getGoalMissedReason('water') && (
+            <div className="mt-3 p-2.5 bg-red-950/30 rounded-xl text-xs text-red-300 flex items-center justify-between border border-red-800/40">
+              <div className="flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 text-red-400 shrink-0" />
+                <span>
+                  <strong>Reason:</strong> [{getGoalMissedReason('water')?.reason_tag}]{' '}
+                  {getGoalMissedReason('water')?.reason_text}
+                </span>
+              </div>
+              {!isViewingOther && (
+                <button
+                  onClick={() => setActiveMissedGoal('water')}
+                  className="text-[11px] underline text-red-400 hover:text-red-300 font-semibold cursor-pointer shrink-0 ml-2"
+                >
+                  Edit
+                </button>
+              )}
+            </div>
+          )}
         </div>
 
       </div>
@@ -877,8 +1262,8 @@ export const DailyChecklist: React.FC<DailyChecklistProps> = ({
             <form onSubmit={handleSaveMissedReason} className="space-y-4">
               <div>
                 <label className="block text-xs font-semibold text-[#c5b4a5] mb-2">Category Tag</label>
-                <div className="grid grid-cols-3 gap-2">
-                  {(['Tired', 'Work', 'Travel', 'Lazy', 'Sick', 'Other'] as ReasonTag[]).map((tag) => (
+                <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+                  {(['Tired', 'Work', 'Travel', 'Lazy', 'Sick', 'Sore', 'Cheat Day', 'Other'] as ReasonTag[]).map((tag) => (
                     <button
                       key={tag}
                       type="button"

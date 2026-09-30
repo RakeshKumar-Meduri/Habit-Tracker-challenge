@@ -113,7 +113,11 @@ export function initializeStorageIfEmpty(): {
   const missedReasons: MissedReason[] = getStoredItemSafely<MissedReason[]>(STORAGE_KEYS.MISSED_REASONS, []);
   const reactions: Reaction[] = getStoredItemSafely<Reaction[]>(STORAGE_KEYS.REACTIONS, []);
   const badges: Badge[] = getStoredItemSafely<Badge[]>(STORAGE_KEYS.BADGES, []);
-  const challenge: WeeklyChallenge = getStoredItemSafely<WeeklyChallenge>(STORAGE_KEYS.CHALLENGE, createDefaultChallenge());
+  const challengeRaw = getStoredItemSafely<WeeklyChallenge>(STORAGE_KEYS.CHALLENGE, createDefaultChallenge());
+  const challenge: WeeklyChallenge = {
+    ...challengeRaw,
+    current_count: 0,
+  };
   const adminSettings: AdminSettings = getStoredItemSafely<AdminSettings>(STORAGE_KEYS.ADMIN_SETTINGS, DEFAULT_ADMIN_SETTINGS);
 
   // If users were retrieved, ensure they stay persisted
@@ -145,7 +149,7 @@ function createDefaultChallenge(): WeeklyChallenge {
     description: 'Together as a group, complete 150 daily goals this week!',
     target_type: 'total_goals',
     target_count: 150,
-    current_count: 118,
+    current_count: 0,
     start_date: getDateOffsetString(6),
     end_date: getDateOffsetString(-1),
   };

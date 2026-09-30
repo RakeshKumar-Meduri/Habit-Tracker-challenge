@@ -21,37 +21,45 @@ import {
   Dumbbell, 
   Footprints, 
   UtensilsCrossed, 
-  Droplets 
+  Droplets,
+  Users,
+  Eye
 } from 'lucide-react';
 
 interface AnalyticsDashboardProps {
   currentUser: User;
+  allUsers?: User[];
   dailyLogs: DailyLog[];
   weightLogs: WeightLog[];
 }
 
 export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
   currentUser,
+  allUsers,
   dailyLogs,
   weightLogs,
 }) => {
+  const [selectedUserId, setSelectedUserId] = useState<string>(currentUser.id);
+  const targetUser = allUsers?.find(u => u.id === selectedUserId) || currentUser;
+  const isViewingOther = targetUser.id !== currentUser.id;
+
   const [selectedHeatmapGoal, setSelectedHeatmapGoal] = useState<GoalType>('gym');
 
-  // Filter logs for current user
+  // Filter logs for selected user
   const userLogs = dailyLogs
-    .filter(log => log.user_id === currentUser.id)
+    .filter(log => log.user_id === targetUser.id)
     .sort((a, b) => a.date.localeCompare(b.date));
 
   const userWeightLogs = weightLogs
-    .filter(w => w.user_id === currentUser.id)
+    .filter(w => w.user_id === targetUser.id)
     .sort((a, b) => a.date.localeCompare(b.date));
 
-  // Streaks per goal
-  const gymStreak = calculateGoalStreak(dailyLogs, currentUser.id, 'gym');
-  const stepStreak = calculateGoalStreak(dailyLogs, currentUser.id, 'steps');
-  const sleepStreak = calculateGoalStreak(dailyLogs, currentUser.id, 'sleep');
-  const junkStreak = calculateGoalStreak(dailyLogs, currentUser.id, 'junk_food');
-  const waterStreak = calculateGoalStreak(dailyLogs, currentUser.id, 'water');
+  // Streaks per goal for selected user
+  const gymStreak = calculateGoalStreak(dailyLogs, targetUser.id, 'gym');
+  const stepStreak = calculateGoalStreak(dailyLogs, targetUser.id, 'steps');
+  const sleepStreak = calculateGoalStreak(dailyLogs, targetUser.id, 'sleep');
+  const junkStreak = calculateGoalStreak(dailyLogs, targetUser.id, 'junk_food');
+  const waterStreak = calculateGoalStreak(dailyLogs, targetUser.id, 'water');
 
   // 7-day completion data
   const last7Logs = userLogs.slice(-7);
@@ -102,14 +110,62 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
   return (
     <div className="space-y-6 max-w-6xl mx-auto font-sans">
       
+      {/* Member Accountability Selector */}
+      {allUsers && allUsers.length > 1 && (
+        <div className="bg-[#26201b] border border-[#3d322a] rounded-2xl p-4 shadow-xl flex flex-col sm:flex-row items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-xl bg-[#c68b59]/20 text-[#d4a373] border border-[#c68b59]/30">
+              <Users className="w-5 h-5" />
+            </div>
+            <div>
+              <h3 className="text-sm font-bold text-[#f5efe6] flex items-center gap-2">
+                Member Analytics Inspector
+                {isViewingOther && (
+                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-950/40 text-amber-400 border border-amber-800/60 font-semibold flex items-center gap-1">
+                    <Eye className="w-3 h-3" /> Inspecting {targetUser.name}
+                  </span>
+                )}
+              </h3>
+              <p className="text-xs text-[#c5b4a5]">Inspect your own or your teammates' habit streaks, sleep, and weight trends</p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 w-full sm:w-auto">
+            <span className="text-xs font-semibold text-[#c5b4a5] shrink-0">Member:</span>
+            <select
+              value={selectedUserId}
+              onChange={(e) => setSelectedUserId(e.target.value)}
+              className="w-full sm:w-auto bg-[#1c1815] text-[#f5efe6] font-bold text-xs border border-[#3d322a] rounded-xl px-3 py-2 focus:outline-none focus:border-[#c68b59] cursor-pointer"
+            >
+              {allUsers.map((u) => (
+                <option key={u.id} value={u.id}>
+                  {u.id === currentUser.id ? `👤 You (${u.name})` : `👥 ${u.name} (@${u.username})`}
+                </option>
+              ))}
+            </select>
+            {isViewingOther && (
+              <button
+                type="button"
+                onClick={() => setSelectedUserId(currentUser.id)}
+                className="px-2.5 py-2 bg-[#c68b59]/20 hover:bg-[#c68b59]/30 text-[#d4a373] text-xs font-bold rounded-xl border border-[#c68b59]/30 transition shrink-0 cursor-pointer"
+              >
+                Reset to Me
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <div className="bg-[#26201b] border border-[#3d322a] rounded-2xl p-6 shadow-xl">
         <h2 className="text-xl font-black text-[#f5efe6] flex items-center gap-2">
           <BarChart3 className="w-6 h-6 text-[#c68b59]" />
-          Personal Health Analytics Dashboard
+          {isViewingOther ? `${targetUser.name}'s Health & Habit Analytics` : 'Personal Health Analytics Dashboard'}
         </h2>
         <p className="text-xs text-[#c5b4a5] mt-1">
-          Visualizing your progress across weight trends, sleep targets, and goal consistency
+          {isViewingOther
+            ? `Inspecting ${targetUser.name}'s consistency, sleep records, and progress metrics.`
+            : 'Visualizing your progress across weight trends, sleep targets, and goal consistency'}
         </p>
       </div>
 

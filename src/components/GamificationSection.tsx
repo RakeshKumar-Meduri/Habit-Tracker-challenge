@@ -28,7 +28,19 @@ export const GamificationSection: React.FC<GamificationSectionProps> = ({
     { type: 'workouts_10', title: 'Workout Veteran', desc: 'Log 10 total workout sessions', icon: '💪' },
   ];
 
-  const challengePercent = Math.min(100, Math.round((challenge.current_count / challenge.target_count) * 100));
+  // Dynamically calculate the group's real completed goals from dailyLogs
+  const groupCurrentCount = dailyLogs.reduce((total, log) => {
+    let count = 0;
+    if (log.gym_done) count++;
+    if (log.steps_done) count++;
+    if (log.sleep_done) count++;
+    if (log.water_done) count++;
+    if (log.junk_food_avoided) count++;
+    return total + count;
+  }, 0);
+
+  const groupTargetCount = challenge.target_count || 150;
+  const challengePercent = Math.min(100, Math.round((groupCurrentCount / groupTargetCount) * 100));
 
   return (
     <div className="space-y-6 max-w-5xl mx-auto">
@@ -73,7 +85,7 @@ export const GamificationSection: React.FC<GamificationSectionProps> = ({
         <div className="mt-4 space-y-1.5">
           <div className="flex justify-between text-xs text-slate-300 font-semibold">
             <span>Group Progress:</span>
-            <span className="font-mono text-emerald-400">{challenge.current_count} / {challenge.target_count} Goals</span>
+            <span className="font-mono text-emerald-400">{groupCurrentCount} / {groupTargetCount} Goals</span>
           </div>
           <div className="w-full h-3 bg-slate-800 rounded-full overflow-hidden border border-slate-700">
             <div

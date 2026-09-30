@@ -65,8 +65,11 @@ export function App() {
   const [missedReasons, setMissedReasons] = useState<MissedReason[]>(() => initialData.missedReasons);
   const [reactions, setReactions] = useState<Reaction[]>(() => initialData.reactions);
   const [badges, setBadges] = useState<Badge[]>(() => initialData.badges);
-  const [challenge] = useState<WeeklyChallenge>(() => initialData.challenge || {
-    id: 'c_1', title: 'Group Clean Sweep Challenge', description: 'Complete daily goal targets together', target_type: 'total_goals', target_count: 150, current_count: 0, start_date: '', end_date: ''
+  const [challenge] = useState<WeeklyChallenge>(() => {
+    const ch = initialData.challenge || {
+      id: 'c_1', title: 'Group Clean Sweep Challenge', description: 'Complete daily goal targets together', target_type: 'total_goals', target_count: 150, current_count: 0, start_date: '', end_date: ''
+    };
+    return { ...ch, current_count: 0 };
   });
   const [adminSettings] = useState<AdminSettings>(() => initialData.adminSettings || DEFAULT_ADMIN_SETTINGS);
 
@@ -676,6 +679,9 @@ export function App() {
         {activeTab === 'checklist' && currentUser && (
           <DailyChecklist
             currentUser={currentUser}
+            allUsers={activeUsers}
+            allDailyLogs={dailyLogs}
+            allWorkouts={workouts}
             selectedDate={selectedDate}
             setSelectedDate={setSelectedDate}
             dailyLog={currentDailyLog}
@@ -712,6 +718,7 @@ export function App() {
         {activeTab === 'analytics' && currentUser && (
           <AnalyticsDashboard
             currentUser={currentUser}
+            allUsers={activeUsers}
             dailyLogs={dailyLogs}
             weightLogs={weightLogs}
           />
@@ -768,6 +775,7 @@ export function App() {
         {activeTab === 'profile' && currentUser && (
           <ProfileSection
             currentUser={currentUser}
+            allUsers={activeUsers}
             weightLogs={weightLogs}
             onUpdateProfile={handleUpdateProfile}
             onDeleteAccount={handleDeleteAccount}
