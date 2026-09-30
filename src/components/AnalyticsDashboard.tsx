@@ -1,0 +1,290 @@
+import React, { useState } from 'react';
+import type { User, DailyLog, WeightLog, GoalType } from '../types';
+import { calculateGoalStreak } from '../utils/gamification';
+import { 
+  ResponsiveContainer, 
+  AreaChart, 
+  Area, 
+  BarChart, 
+  Bar, 
+  XAxis, 
+  YAxis, 
+  Tooltip, 
+  CartesianGrid, 
+  Cell 
+} from 'recharts';
+import { 
+  BarChart3, 
+  TrendingDown, 
+  Moon, 
+  Calendar as CalendarIcon, 
+  Dumbbell, 
+  Footprints, 
+  UtensilsCrossed, 
+  Droplets 
+} from 'lucide-react';
+
+interface AnalyticsDashboardProps {
+  currentUser: User;
+  dailyLogs: DailyLog[];
+  weightLogs: WeightLog[];
+}
+
+export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
+  currentUser,
+  dailyLogs,
+  weightLogs,
+}) => {
+  const [selectedHeatmapGoal, setSelectedHeatmapGoal] = useState<GoalType>('gym');
+
+  // Filter logs for current user
+  const userLogs = dailyLogs
+    .filter(log => log.user_id === currentUser.id)
+    .sort((a, b) => a.date.localeCompare(b.date));
+
+  const userWeightLogs = weightLogs
+    .filter(w => w.user_id === currentUser.id)
+    .sort((a, b) => a.date.localeCompare(b.date));
+
+  // Streaks per goal
+  const gymStreak = calculateGoalStreak(dailyLogs, currentUser.id, 'gym');
+  const stepStreak = calculateGoalStreak(dailyLogs, currentUser.id, 'steps');
+  const sleepStreak = calculateGoalStreak(dailyLogs, currentUser.id, 'sleep');
+  const junkStreak = calculateGoalStreak(dailyLogs, currentUser.id, 'junk_food');
+  const waterStreak = calculateGoalStreak(dailyLogs, currentUser.id, 'water');
+
+  // 7-day completion data
+  const last7Logs = userLogs.slice(-7);
+  const weeklyBarData = last7Logs.map(log => {
+    let completed = 0;
+    if (log.gym_done) completed++;
+    if (log.steps_done) completed++;
+    if (log.sleep_done) completed++;
+    if (log.junk_food_avoided) completed++;
+    if (log.water_done) completed++;
+    return {
+      date: log.date.slice(5),
+      completed,
+      percent: Math.round((completed / 5) * 100),
+    };
+  });
+
+  // Sleep duration chart data
+  const last14Logs = userLogs.slice(-14);
+  const sleepChartData = last14Logs.map(log => ({
+    date: log.date.slice(5),
+    duration: log.sleep_duration || 0,
+    hitTarget: log.sleep_done,
+  }));
+
+  // Weight trend chart data
+  const weightChartData = userWeightLogs.map(w => ({
+    date: w.date.slice(5),
+    weight: w.weight,
+  }));
+
+  // Heatmap tile grid data (last 30 days)
+  const last30Logs = userLogs.slice(-30);
+
+  const getHeatmapColor = (log: DailyLog) => {
+    let done = false;
+    if (selectedHeatmapGoal === 'gym') done = log.gym_done;
+    if (selectedHeatmapGoal === 'steps') done = log.steps_done;
+    if (selectedHeatmapGoal === 'sleep') done = log.sleep_done;
+    if (selectedHeatmapGoal === 'junk_food') done = log.junk_food_avoided;
+    if (selectedHeatmapGoal === 'water') done = log.water_done;
+
+    return done
+      ? 'bg-[#c68b59] border-[#c68b59] text-[#1c1815] shadow-sm font-bold'
+      : 'bg-[#1c1815] border-[#3d322a] text-[#c5b4a5] hover:bg-[#322a24]';
+  };
+
+  return (
+    <div className="space-y-6 max-w-6xl mx-auto font-sans">
+      
+      {/* Header */}
+      <div className="bg-[#26201b] border border-[#3d322a] rounded-2xl p-6 shadow-xl">
+        <h2 className="text-xl font-black text-[#f5efe6] flex items-center gap-2">
+          <BarChart3 className="w-6 h-6 text-[#c68b59]" />
+          Personal Health Analytics Dashboard
+        </h2>
+        <p className="text-xs text-[#c5b4a5] mt-1">
+          Visualizing your progress across weight trends, sleep targets, and goal consistency
+        </p>
+      </div>
+
+      {/* Streak Counters Banner */}
+      <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+        <div className="bg-[#26201b] border border-[#3d322a] rounded-2xl p-4 text-center">
+          <Dumbbell className="w-5 h-5 text-[#c68b59] mx-auto mb-1" />
+          <span className="text-[11px] font-semibold text-[#c5b4a5] block">Gym Streak</span>
+          <strong className="text-xl font-black text-[#f5efe6]">{gymStreak} days</strong>
+        </div>
+        <div className="bg-[#26201b] border border-[#3d322a] rounded-2xl p-4 text-center">
+          <Footprints className="w-5 h-5 text-[#d4a373] mx-auto mb-1" />
+          <span className="text-[11px] font-semibold text-[#c5b4a5] block">Step Streak</span>
+          <strong className="text-xl font-black text-[#f5efe6]">{stepStreak} days</strong>
+        </div>
+        <div className="bg-[#26201b] border border-[#3d322a] rounded-2xl p-4 text-center">
+          <Moon className="w-5 h-5 text-[#c68b59] mx-auto mb-1" />
+          <span className="text-[11px] font-semibold text-[#c5b4a5] block">Sleep Target</span>
+          <strong className="text-xl font-black text-[#f5efe6]">{sleepStreak} days</strong>
+        </div>
+        <div className="bg-[#26201b] border border-[#3d322a] rounded-2xl p-4 text-center">
+          <UtensilsCrossed className="w-5 h-5 text-[#d4a373] mx-auto mb-1" />
+          <span className="text-[11px] font-semibold text-[#c5b4a5] block">No Junk Food</span>
+          <strong className="text-xl font-black text-[#f5efe6]">{junkStreak} days</strong>
+        </div>
+        <div className="bg-[#26201b] border border-[#3d322a] rounded-2xl p-4 text-center col-span-2 sm:col-span-1">
+          <Droplets className="w-5 h-5 text-[#c68b59] mx-auto mb-1" />
+          <span className="text-[11px] font-semibold text-[#c5b4a5] block">Water Target</span>
+          <strong className="text-xl font-black text-[#f5efe6]">{waterStreak} days</strong>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        
+        {/* Weight Trend Area Chart */}
+        <div className="bg-[#26201b] border border-[#3d322a] rounded-2xl p-6 shadow-xl">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h3 className="text-base font-bold text-[#f5efe6] flex items-center gap-2">
+                <TrendingDown className="w-5 h-5 text-[#c68b59]" />
+                Weight Trend Over Time
+              </h3>
+              <p className="text-xs text-[#c5b4a5]">Recorded weight entries (kg)</p>
+            </div>
+            {weightChartData.length >= 2 && (
+              <span className="text-xs font-bold text-[#d4a373] bg-[#c68b59]/15 px-2.5 py-1 rounded-full border border-[#c68b59]/30">
+                -{(weightChartData[0].weight - weightChartData[weightChartData.length - 1].weight).toFixed(1)} kg lost
+              </span>
+            )}
+          </div>
+
+          <div className="h-64 w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={weightChartData}>
+                <defs>
+                  <linearGradient id="weightGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#c68b59" stopOpacity={0.4}/>
+                    <stop offset="95%" stopColor="#c68b59" stopOpacity={0.0}/>
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="#3d322a" />
+                <XAxis dataKey="date" stroke="#c5b4a5" fontSize={11} />
+                <YAxis domain={['dataMin - 1', 'dataMax + 1']} stroke="#c5b4a5" fontSize={11} />
+                <Tooltip
+                  contentStyle={{ backgroundColor: '#1c1815', borderColor: '#3d322a', borderRadius: '12px', color: '#f5efe6' }}
+                  labelStyle={{ color: '#d4a373', fontWeight: 'bold' }}
+                />
+                <Area type="monotone" dataKey="weight" stroke="#c68b59" strokeWidth={3} fillOpacity={1} fill="url(#weightGrad)" />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        {/* Sleep Duration Bar Chart */}
+        <div className="bg-[#26201b] border border-[#3d322a] rounded-2xl p-6 shadow-xl">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h3 className="text-base font-bold text-[#f5efe6] flex items-center gap-2">
+                <Moon className="w-5 h-5 text-[#c68b59]" />
+                Nightly Sleep Duration (7–8h Target)
+              </h3>
+              <p className="text-xs text-[#c5b4a5]">Beige = target hit (7-8.5 hrs)</p>
+            </div>
+          </div>
+
+          <div className="h-64 w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={sleepChartData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#3d322a" />
+                <XAxis dataKey="date" stroke="#c5b4a5" fontSize={11} />
+                <YAxis domain={[0, 10]} stroke="#c5b4a5" fontSize={11} />
+                <Tooltip
+                  contentStyle={{ backgroundColor: '#1c1815', borderColor: '#3d322a', borderRadius: '12px', color: '#f5efe6' }}
+                  labelStyle={{ color: '#d4a373', fontWeight: 'bold' }}
+                />
+                <Bar dataKey="duration" radius={[6, 6, 0, 0]}>
+                  {sleepChartData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.hitTarget ? '#c68b59' : '#5a4537'} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        {/* Weekly Completion % Bar Chart */}
+        <div className="bg-[#26201b] border border-[#3d322a] rounded-2xl p-6 shadow-xl">
+          <h3 className="text-base font-bold text-[#f5efe6] mb-1">7-Day Completion Rate (%)</h3>
+          <p className="text-xs text-[#c5b4a5] mb-4">Daily percentage of core goals completed</p>
+
+          <div className="h-56 w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={weeklyBarData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#3d322a" />
+                <XAxis dataKey="date" stroke="#c5b4a5" fontSize={11} />
+                <YAxis domain={[0, 100]} stroke="#c5b4a5" fontSize={11} />
+                <Tooltip
+                  contentStyle={{ backgroundColor: '#1c1815', borderColor: '#3d322a', borderRadius: '12px', color: '#f5efe6' }}
+                  labelStyle={{ color: '#d4a373', fontWeight: 'bold' }}
+                />
+                <Bar dataKey="percent" fill="#d4a373" radius={[6, 6, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        {/* Calendar Heatmap Grid */}
+        <div className="bg-[#26201b] border border-[#3d322a] rounded-2xl p-6 shadow-xl">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 mb-4">
+            <div>
+              <h3 className="text-base font-bold text-[#f5efe6] flex items-center gap-2">
+                <CalendarIcon className="w-5 h-5 text-[#c68b59]" />
+                30-Day Activity Heatmap
+              </h3>
+              <p className="text-xs text-[#c5b4a5]">Goal completion grid</p>
+            </div>
+
+            {/* Goal Selector */}
+            <select
+              value={selectedHeatmapGoal}
+              onChange={(e) => setSelectedHeatmapGoal(e.target.value as GoalType)}
+              className="bg-[#1c1815] border border-[#3d322a] text-[#f5efe6] text-xs px-2.5 py-1.5 rounded-xl focus:outline-none focus:border-[#c68b59] cursor-pointer"
+            >
+              <option value="gym">Gym Goal</option>
+              <option value="steps">Steps Goal</option>
+              <option value="sleep">Sleep Target</option>
+              <option value="junk_food">No Junk Food</option>
+              <option value="water">Water Target</option>
+            </select>
+          </div>
+
+          <div className="grid grid-cols-6 sm:grid-cols-10 gap-2 pt-2">
+            {last30Logs.map((log) => (
+              <div
+                key={log.id}
+                title={`${log.date}: ${selectedHeatmapGoal.toUpperCase()}`}
+                className={`h-8 rounded-lg border transition-transform hover:scale-110 flex items-center justify-center text-[10px] font-mono ${getHeatmapColor(log)}`}
+              >
+                {log.date.slice(8)}
+              </div>
+            ))}
+          </div>
+
+          <div className="flex items-center gap-4 mt-6 text-xs text-[#c5b4a5]">
+            <span className="flex items-center gap-1.5">
+              <span className="w-3 h-3 rounded bg-[#1c1815] border border-[#3d322a] inline-block"></span> Not Completed
+            </span>
+            <span className="flex items-center gap-1.5">
+              <span className="w-3 h-3 rounded bg-[#c68b59] inline-block"></span> Goal Completed
+            </span>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  );
+};

@@ -1,0 +1,39 @@
+{
+  "users": [
+    {
+      "id": "user_1790779706015_wepw",
+      "name": "Rakesh Kumar",
+      "username": "rakesh_meduri",
+      "password_hash": "65a455568ff0aa5c723e94192cd3b7505d9eb7f6042798251d05dfa5fb6d6ceb",
+      "role": "member",
+      "height": 180,
+      "weight_current": 105,
+      "age": 19,
+      "gender": "male",
+      "is_private": false,
+      "avatar_color": "from-rose-500 to-pink-700",
+      "created_at": "2026-09-30",
+      "is_active": true,
+      "must_change_password": false
+    }
+  ],
+  "dailyLogs": [],
+  "workouts": [],
+  "weightLogs": [],
+  "missedReasons": [],
+  "reactions": [],
+  "badges": [],
+  "supplements": [],
+  "supplementLogs": [],
+  "customHabits": [],
+  "customHabitLogs": [],
+  "adminSettings": {
+    "step_target": 10000,
+    "sleep_min_hours": 7,
+    "sleep_max_hours": 9,
+    "water_target_ml": 2500,
+    "invite_code": "PULSE2026",
+    "cheat_days_enabled": true,
+    "day_cutoff_hour": 0
+  }
+}
