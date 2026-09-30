@@ -63,8 +63,20 @@ class RealtimeClient {
     }
 
     try {
-      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-      const wsUrl = `${protocol}//${window.location.host}/ws`;
+      let wsUrl: string;
+      if (import.meta.env.VITE_API_URL) {
+        try {
+          const parsed = new URL(import.meta.env.VITE_API_URL);
+          const wsProtocol = parsed.protocol === 'https:' ? 'wss:' : 'ws:';
+          wsUrl = `${wsProtocol}//${parsed.host}/ws`;
+        } catch {
+          const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+          wsUrl = `${protocol}//${window.location.host}/ws`;
+        }
+      } else {
+        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        wsUrl = `${protocol}//${window.location.host}/ws`;
+      }
 
       this.ws = new WebSocket(wsUrl);
 

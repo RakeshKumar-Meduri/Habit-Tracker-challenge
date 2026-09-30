@@ -26,12 +26,14 @@ export interface ServerSyncResponse {
   customHabitLogs: CustomHabitLog[];
 }
 
+export const API_BASE = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
+
 /**
  * Check if backend API server is reachable
  */
 export async function checkServerHealth(): Promise<boolean> {
   try {
-    const res = await fetch('/api/health', { method: 'GET' });
+    const res = await fetch(`${API_BASE}/api/health`, { method: 'GET' });
     return res.ok;
   } catch {
     return false;
@@ -43,7 +45,7 @@ export async function checkServerHealth(): Promise<boolean> {
  */
 export async function fetchServerSync(): Promise<ServerSyncResponse | null> {
   try {
-    const res = await fetch('/api/sync', {
+    const res = await fetch(`${API_BASE}/api/sync`, {
       method: 'GET',
       headers: { 'Content-Type': 'application/json' },
     });
@@ -63,7 +65,7 @@ export async function fetchServerSync(): Promise<ServerSyncResponse | null> {
  */
 export async function registerUserOnServer(user: User): Promise<{ success: boolean; error?: string }> {
   try {
-    const res = await fetch('/api/auth/register', {
+    const res = await fetch(`${API_BASE}/api/auth/register`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(user),
@@ -83,7 +85,7 @@ export async function registerUserOnServer(user: User): Promise<{ success: boole
  */
 export async function loginUserOnServer(identifier: string, passwordPlain: string, passwordHash?: string): Promise<{ success: boolean; user?: User; error?: string }> {
   try {
-    const res = await fetch('/api/auth/login', {
+    const res = await fetch(`${API_BASE}/api/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ identifier, password: passwordPlain, passwordHash }),
@@ -103,7 +105,7 @@ export async function loginUserOnServer(identifier: string, passwordPlain: strin
  */
 export async function updateUserOnServer(user: User): Promise<boolean> {
   try {
-    const res = await fetch(`/api/users/${encodeURIComponent(user.id)}`, {
+    const res = await fetch(`${API_BASE}/api/users/${encodeURIComponent(user.id)}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(user),
@@ -119,7 +121,7 @@ export async function updateUserOnServer(user: User): Promise<boolean> {
  */
 export async function pushDailyLogToServer(log: DailyLog): Promise<boolean> {
   try {
-    const res = await fetch('/api/logs', {
+    const res = await fetch(`${API_BASE}/api/logs`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(log),
@@ -135,7 +137,7 @@ export async function pushDailyLogToServer(log: DailyLog): Promise<boolean> {
  */
 export async function pushWorkoutsToServer(workouts: Workout[]): Promise<boolean> {
   try {
-    const res = await fetch('/api/workouts', {
+    const res = await fetch(`${API_BASE}/api/workouts`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(workouts),
@@ -151,7 +153,7 @@ export async function pushWorkoutsToServer(workouts: Workout[]): Promise<boolean
  */
 export async function pushWeightLogToServer(weightLog: WeightLog): Promise<boolean> {
   try {
-    const res = await fetch('/api/weights', {
+    const res = await fetch(`${API_BASE}/api/weights`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(weightLog),
@@ -167,7 +169,7 @@ export async function pushWeightLogToServer(weightLog: WeightLog): Promise<boole
  */
 export async function pushMissedReasonToServer(reason: MissedReason): Promise<boolean> {
   try {
-    const res = await fetch('/api/missed-reasons', {
+    const res = await fetch(`${API_BASE}/api/missed-reasons`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(reason),
@@ -183,7 +185,7 @@ export async function pushMissedReasonToServer(reason: MissedReason): Promise<bo
  */
 export async function pushReactionToServer(reaction: Reaction): Promise<boolean> {
   try {
-    const res = await fetch('/api/reactions', {
+    const res = await fetch(`${API_BASE}/api/reactions`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(reaction),
@@ -199,7 +201,7 @@ export async function pushReactionToServer(reaction: Reaction): Promise<boolean>
  */
 export async function pushBadgesToServer(badges: Badge[]): Promise<boolean> {
   try {
-    const res = await fetch('/api/badges', {
+    const res = await fetch(`${API_BASE}/api/badges`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(badges),
@@ -215,7 +217,7 @@ export async function pushBadgesToServer(badges: Badge[]): Promise<boolean> {
  */
 export async function pushSupplementToServer(supplement: Supplement): Promise<boolean> {
   try {
-    const res = await fetch('/api/supplements', {
+    const res = await fetch(`${API_BASE}/api/supplements`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(supplement),
@@ -228,7 +230,7 @@ export async function pushSupplementToServer(supplement: Supplement): Promise<bo
 
 export async function deleteSupplementOnServer(id: string): Promise<boolean> {
   try {
-    const res = await fetch(`/api/supplements/${encodeURIComponent(id)}`, {
+    const res = await fetch(`${API_BASE}/api/supplements/${encodeURIComponent(id)}`, {
       method: 'DELETE',
     });
     return res.ok;
@@ -239,7 +241,7 @@ export async function deleteSupplementOnServer(id: string): Promise<boolean> {
 
 export async function pushSupplementLogToServer(log: SupplementLog): Promise<boolean> {
   try {
-    const res = await fetch('/api/supplement-logs', {
+    const res = await fetch(`${API_BASE}/api/supplement-logs`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(log),
@@ -255,7 +257,7 @@ export async function pushSupplementLogToServer(log: SupplementLog): Promise<boo
  */
 export async function pushCustomHabitToServer(habit: CustomHabit): Promise<boolean> {
   try {
-    const res = await fetch('/api/custom-habits', {
+    const res = await fetch(`${API_BASE}/api/custom-habits`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(habit),
@@ -268,7 +270,7 @@ export async function pushCustomHabitToServer(habit: CustomHabit): Promise<boole
 
 export async function deleteCustomHabitOnServer(id: string): Promise<boolean> {
   try {
-    const res = await fetch(`/api/custom-habits/${encodeURIComponent(id)}`, {
+    const res = await fetch(`${API_BASE}/api/custom-habits/${encodeURIComponent(id)}`, {
       method: 'DELETE',
     });
     return res.ok;
@@ -279,7 +281,7 @@ export async function deleteCustomHabitOnServer(id: string): Promise<boolean> {
 
 export async function pushCustomHabitLogToServer(log: CustomHabitLog): Promise<boolean> {
   try {
-    const res = await fetch('/api/custom-habit-logs', {
+    const res = await fetch(`${API_BASE}/api/custom-habit-logs`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(log),
@@ -295,7 +297,7 @@ export async function pushCustomHabitLogToServer(log: CustomHabitLog): Promise<b
  */
 export async function deleteUserOnServer(userId: string): Promise<boolean> {
   try {
-    const res = await fetch(`/api/users/${encodeURIComponent(userId)}`, {
+    const res = await fetch(`${API_BASE}/api/users/${encodeURIComponent(userId)}`, {
       method: 'DELETE',
     });
     return res.ok;
@@ -321,7 +323,7 @@ export async function pushStateToServer(payload: {
   customHabitLogs?: CustomHabitLog[];
 }): Promise<boolean> {
   try {
-    const res = await fetch('/api/sync/push', {
+    const res = await fetch(`${API_BASE}/api/sync/push`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
