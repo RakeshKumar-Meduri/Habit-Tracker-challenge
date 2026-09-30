@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import type { User, WeightLog, Gender } from '../types';
 import { calculateBMI, calculateAgeFromBirthday } from '../utils/crypto';
 import { 
@@ -38,25 +38,68 @@ export const ProfileSection: React.FC<ProfileSectionProps> = ({
 
   // Form state for current user
   const [name, setName] = useState(currentUser.name);
-  const [birthday, setBirthday] = useState(currentUser.birthday || '1998-05-15');
+  const [age, setAge] = useState<string>(() => String(currentUser.age || 25));
+  const [birthday, setBirthday] = useState<string>(() => {
+    if (currentUser.birthday) return currentUser.birthday;
+    const year = new Date().getFullYear() - (currentUser.age || 25);
+    return `${year}-01-01`;
+  });
   const [height, setHeight] = useState(String(currentUser.height || 175));
   const [weight, setWeight] = useState(String(currentUser.weight_current || 75));
   const [gender, setGender] = useState<Gender>(currentUser.gender || 'male');
   const [bodyShapePhoto, setBodyShapePhoto] = useState(currentUser.body_shape_photo || '');
   const [isPrivate, setIsPrivate] = useState(currentUser.is_private);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [saveSuccessMsg, setSaveSuccessMsg] = useState('');
 
-  // Live calculated age from birthday for currentUser
-  const calculatedAge = calculateAgeFromBirthday(birthday);
+  // Keep state in sync if currentUser updates
+  useEffect(() => {
+    if (currentUser) {
+      setName(currentUser.name);
+      setAge(String(currentUser.age || 25));
+      if (currentUser.birthday) {
+        setBirthday(currentUser.birthday);
+      } else {
+        const year = new Date().getFullYear() - (currentUser.age || 25);
+        setBirthday(`${year}-01-01`);
+      }
+      setHeight(String(currentUser.height || 175));
+      setWeight(String(currentUser.weight_current || 75));
+      setGender(currentUser.gender || 'male');
+      setBodyShapePhoto(currentUser.body_shape_photo || '');
+      setIsPrivate(currentUser.is_private);
+    }
+  }, [currentUser.id, currentUser.age, currentUser.height, currentUser.weight_current, currentUser.name, currentUser.gender, currentUser.birthday]);
+
+  // Handle direct age input with automatic birthday derivation
+  const handleAgeChange = (val: string) => {
+    setAge(val);
+    const parsed = parseInt(val);
+    if (!isNaN(parsed) && parsed > 0 && parsed <= 120) {
+      const year = new Date().getFullYear() - parsed;
+      const md = birthday && birthday.length >= 10 ? birthday.slice(5) : '01-01';
+      setBirthday(`${year}-${md}`);
+    }
+  };
+
+  // Handle birthday date picker change with automatic age derivation
+  const handleBirthdayChange = (val: string) => {
+    setBirthday(val);
+    const calculated = calculateAgeFromBirthday(val);
+    if (calculated > 0) {
+      setAge(String(calculated));
+    }
+  };
 
   // Live updated BMI whenever height or weight input changes for currentUser
+  const parsedAge = parseInt(age) || currentUser.age || 25;
   const parsedHeight = parseFloat(height) || 0;
   const parsedWeight = parseFloat(weight) || 0;
 
   // Display metrics depending on whether viewing self or teammate
   const displayHeight = isViewingOther ? (targetUser.height || 175) : parsedHeight;
   const displayWeight = isViewingOther ? (targetUser.weight_current || 75) : parsedWeight;
-  const displayAge = isViewingOther ? (targetUser.age || 25) : calculatedAge;
+  const displayAge = isViewingOther ? (targetUser.age || 25) : parsedAge;
   const { bmi, category, color } = calculateBMI(displayHeight, displayWeight);
 
   const userWeightLogs = weightLogs
@@ -78,6 +121,7 @@ export const ProfileSection: React.FC<ProfileSectionProps> = ({
     e.preventDefault();
 
     const newWeightNum = parsedWeight || currentUser.weight_current;
+    const newAgeNum = parseInt(age) || currentUser.age || 25;
     let newWeightEntry: WeightLog | undefined = undefined;
 
     const todayStr = new Date().toISOString().split('T')[0];
@@ -99,13 +143,15 @@ export const ProfileSection: React.FC<ProfileSectionProps> = ({
       birthday,
       height: parsedHeight || 175,
       weight_current: newWeightNum,
-      age: calculatedAge,
+      age: newAgeNum,
       gender,
       body_shape_photo: bodyShapePhoto,
       is_private: isPrivate,
     };
 
     onUpdateProfile(updatedUser, newWeightEntry);
+    setSaveSuccessMsg(`Profile saved successfully! Age updated to ${newAgeNum} yrs.`);
+    setTimeout(() => setSaveSuccessMsg(''), 4000);
   };
 
   return (
@@ -296,22 +342,30 @@ export const ProfileSection: React.FC<ProfileSectionProps> = ({
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-xs font-semibold text-[#c5b4a5] mb-1 flex items-center gap-1.5">
-                      <Cake className="w-3.5 h-3.5 text-[#c68b59]" /> Birthday
+                      <Cake className="w-3.5 h-3.5 text-[#c68b59]" /> Age (Years)
                     </label>
                     <input
-                      type="date"
+                      type="number"
+                      min="10"
+                      max="120"
                       required
-                      value={birthday}
-                      onChange={(e) => setBirthday(e.target.value)}
-                      className="w-full px-3.5 py-2 bg-[#1c1815] border border-[#3d322a] rounded-xl text-[#f5efe6] text-sm focus:outline-none focus:border-[#c68b59] transition"
+                      value={age}
+                      onChange={(e) => handleAgeChange(e.target.value)}
+                      placeholder="e.g. 19"
+                      className="w-full px-3.5 py-2 bg-[#1c1815] border border-[#3d322a] rounded-xl text-[#f5efe6] font-bold text-sm focus:outline-none focus:border-[#c68b59] transition"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-[#c5b4a5] mb-1">Calculated Age</label>
-                    <div className="w-full px-3.5 py-2 bg-[#1c1815]/70 border border-[#3d322a] rounded-xl text-[#d4a373] font-bold text-sm">
-                      {calculatedAge} years old
-                    </div>
+                    <label className="block text-xs font-semibold text-[#c5b4a5] mb-1 flex items-center gap-1.5">
+                      <Calendar className="w-3.5 h-3.5 text-[#c68b59]" /> Birthday (Optional)
+                    </label>
+                    <input
+                      type="date"
+                      value={birthday}
+                      onChange={(e) => handleBirthdayChange(e.target.value)}
+                      className="w-full px-3.5 py-2 bg-[#1c1815] border border-[#3d322a] rounded-xl text-[#f5efe6] text-sm focus:outline-none focus:border-[#c68b59] transition cursor-pointer"
+                    />
                   </div>
                 </div>
 
@@ -373,6 +427,13 @@ export const ProfileSection: React.FC<ProfileSectionProps> = ({
                     {isPrivate ? 'Private' : 'Public'}
                   </button>
                 </div>
+
+                {saveSuccessMsg && (
+                  <div className="p-3 bg-emerald-950/60 border border-emerald-500/60 rounded-xl text-emerald-400 text-xs font-bold flex items-center gap-2 shadow-lg shadow-emerald-950/40">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                    <span>{saveSuccessMsg}</span>
+                  </div>
+                )}
 
                 <button
                   type="submit"
