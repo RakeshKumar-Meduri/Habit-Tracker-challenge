@@ -1,5 +1,5 @@
 export type Gender = 'male' | 'female' | 'other' | '';
-export type UserRole = 'member';
+export type UserRole = 'member' | 'admin';
 
 export interface User {
   id: string;

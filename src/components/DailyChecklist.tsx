@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import type { 
   User, 
   DailyLog, 
+  Workout,
   MissedReason, 
   GoalType, 
   ReasonTag, 
@@ -126,7 +127,6 @@ export const DailyChecklist: React.FC<DailyChecklistProps> = ({
         sleep_end: '07:00',
         sleep_duration: 8,
         water_intake_ml: 0,
-        created_at: selectedDate,
       })
     : dailyLog;
 

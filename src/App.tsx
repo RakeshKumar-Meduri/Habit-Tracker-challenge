@@ -146,16 +146,46 @@ export function App() {
     }
 
     if (Array.isArray(serverData.dailyLogs)) {
-      setDailyLogs(serverData.dailyLogs);
+      setDailyLogs(prev => {
+        const map = new Map(prev.map(l => [`${l.user_id}_${l.date}`, l]));
+        serverData.dailyLogs.forEach((l: any) => {
+          const key = `${l.user_id}_${l.date}`;
+          const existing = map.get(key);
+          map.set(key, existing ? { ...l, ...existing } : l);
+        });
+        return Array.from(map.values());
+      });
     }
     if (Array.isArray(serverData.workouts)) {
-      setWorkouts(serverData.workouts);
+      setWorkouts(prev => {
+        const map = new Map(prev.map(w => [w.id, w]));
+        serverData.workouts.forEach((w: any) => {
+          if (!map.has(w.id)) {
+            map.set(w.id, w);
+          }
+        });
+        return Array.from(map.values());
+      });
     }
     if (Array.isArray(serverData.weightLogs)) {
-      setWeightLogs(serverData.weightLogs);
+      setWeightLogs(prev => {
+        const map = new Map(prev.map(w => [w.id, w]));
+        serverData.weightLogs.forEach((w: any) => {
+          if (!map.has(w.id)) {
+            map.set(w.id, w);
+          }
+        });
+        return Array.from(map.values());
+      });
     }
     if (Array.isArray(serverData.missedReasons)) {
-      setMissedReasons(serverData.missedReasons);
+      setMissedReasons(prev => {
+        const map = new Map(prev.map(m => [m.id, m]));
+        serverData.missedReasons.forEach((m: any) => {
+          map.set(m.id, m);
+        });
+        return Array.from(map.values());
+      });
     }
     if (Array.isArray(serverData.reactions)) {
       setReactions(serverData.reactions);
@@ -164,16 +194,40 @@ export function App() {
       setBadges(serverData.badges);
     }
     if (Array.isArray(serverData.supplements)) {
-      setSupplements(serverData.supplements);
+      setSupplements(prev => {
+        const map = new Map(prev.map(s => [s.id, s]));
+        serverData.supplements.forEach((s: any) => {
+          map.set(s.id, s);
+        });
+        return Array.from(map.values());
+      });
     }
     if (Array.isArray(serverData.supplementLogs)) {
-      setSupplementLogs(serverData.supplementLogs);
+      setSupplementLogs(prev => {
+        const map = new Map(prev.map(s => [s.id, s]));
+        serverData.supplementLogs.forEach((s: any) => {
+          map.set(s.id, s);
+        });
+        return Array.from(map.values());
+      });
     }
     if (Array.isArray(serverData.customHabits)) {
-      setCustomHabits(serverData.customHabits);
+      setCustomHabits(prev => {
+        const map = new Map(prev.map(h => [h.id, h]));
+        serverData.customHabits.forEach((h: any) => {
+          map.set(h.id, h);
+        });
+        return Array.from(map.values());
+      });
     }
     if (Array.isArray(serverData.customHabitLogs)) {
-      setCustomHabitLogs(serverData.customHabitLogs);
+      setCustomHabitLogs(prev => {
+        const map = new Map(prev.map(l => [l.id, l]));
+        serverData.customHabitLogs.forEach((l: any) => {
+          map.set(l.id, l);
+        });
+        return Array.from(map.values());
+      });
     }
   };
 
@@ -500,15 +554,17 @@ export function App() {
 
   // Update Daily Log
   const handleUpdateDailyLog = (updatedLog: DailyLog) => {
-    const existingIdx = dailyLogs.findIndex(l => l.id === updatedLog.id);
     let newLogs: DailyLog[] = [];
-    if (existingIdx >= 0) {
-      newLogs = [...dailyLogs];
-      newLogs[existingIdx] = updatedLog;
-    } else {
-      newLogs = [...dailyLogs, updatedLog];
-    }
-    setDailyLogs(newLogs);
+    setDailyLogs(prev => {
+      const idx = prev.findIndex(l => l.id === updatedLog.id || (l.user_id === updatedLog.user_id && l.date === updatedLog.date));
+      if (idx >= 0) {
+        newLogs = [...prev];
+        newLogs[idx] = { ...prev[idx], ...updatedLog };
+      } else {
+        newLogs = [...prev, updatedLog];
+      }
+      return newLogs;
+    });
     pushDailyLogToServer(updatedLog);
 
     // Evaluate Badges
@@ -529,14 +585,29 @@ export function App() {
 
   // Save Multiple Workouts / Routine
   const handleSaveWorkouts = (newWorkouts: Workout[]) => {
-    setWorkouts(prev => [...newWorkouts, ...prev]);
+    setWorkouts(prev => [...newWorkouts, ...prev.filter(w => !newWorkouts.some(nw => nw.id === w.id))]);
     pushWorkoutsToServer(newWorkouts);
     
     // Auto-mark gym goal as done for that date
     if (currentUser && newWorkouts.length > 0) {
-      const currentLog = getOrCreateDailyLog();
-      if (!currentLog.gym_done) {
-        handleUpdateDailyLog({ ...currentLog, gym_done: true });
+      const targetDate = newWorkouts[0].date;
+      const targetLog = dailyLogs.find(l => l.user_id === currentUser.id && l.date === targetDate) || {
+        id: `dl_${currentUser.id}_${targetDate}`,
+        user_id: currentUser.id,
+        date: targetDate,
+        gym_done: false,
+        steps_done: false,
+        sleep_done: false,
+        junk_food_avoided: false,
+        water_done: false,
+        water_intake_ml: 0,
+        sleep_start: '23:00',
+        sleep_end: '07:00',
+        sleep_duration: 8.0,
+        points_earned: 0,
+      };
+      if (!targetLog.gym_done) {
+        handleUpdateDailyLog({ ...targetLog, gym_done: true });
       }
     }
   };

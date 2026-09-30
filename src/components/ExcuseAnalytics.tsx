@@ -29,6 +29,8 @@ export const ExcuseAnalytics: React.FC<ExcuseAnalyticsProps> = ({
     Lazy: 0,
     Sick: 0,
     Weather: 0,
+    Sore: 0,
+    'Cheat Day': 0,
     Other: 0,
   };
 

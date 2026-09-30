@@ -326,9 +326,9 @@ app.post('/api/logs', (req, res) => {
   const log = req.body;
   if (!log || !log.id) return res.status(400).json({ error: 'Invalid log' });
 
-  const idx = db.dailyLogs.findIndex(l => l.id === log.id);
+  const idx = db.dailyLogs.findIndex(l => l.id === log.id || (l.user_id === log.user_id && l.date === log.date));
   if (idx >= 0) {
-    db.dailyLogs[idx] = log;
+    db.dailyLogs[idx] = { ...db.dailyLogs[idx], ...log };
   } else {
     db.dailyLogs.push(log);
   }
