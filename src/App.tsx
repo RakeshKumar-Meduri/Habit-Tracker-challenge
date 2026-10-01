@@ -938,6 +938,7 @@ export function App() {
           onClose={() => setIsAuthModalOpen(false)}
           users={users}
           onLoginSuccess={(user) => {
+            setUsers(prev => [...prev.filter(u => u.id !== user.id), user]);
             setCurrentUserId(user.id);
             setIsAuthModalOpen(false);
           }}

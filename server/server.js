@@ -6,6 +6,7 @@ import http from 'http';
 import crypto from 'crypto';
 import { fileURLToPath } from 'url';
 import { WebSocketServer, WebSocket } from 'ws';
+import { Redis } from '@upstash/redis';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -18,13 +19,12 @@ app.use(express.json({ limit: '10mb' }));
 
 // -------------------------------------------------------
 // Persistent Database Layer
-// On Vercel: uses Upstash Redis (permanent, survives cold starts)
+// On Vercel / Cloud: uses Upstash Redis (permanent, survives cold starts)
 // Locally: uses JSON file on disk
 // -------------------------------------------------------
 const IS_VERCEL = !!process.env.VERCEL;
 const DATA_DIR = IS_VERCEL ? '/tmp' : path.join(__dirname, 'data');
 const DB_FILE = path.join(DATA_DIR, 'pulse_db.json');
-const SEED_DB_FILE = path.join(__dirname, 'data', 'pulse_db.json');
 const REDIS_KEY = 'pulse_db';
 
 const DEFAULT_DB = {
@@ -50,8 +50,48 @@ const DEFAULT_DB = {
   },
 };
 
-// Upstash Redis client (lazy-initialized, only on Vercel)
-let redis = null;
+function mergeDb(base, incoming) {
+  if (!incoming || typeof incoming !== 'object') return { ...base };
+  return {
+    users: Array.isArray(incoming.users) ? incoming.users : (base.users || []),
+    dailyLogs: Array.isArray(incoming.dailyLogs) ? incoming.dailyLogs : (base.dailyLogs || []),
+    workouts: Array.isArray(incoming.workouts) ? incoming.workouts : (base.workouts || []),
+    weightLogs: Array.isArray(incoming.weightLogs) ? incoming.weightLogs : (base.weightLogs || []),
+    missedReasons: Array.isArray(incoming.missedReasons) ? incoming.missedReasons : (base.missedReasons || []),
+    reactions: Array.isArray(incoming.reactions) ? incoming.reactions : (base.reactions || []),
+    badges: Array.isArray(incoming.badges) ? incoming.badges : (base.badges || []),
+    supplements: Array.isArray(incoming.supplements) ? incoming.supplements : (base.supplements || []),
+    supplementLogs: Array.isArray(incoming.supplementLogs) ? incoming.supplementLogs : (base.supplementLogs || []),
+    customHabits: Array.isArray(incoming.customHabits) ? incoming.customHabits : (base.customHabits || []),
+    customHabitLogs: Array.isArray(incoming.customHabitLogs) ? incoming.customHabitLogs : (base.customHabitLogs || []),
+    adminSettings: {
+      ...base.adminSettings,
+      ...(incoming.adminSettings || {}),
+    },
+  };
+}
+
+// Discover Redis credentials from any common Vercel / Upstash environment variable
+function getRedisCredentials() {
+  const url = process.env.KV_REST_API_URL || 
+              process.env.UPSTASH_REDIS_REST_URL || 
+              process.env.STORAGE_REST_API_URL ||
+              process.env.REDIS_REST_API_URL;
+  const token = process.env.KV_REST_API_TOKEN || 
+                process.env.UPSTASH_REDIS_REST_TOKEN || 
+                process.env.STORAGE_REST_API_TOKEN ||
+                process.env.REDIS_REST_API_TOKEN;
+  return { url, token };
+}
+
+const { url: REDIS_URL, token: REDIS_TOKEN } = getRedisCredentials();
+const redis = (REDIS_URL && REDIS_TOKEN) ? new Redis({ url: REDIS_URL, token: REDIS_TOKEN }) : null;
+
+if (redis) {
+  console.log('[PULSE Server] Upstash Redis initialized successfully');
+} else {
+  console.log('[PULSE Server] Running with local JSON storage at:', DB_FILE);
+}
 
 // Ensure local data directory exists
 if (!IS_VERCEL && !fs.existsSync(DATA_DIR)) {
@@ -60,14 +100,32 @@ if (!IS_VERCEL && !fs.existsSync(DATA_DIR)) {
   } catch {}
 }
 
+function getSeedDbPath() {
+  const candidates = [
+    path.join(__dirname, 'data', 'pulse_db.json'),
+    path.join(__dirname, '..', 'server', 'data', 'pulse_db.json'),
+    path.join(process.cwd(), 'server', 'data', 'pulse_db.json'),
+    path.join(process.cwd(), 'pulse_db.json'),
+  ];
+  for (const p of candidates) {
+    try {
+      if (fs.existsSync(p)) return p;
+    } catch {}
+  }
+  return null;
+}
+
 // Load seed data from the committed JSON file
 function loadSeedData() {
-  try {
-    if (fs.existsSync(SEED_DB_FILE)) {
-      const data = fs.readFileSync(SEED_DB_FILE, 'utf-8');
-      return { ...DEFAULT_DB, ...JSON.parse(data) };
+  const seedPath = getSeedDbPath();
+  if (seedPath) {
+    try {
+      const data = fs.readFileSync(seedPath, 'utf-8');
+      return mergeDb(DEFAULT_DB, JSON.parse(data));
+    } catch (e) {
+      console.warn('[PULSE Server] Failed to read seed DB:', e);
     }
-  } catch {}
+  }
   return { ...DEFAULT_DB };
 }
 
@@ -76,49 +134,32 @@ function loadDatabaseLocal() {
   try {
     if (fs.existsSync(DB_FILE)) {
       const data = fs.readFileSync(DB_FILE, 'utf-8');
-      return { ...DEFAULT_DB, ...JSON.parse(data) };
+      return mergeDb(DEFAULT_DB, JSON.parse(data));
     }
   } catch (err) {
-    console.error('Error reading local database file:', err);
+    console.error('[PULSE Server] Error reading local database file:', err);
   }
   return loadSeedData();
 }
 
-// VERCEL: async Redis-based load
+// VERCEL / REDIS: async Redis-based load
 async function loadDatabaseRedis() {
+  if (!redis) return loadDatabaseLocal();
   try {
-    const r = await getRedisAsync();
-    if (r) {
-      const data = await r.get(REDIS_KEY);
-      if (data) {
-        // Upstash returns parsed JSON automatically if stored as JSON
-        const parsed = typeof data === 'string' ? JSON.parse(data) : data;
-        return { ...DEFAULT_DB, ...parsed };
-      }
-      // No data in Redis yet — seed it from the committed JSON file
-      console.log('No data in Redis, seeding from pulse_db.json...');
-      const seed = loadSeedData();
-      await r.set(REDIS_KEY, JSON.stringify(seed));
-      return seed;
+    const data = await redis.get(REDIS_KEY);
+    if (data) {
+      const parsed = typeof data === 'string' ? JSON.parse(data) : data;
+      return mergeDb(DEFAULT_DB, parsed);
     }
+    // No data in Redis yet — seed it from the committed JSON file
+    console.log('[PULSE Server] No data in Redis, seeding from pulse_db.json...');
+    const seed = loadSeedData();
+    await redis.set(REDIS_KEY, JSON.stringify(seed));
+    return seed;
   } catch (err) {
-    console.error('Error loading from Redis:', err);
+    console.error('[PULSE Server] Error loading from Redis:', err);
+    return loadSeedData();
   }
-  return loadSeedData();
-}
-
-// Async Redis initialization helper
-async function getRedisAsync() {
-  if (redis) return redis;
-  if (IS_VERCEL && process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN) {
-    const { Redis } = await import('@upstash/redis');
-    redis = new Redis({
-      url: process.env.KV_REST_API_URL,
-      token: process.env.KV_REST_API_TOKEN,
-    });
-    return redis;
-  }
-  return null;
 }
 
 let lastSavedHash = '';
@@ -131,60 +172,63 @@ function saveDatabaseLocal(database) {
     lastSavedHash = serialized;
     fs.writeFileSync(DB_FILE, serialized, 'utf-8');
   } catch (err) {
-    console.error('Error saving local database file:', err);
+    console.error('[PULSE Server] Error saving local database file:', err);
   }
 }
 
-// VERCEL: async Redis save (fire-and-forget from sync callers)
-function saveDatabaseRedis(database) {
-  const serialized = JSON.stringify(database);
-  if (serialized === lastSavedHash) return;
-  lastSavedHash = serialized;
-
-  getRedisAsync().then(r => {
-    if (r) {
-      r.set(REDIS_KEY, serialized).catch(err => {
-        console.error('Error saving to Redis:', err);
-      });
-    }
-  }).catch(err => {
-    console.error('Error getting Redis client for save:', err);
-  });
+// VERCEL / REDIS: async Redis save
+async function saveDatabaseRedis(database) {
+  if (!redis) {
+    saveDatabaseLocal(database);
+    return;
+  }
+  try {
+    const serialized = JSON.stringify(database);
+    await redis.set(REDIS_KEY, serialized);
+  } catch (err) {
+    console.error('[PULSE Server] Error saving to Redis:', err);
+    saveDatabaseLocal(database);
+  }
 }
 
-// Unified save function
-function saveDatabase(database) {
-  if (IS_VERCEL) {
-    saveDatabaseRedis(database);
+// Unified save function (always awaited before HTTP response)
+async function saveDatabase(database) {
+  if (redis) {
+    await saveDatabaseRedis(database);
   } else {
     saveDatabaseLocal(database);
   }
 }
 
-// Initialize db — on Vercel this gets hydrated asynchronously via middleware
-let db = IS_VERCEL ? { ...DEFAULT_DB } : loadDatabaseLocal();
-let dbReady = !IS_VERCEL; // local is immediately ready
+// Initialize db synchronously with local or seed
+let db = loadDatabaseLocal();
 
-// Async initialization for Vercel: load from Redis before handling requests
-if (IS_VERCEL) {
-  const initPromise = loadDatabaseRedis().then(data => {
-    db = data;
-    dbReady = true;
-    console.log(`Redis DB loaded: ${db.users.length} users, ${db.dailyLogs.length} logs`);
-  }).catch(err => {
-    console.error('Failed to load DB from Redis:', err);
-    db = loadSeedData();
-    dbReady = true;
-  });
-
-  // Middleware: ensure DB is loaded before processing any API request
-  app.use('/api', async (req, res, next) => {
-    if (!dbReady) {
-      await initPromise;
+// Hydrate from Redis on startup if available
+if (redis) {
+  loadDatabaseRedis().then(data => {
+    if (data) {
+      db = data;
+      console.log(`[PULSE Server] Redis DB loaded: ${db.users.length} users, ${db.dailyLogs.length} logs`);
     }
-    next();
+  }).catch(err => {
+    console.error('[PULSE Server] Error during initial Redis load:', err);
   });
 }
+
+// Middleware: ensure DB is always fresh from Redis before handling any /api request
+app.use('/api', async (req, res, next) => {
+  if (redis) {
+    try {
+      const fresh = await loadDatabaseRedis();
+      if (fresh && fresh.users) {
+        db = fresh;
+      }
+    } catch (err) {
+      console.error('[PULSE Server] Error refreshing DB from Redis in middleware:', err);
+    }
+  }
+  next();
+});
 
 // Password hashing helper (deterministic salt matching frontend)
 function hashPassword(password) {
@@ -306,11 +350,18 @@ app.get('/api/health', (req, res) => {
     userCount: db.users.length,
     activeWsClients: wsClients.size,
     onlineUsers: getOnlineUserCount(),
+    storage: redis ? 'upstash-redis' : 'local-json',
   });
 });
 
 // Full Sync (Fetch all shared data for all users)
-app.get('/api/sync', (req, res) => {
+app.get('/api/sync', async (req, res) => {
+  if (redis) {
+    try {
+      const fresh = await loadDatabaseRedis();
+      if (fresh && fresh.users) db = fresh;
+    } catch {}
+  }
   res.json({
     success: true,
     data: {
@@ -331,10 +382,17 @@ app.get('/api/sync', (req, res) => {
 });
 
 // Register User
-app.post('/api/auth/register', (req, res) => {
+app.post('/api/auth/register', async (req, res) => {
   const newUser = req.body;
   if (!newUser || !newUser.username) {
     return res.status(400).json({ success: false, error: 'Username is required.' });
+  }
+
+  if (redis) {
+    try {
+      const fresh = await loadDatabaseRedis();
+      if (fresh && fresh.users) db = fresh;
+    } catch {}
   }
 
   const cleanUsername = newUser.username.trim().replace(/^@+/, '').toLowerCase();
@@ -350,7 +408,7 @@ app.post('/api/auth/register', (req, res) => {
 
   newUser.username = cleanUsername;
   db.users.push(newUser);
-  saveDatabase(db);
+  await saveDatabase(db);
 
   // Broadcast new user to all connected clients in real time
   broadcast({
@@ -362,10 +420,17 @@ app.post('/api/auth/register', (req, res) => {
 });
 
 // Server-side Login Verification
-app.post('/api/auth/login', (req, res) => {
+app.post('/api/auth/login', async (req, res) => {
   const { identifier, password, passwordHash } = req.body || {};
   if (!identifier || (!password && !passwordHash)) {
     return res.status(400).json({ success: false, error: 'Identifier and password are required.' });
+  }
+
+  if (redis) {
+    try {
+      const fresh = await loadDatabaseRedis();
+      if (fresh && fresh.users) db = fresh;
+    } catch {}
   }
 
   const rawClean = identifier.trim();
@@ -394,7 +459,7 @@ app.post('/api/auth/login', (req, res) => {
 });
 
 // Update User Profile
-app.put('/api/users/:id', (req, res) => {
+app.put('/api/users/:id', async (req, res) => {
   const { id } = req.params;
   const updatedData = req.body;
 
@@ -404,7 +469,7 @@ app.put('/api/users/:id', (req, res) => {
   }
 
   db.users[idx] = { ...db.users[idx], ...updatedData };
-  saveDatabase(db);
+  await saveDatabase(db);
 
   broadcast({
     type: 'USER_UPDATED',
@@ -415,7 +480,7 @@ app.put('/api/users/:id', (req, res) => {
 });
 
 // Delete User Account
-app.delete('/api/users/:id', (req, res) => {
+app.delete('/api/users/:id', async (req, res) => {
   const { id } = req.params;
   db.users = db.users.filter(u => u.id !== id);
   db.dailyLogs = db.dailyLogs.filter(l => l.user_id !== id);
@@ -426,7 +491,7 @@ app.delete('/api/users/:id', (req, res) => {
   if (Array.isArray(db.supplementLogs)) db.supplementLogs = db.supplementLogs.filter(s => s.user_id !== id);
   if (Array.isArray(db.customHabits)) db.customHabits = db.customHabits.filter(h => h.user_id !== id);
   if (Array.isArray(db.customHabitLogs)) db.customHabitLogs = db.customHabitLogs.filter(h => h.user_id !== id);
-  saveDatabase(db);
+  await saveDatabase(db);
 
   broadcast({
     type: 'USER_DELETED',
@@ -442,7 +507,7 @@ app.delete('/api/users/:id', (req, res) => {
 });
 
 // Update or Create Daily Log
-app.post('/api/logs', (req, res) => {
+app.post('/api/logs', async (req, res) => {
   const log = req.body;
   if (!log || !log.id) return res.status(400).json({ error: 'Invalid log' });
 
@@ -452,7 +517,7 @@ app.post('/api/logs', (req, res) => {
   } else {
     db.dailyLogs.push(log);
   }
-  saveDatabase(db);
+  await saveDatabase(db);
 
   // Real-time broadcast
   broadcast({
@@ -464,7 +529,7 @@ app.post('/api/logs', (req, res) => {
 });
 
 // Add Workouts
-app.post('/api/workouts', (req, res) => {
+app.post('/api/workouts', async (req, res) => {
   const newWorkouts = req.body;
   const added = [];
 
@@ -480,7 +545,7 @@ app.post('/api/workouts', (req, res) => {
     added.push(newWorkouts);
   }
 
-  saveDatabase(db);
+  await saveDatabase(db);
 
   // Real-time broadcast
   broadcast({
@@ -492,11 +557,11 @@ app.post('/api/workouts', (req, res) => {
 });
 
 // Delete Workout
-app.delete('/api/workouts/:id', (req, res) => {
+app.delete('/api/workouts/:id', async (req, res) => {
   const { id } = req.params;
   const initialLen = db.workouts.length;
   db.workouts = db.workouts.filter(w => w.id !== id);
-  saveDatabase(db);
+  await saveDatabase(db);
 
   broadcast({
     type: 'WORKOUT_DELETED',
@@ -507,7 +572,7 @@ app.delete('/api/workouts/:id', (req, res) => {
 });
 
 // Add Weight Log
-app.post('/api/weights', (req, res) => {
+app.post('/api/weights', async (req, res) => {
   const weightLog = req.body;
   if (!weightLog || !weightLog.id) return res.status(400).json({ error: 'Invalid weight log' });
 
@@ -521,7 +586,7 @@ app.post('/api/weights', (req, res) => {
     db.users[userIdx].weight_current = weightLog.weight;
   }
 
-  saveDatabase(db);
+  await saveDatabase(db);
 
   broadcast({
     type: 'WEIGHT_LOG_ADDED',
@@ -532,14 +597,14 @@ app.post('/api/weights', (req, res) => {
 });
 
 // Add/Update Missed Reason
-app.post('/api/missed-reasons', (req, res) => {
+app.post('/api/missed-reasons', async (req, res) => {
   const reason = req.body;
   if (!reason || !reason.id) return res.status(400).json({ error: 'Invalid missed reason' });
 
   const map = new Map(db.missedReasons.map(r => [r.id, r]));
   map.set(reason.id, reason);
   db.missedReasons = Array.from(map.values());
-  saveDatabase(db);
+  await saveDatabase(db);
 
   broadcast({
     type: 'MISSED_REASON_ADDED',
@@ -550,14 +615,14 @@ app.post('/api/missed-reasons', (req, res) => {
 });
 
 // Add Reaction
-app.post('/api/reactions', (req, res) => {
+app.post('/api/reactions', async (req, res) => {
   const reaction = req.body;
   if (!reaction || !reaction.id) return res.status(400).json({ error: 'Invalid reaction' });
 
   const map = new Map(db.reactions.map(r => [r.id, r]));
   map.set(reaction.id, reaction);
   db.reactions = Array.from(map.values());
-  saveDatabase(db);
+  await saveDatabase(db);
 
   broadcast({
     type: 'REACTION_ADDED',
@@ -568,13 +633,13 @@ app.post('/api/reactions', (req, res) => {
 });
 
 // Update Badges
-app.post('/api/badges', (req, res) => {
+app.post('/api/badges', async (req, res) => {
   const badges = req.body;
   if (Array.isArray(badges)) {
     const map = new Map(db.badges.map(b => [b.id, b]));
     badges.forEach(b => map.set(b.id, b));
     db.badges = Array.from(map.values());
-    saveDatabase(db);
+    await saveDatabase(db);
 
     broadcast({
       type: 'BADGES_UPDATED',
@@ -585,12 +650,12 @@ app.post('/api/badges', (req, res) => {
 });
 
 // Supplements
-app.post('/api/supplements', (req, res) => {
+app.post('/api/supplements', async (req, res) => {
   const supp = req.body;
   if (!supp || !supp.id) return res.status(400).json({ error: 'Invalid supplement' });
 
   db.supplements = [...(db.supplements || []).filter(s => s.id !== supp.id), supp];
-  saveDatabase(db);
+  await saveDatabase(db);
 
   broadcast({
     type: 'SUPPLEMENT_ADDED',
@@ -600,11 +665,11 @@ app.post('/api/supplements', (req, res) => {
   res.json({ success: true, supplement: supp });
 });
 
-app.delete('/api/supplements/:id', (req, res) => {
+app.delete('/api/supplements/:id', async (req, res) => {
   const { id } = req.params;
   db.supplements = (db.supplements || []).filter(s => s.id !== id);
   db.supplementLogs = (db.supplementLogs || []).filter(l => l.supplement_id !== id);
-  saveDatabase(db);
+  await saveDatabase(db);
 
   broadcast({
     type: 'SUPPLEMENT_DELETED',
@@ -614,14 +679,14 @@ app.delete('/api/supplements/:id', (req, res) => {
   res.json({ success: true, id });
 });
 
-app.post('/api/supplement-logs', (req, res) => {
+app.post('/api/supplement-logs', async (req, res) => {
   const log = req.body;
   if (!log || !log.id) return res.status(400).json({ error: 'Invalid supplement log' });
 
   const map = new Map((db.supplementLogs || []).map(l => [l.id, l]));
   map.set(log.id, log);
   db.supplementLogs = Array.from(map.values());
-  saveDatabase(db);
+  await saveDatabase(db);
 
   broadcast({
     type: 'SUPPLEMENT_LOG_UPDATED',
@@ -632,12 +697,12 @@ app.post('/api/supplement-logs', (req, res) => {
 });
 
 // Custom Habits
-app.post('/api/custom-habits', (req, res) => {
+app.post('/api/custom-habits', async (req, res) => {
   const habit = req.body;
   if (!habit || !habit.id) return res.status(400).json({ error: 'Invalid habit' });
 
   db.customHabits = [...(db.customHabits || []).filter(h => h.id !== habit.id), habit];
-  saveDatabase(db);
+  await saveDatabase(db);
 
   broadcast({
     type: 'CUSTOM_HABIT_ADDED',
@@ -647,11 +712,11 @@ app.post('/api/custom-habits', (req, res) => {
   res.json({ success: true, habit });
 });
 
-app.delete('/api/custom-habits/:id', (req, res) => {
+app.delete('/api/custom-habits/:id', async (req, res) => {
   const { id } = req.params;
   db.customHabits = (db.customHabits || []).filter(h => h.id !== id);
   db.customHabitLogs = (db.customHabitLogs || []).filter(l => l.habit_id !== id);
-  saveDatabase(db);
+  await saveDatabase(db);
 
   broadcast({
     type: 'CUSTOM_HABIT_DELETED',
@@ -661,14 +726,14 @@ app.delete('/api/custom-habits/:id', (req, res) => {
   res.json({ success: true, id });
 });
 
-app.post('/api/custom-habit-logs', (req, res) => {
+app.post('/api/custom-habit-logs', async (req, res) => {
   const log = req.body;
   if (!log || !log.id) return res.status(400).json({ error: 'Invalid custom habit log' });
 
   const map = new Map((db.customHabitLogs || []).map(l => [l.id, l]));
   map.set(log.id, log);
   db.customHabitLogs = Array.from(map.values());
-  saveDatabase(db);
+  await saveDatabase(db);
 
   broadcast({
     type: 'CUSTOM_HABIT_LOG_UPDATED',
@@ -679,7 +744,7 @@ app.post('/api/custom-habit-logs', (req, res) => {
 });
 
 // Sync push from client (Merges updates)
-app.post('/api/sync/push', (req, res) => {
+app.post('/api/sync/push', async (req, res) => {
   const {
     users,
     deletedUserIds,
@@ -769,7 +834,7 @@ app.post('/api/sync/push', (req, res) => {
     db.customHabitLogs = Array.from(habitLogMap.values());
   }
 
-  saveDatabase(db);
+  await saveDatabase(db);
 
   broadcast({
     type: 'FULL_SYNC',
