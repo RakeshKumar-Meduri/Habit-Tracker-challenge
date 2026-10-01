@@ -16,10 +16,16 @@ const PORT = process.env.PORT || 3001;
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 
-// Database file path (support Vercel serverless /tmp and local data directory)
-const DATA_DIR = process.env.VERCEL ? '/tmp' : path.join(__dirname, 'data');
+// -------------------------------------------------------
+// Persistent Database Layer
+// On Vercel: uses Upstash Redis (permanent, survives cold starts)
+// Locally: uses JSON file on disk
+// -------------------------------------------------------
+const IS_VERCEL = !!process.env.VERCEL;
+const DATA_DIR = IS_VERCEL ? '/tmp' : path.join(__dirname, 'data');
 const DB_FILE = path.join(DATA_DIR, 'pulse_db.json');
 const SEED_DB_FILE = path.join(__dirname, 'data', 'pulse_db.json');
+const REDIS_KEY = 'pulse_db';
 
 const DEFAULT_DB = {
   users: [],
@@ -44,50 +50,141 @@ const DEFAULT_DB = {
   },
 };
 
-// Ensure data directory exists
-if (!fs.existsSync(DATA_DIR)) {
+// Upstash Redis client (lazy-initialized, only on Vercel)
+let redis = null;
+
+// Ensure local data directory exists
+if (!IS_VERCEL && !fs.existsSync(DATA_DIR)) {
   try {
     fs.mkdirSync(DATA_DIR, { recursive: true });
   } catch {}
 }
 
-function loadDatabase() {
+// Load seed data from the committed JSON file
+function loadSeedData() {
   try {
-    if (process.env.VERCEL) {
-      if (!fs.existsSync(DB_FILE) && fs.existsSync(SEED_DB_FILE)) {
-        try {
-          fs.copyFileSync(SEED_DB_FILE, DB_FILE);
-        } catch {}
-      }
-    }
-    if (fs.existsSync(DB_FILE)) {
-      const data = fs.readFileSync(DB_FILE, 'utf-8');
-      return { ...DEFAULT_DB, ...JSON.parse(data) };
-    }
     if (fs.existsSync(SEED_DB_FILE)) {
       const data = fs.readFileSync(SEED_DB_FILE, 'utf-8');
       return { ...DEFAULT_DB, ...JSON.parse(data) };
     }
-  } catch (err) {
-    console.error('Error reading database file, using defaults:', err);
-  }
+  } catch {}
   return { ...DEFAULT_DB };
+}
+
+// LOCAL: synchronous file-based load
+function loadDatabaseLocal() {
+  try {
+    if (fs.existsSync(DB_FILE)) {
+      const data = fs.readFileSync(DB_FILE, 'utf-8');
+      return { ...DEFAULT_DB, ...JSON.parse(data) };
+    }
+  } catch (err) {
+    console.error('Error reading local database file:', err);
+  }
+  return loadSeedData();
+}
+
+// VERCEL: async Redis-based load
+async function loadDatabaseRedis() {
+  try {
+    const r = await getRedisAsync();
+    if (r) {
+      const data = await r.get(REDIS_KEY);
+      if (data) {
+        // Upstash returns parsed JSON automatically if stored as JSON
+        const parsed = typeof data === 'string' ? JSON.parse(data) : data;
+        return { ...DEFAULT_DB, ...parsed };
+      }
+      // No data in Redis yet — seed it from the committed JSON file
+      console.log('No data in Redis, seeding from pulse_db.json...');
+      const seed = loadSeedData();
+      await r.set(REDIS_KEY, JSON.stringify(seed));
+      return seed;
+    }
+  } catch (err) {
+    console.error('Error loading from Redis:', err);
+  }
+  return loadSeedData();
+}
+
+// Async Redis initialization helper
+async function getRedisAsync() {
+  if (redis) return redis;
+  if (IS_VERCEL && process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN) {
+    const { Redis } = await import('@upstash/redis');
+    redis = new Redis({
+      url: process.env.KV_REST_API_URL,
+      token: process.env.KV_REST_API_TOKEN,
+    });
+    return redis;
+  }
+  return null;
 }
 
 let lastSavedHash = '';
 
-function saveDatabase(database) {
+// LOCAL: synchronous file save
+function saveDatabaseLocal(database) {
   try {
     const serialized = JSON.stringify(database, null, 2);
     if (serialized === lastSavedHash) return;
     lastSavedHash = serialized;
     fs.writeFileSync(DB_FILE, serialized, 'utf-8');
   } catch (err) {
-    console.error('Error saving database file:', err);
+    console.error('Error saving local database file:', err);
   }
 }
 
-let db = loadDatabase();
+// VERCEL: async Redis save (fire-and-forget from sync callers)
+function saveDatabaseRedis(database) {
+  const serialized = JSON.stringify(database);
+  if (serialized === lastSavedHash) return;
+  lastSavedHash = serialized;
+
+  getRedisAsync().then(r => {
+    if (r) {
+      r.set(REDIS_KEY, serialized).catch(err => {
+        console.error('Error saving to Redis:', err);
+      });
+    }
+  }).catch(err => {
+    console.error('Error getting Redis client for save:', err);
+  });
+}
+
+// Unified save function
+function saveDatabase(database) {
+  if (IS_VERCEL) {
+    saveDatabaseRedis(database);
+  } else {
+    saveDatabaseLocal(database);
+  }
+}
+
+// Initialize db — on Vercel this gets hydrated asynchronously via middleware
+let db = IS_VERCEL ? { ...DEFAULT_DB } : loadDatabaseLocal();
+let dbReady = !IS_VERCEL; // local is immediately ready
+
+// Async initialization for Vercel: load from Redis before handling requests
+if (IS_VERCEL) {
+  const initPromise = loadDatabaseRedis().then(data => {
+    db = data;
+    dbReady = true;
+    console.log(`Redis DB loaded: ${db.users.length} users, ${db.dailyLogs.length} logs`);
+  }).catch(err => {
+    console.error('Failed to load DB from Redis:', err);
+    db = loadSeedData();
+    dbReady = true;
+  });
+
+  // Middleware: ensure DB is loaded before processing any API request
+  app.use('/api', async (req, res, next) => {
+    if (!dbReady) {
+      await initPromise;
+    }
+    next();
+  });
+}
 
 // Password hashing helper (deterministic salt matching frontend)
 function hashPassword(password) {
