@@ -17,6 +17,38 @@
       "must_change_password": false,
       "birthday": "2005-01-01",
       "body_shape_photo": ""
+    },
+    {
+      "id": "user_1790824958946_sy7b",
+      "name": "Test User",
+      "username": "testuser2",
+      "password_hash": "1e62ff825a77a929e21f55318d2ef65d5e6434ec4af849e932df1ec1bb14de0c",
+      "role": "member",
+      "height": 175,
+      "weight_current": 70,
+      "age": 25,
+      "gender": "male",
+      "is_private": false,
+      "avatar_color": "from-[#c68b59] to-[#785338]",
+      "created_at": "2026-10-01",
+      "is_active": true,
+      "must_change_password": false
+    },
+    {
+      "id": "user_1790843934888_9m2c",
+      "name": "Tester One",
+      "username": "tester1",
+      "password_hash": "3119b8af00753c13a4b8d3a45f0cc15f40a2dba9ac9966dd9db57ed1034381bd",
+      "role": "member",
+      "height": 175,
+      "weight_current": 70,
+      "age": 25,
+      "gender": "male",
+      "is_private": false,
+      "avatar_color": "from-rose-500 to-pink-700",
+      "created_at": "2026-10-01",
+      "is_active": true,
+      "must_change_password": false
     }
   ],
   "dailyLogs": [

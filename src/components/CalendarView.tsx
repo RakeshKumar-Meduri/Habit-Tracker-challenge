@@ -31,7 +31,8 @@ import {
   Lock, 
   Users, 
   Activity,
-  Plus
+  Plus,
+  Trash2
 } from 'lucide-react';
 
 interface CalendarViewProps {
@@ -49,6 +50,7 @@ interface CalendarViewProps {
   onSelectDate: (date: string) => void;
   onNavigateToChecklist: (date: string) => void;
   onOpenWorkoutModal?: () => void;
+  onDeleteWorkout?: (id: string) => void;
 }
 
 const MONTH_NAMES = [
@@ -73,6 +75,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
   onSelectDate,
   onNavigateToChecklist,
   onOpenWorkoutModal,
+  onDeleteWorkout,
 }) => {
   // Member selection (defaults to current user)
   const [selectedMemberId, setSelectedMemberId] = useState<string>(currentUser.id);
@@ -201,14 +204,11 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
     if (log?.junk_food_avoided) coreTasksDone += 1;
     if (log?.water_done) coreTasksDone += 1;
 
-    // Daily points
-    let points = 0;
-    if (log?.points_earned !== undefined && log.points_earned !== null) {
-      points = log.points_earned;
-    } else {
-      // 10 pts per goal
-      points = coreTasksDone * 10;
-    }
+    // Daily points: 10 pts per core goal (Max 50 pts/day)
+    const calculatedPoints = coreTasksDone * 10;
+    const points = (log?.points_earned !== undefined && log.points_earned !== null && log.points_earned > 0)
+      ? Math.max(log.points_earned, calculatedPoints)
+      : calculatedPoints;
 
     // Supplements stats
     const userSupps = supplements.filter(s => s.user_id === targetUser.id);
@@ -963,7 +963,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
               {selectedStats.workouts.map((w) => (
                 <div key={w.id} className="p-3 rounded-xl bg-[#1c1815] border border-[#3d322a] flex items-center justify-between">
-                  <div className="min-w-0">
+                  <div className="min-w-0 flex-1">
                     <h5 className="text-xs font-bold text-[#f5efe6] truncate">{w.exercise_name}</h5>
                     <p className="text-[11px] text-[#c5b4a5] mt-0.5">
                       {w.sets} sets × {w.reps} reps
@@ -974,9 +974,21 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
                       <p className="text-[10px] text-[#d4a373] italic truncate mt-0.5">{w.notes}</p>
                     )}
                   </div>
-                  <span className="text-[9px] px-1.5 py-0.5 rounded bg-[#26201b] text-[#c68b59] font-bold border border-[#3d322a] shrink-0 ml-2">
-                    {w.exercise_type || 'Strength'}
-                  </span>
+                  <div className="flex items-center gap-2 shrink-0 ml-2">
+                    <span className="text-[9px] px-1.5 py-0.5 rounded bg-[#26201b] text-[#c68b59] font-bold border border-[#3d322a]">
+                      {w.exercise_type || 'Strength'}
+                    </span>
+                    {w.user_id === currentUser.id && onDeleteWorkout && (
+                      <button
+                        type="button"
+                        onClick={() => onDeleteWorkout(w.id)}
+                        className="p-1.5 text-[#c5b4a5] hover:text-rose-400 hover:bg-rose-950/40 rounded-lg border border-transparent hover:border-rose-900/50 transition cursor-pointer"
+                        title="Delete workout"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+                  </div>
                 </div>
               ))}
             </div>

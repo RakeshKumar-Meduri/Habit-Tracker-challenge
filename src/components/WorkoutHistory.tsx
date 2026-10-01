@@ -131,11 +131,8 @@ export const WorkoutHistory: React.FC<WorkoutHistoryProps> = ({
                     )}
                     {w.user_id === currentUser.id && onDeleteWorkout && (
                       <button
-                        onClick={() => {
-                          if (window.confirm(`Delete workout "${w.exercise_name}"?`)) {
-                            onDeleteWorkout(w.id);
-                          }
-                        }}
+                        type="button"
+                        onClick={() => onDeleteWorkout(w.id)}
                         className="p-1.5 text-[#c5b4a5] hover:text-rose-400 hover:bg-rose-950/40 rounded-lg border border-transparent hover:border-rose-900/50 transition cursor-pointer"
                         title="Delete Workout"
                       >

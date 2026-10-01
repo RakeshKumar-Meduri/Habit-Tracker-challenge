@@ -168,7 +168,15 @@ export async function deleteWorkoutOnServer(id: string): Promise<boolean> {
     const res = await fetch(`${API_BASE}/api/workouts/${encodeURIComponent(id)}`, {
       method: 'DELETE',
     });
-    return res.ok;
+    if (res.ok) return true;
+    
+    // Fallback to POST
+    const postRes = await fetch(`${API_BASE}/api/workouts/delete`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id }),
+    });
+    return postRes.ok;
   } catch {
     return false;
   }

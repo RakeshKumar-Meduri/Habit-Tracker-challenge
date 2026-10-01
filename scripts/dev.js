@@ -12,8 +12,8 @@ console.log('   - Backend API & WebSockets: http://localhost:3001');
 console.log('   - Frontend Vite Client:     http://localhost:5173');
 console.log('====================================================\n');
 
-// 1. Start Backend Express + WebSocket Server
-const serverProc = spawn(process.execPath, [path.join(rootDir, 'server', 'server.js')], {
+// 1. Start Backend Express + WebSocket Server (with --watch for live reload)
+const serverProc = spawn(process.execPath, ['--watch', path.join(rootDir, 'server', 'server.js')], {
   cwd: rootDir,
   stdio: 'inherit',
   env: { ...process.env, PORT: '3001' },

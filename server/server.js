@@ -556,9 +556,25 @@ app.post('/api/workouts', async (req, res) => {
   res.json({ success: true });
 });
 
-// Delete Workout
+// Delete Workout (DELETE method)
 app.delete('/api/workouts/:id', async (req, res) => {
   const { id } = req.params;
+  const initialLen = db.workouts.length;
+  db.workouts = db.workouts.filter(w => w.id !== id);
+  await saveDatabase(db);
+
+  broadcast({
+    type: 'WORKOUT_DELETED',
+    payload: { id },
+  });
+
+  res.json({ success: true, deleted: db.workouts.length < initialLen });
+});
+
+// Delete Workout (POST method fallback)
+app.post('/api/workouts/delete', async (req, res) => {
+  const { id } = req.body || {};
+  if (!id) return res.status(400).json({ error: 'Missing workout id' });
   const initialLen = db.workouts.length;
   db.workouts = db.workouts.filter(w => w.id !== id);
   await saveDatabase(db);

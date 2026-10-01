@@ -578,18 +578,36 @@ export function App() {
 
   // Update Daily Log
   const handleUpdateDailyLog = (updatedLog: DailyLog) => {
+    // Automatically recompute points_earned based on 10 pts per completed goal
+    let isSunday = false;
+    if (updatedLog.date) {
+      const [y, m, d] = updatedLog.date.split('-').map(Number);
+      isSunday = new Date(y, m - 1, d).getDay() === 0;
+    }
+    let coreDone = 0;
+    if (updatedLog.gym_done || (isSunday && updatedLog.gym_done !== false)) coreDone += 1;
+    if (updatedLog.steps_done || (updatedLog.steps_value || 0) >= (adminSettings?.step_target || 10000)) coreDone += 1;
+    if (updatedLog.sleep_done) coreDone += 1;
+    if (updatedLog.junk_food_avoided) coreDone += 1;
+    if (updatedLog.water_done) coreDone += 1;
+
+    const logToSave: DailyLog = {
+      ...updatedLog,
+      points_earned: coreDone * 10,
+    };
+
     let newLogs: DailyLog[] = [];
     setDailyLogs(prev => {
-      const idx = prev.findIndex(l => l.id === updatedLog.id || (l.user_id === updatedLog.user_id && l.date === updatedLog.date));
+      const idx = prev.findIndex(l => l.id === logToSave.id || (l.user_id === logToSave.user_id && l.date === logToSave.date));
       if (idx >= 0) {
         newLogs = [...prev];
-        newLogs[idx] = { ...prev[idx], ...updatedLog };
+        newLogs[idx] = { ...prev[idx], ...logToSave };
       } else {
-        newLogs = [...prev, updatedLog];
+        newLogs = [...prev, logToSave];
       }
       return newLogs;
     });
-    pushDailyLogToServer(updatedLog);
+    pushDailyLogToServer(logToSave);
 
     // Evaluate Badges
     if (currentUser) {
@@ -831,6 +849,7 @@ export function App() {
               setActiveTab('checklist');
             }}
             onOpenWorkoutModal={() => setIsWorkoutModalOpen(true)}
+            onDeleteWorkout={handleDeleteWorkout}
           />
         )}
 
