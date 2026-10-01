@@ -178,15 +178,10 @@ export function App() {
       });
     }
     if (Array.isArray(serverData.workouts)) {
-      setWorkouts(prev => {
-        const map = new Map(prev.filter(w => w.user_id !== 'user_1790824958946_sy7b').map(w => [w.id, w]));
-        serverData.workouts.forEach((w: any) => {
-          if (w.user_id !== 'user_1790824958946_sy7b' && !map.has(w.id)) {
-            map.set(w.id, w);
-          }
-        });
-        return Array.from(map.values());
-      });
+      const cleanServerWorkouts = serverData.workouts.filter(
+        (w: any) => w.user_id !== 'user_1790824958946_sy7b' && w.id !== 'w_rakesh_1' && w.id !== 'w_rakesh_2'
+      );
+      setWorkouts(cleanServerWorkouts);
     }
     if (Array.isArray(serverData.weightLogs)) {
       setWeightLogs(prev => {
@@ -643,7 +638,11 @@ export function App() {
 
   // Delete Logged Workout
   const handleDeleteWorkout = (workoutId: string) => {
-    setWorkouts(prev => prev.filter(w => w.id !== workoutId));
+    setWorkouts(prev => {
+      const updated = prev.filter(w => w.id !== workoutId);
+      saveStateToStorage(STORAGE_KEYS.WORKOUTS, updated);
+      return updated;
+    });
     deleteWorkoutOnServer(workoutId);
   };
 

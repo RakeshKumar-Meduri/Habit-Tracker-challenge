@@ -4,31 +4,31 @@ export function calculateUserPoints(dailyLogs: DailyLog[], userId: string): numb
   return dailyLogs
     .filter(log => log.user_id === userId)
     .reduce((total, log) => {
-      let points = 0;
-      if (log.gym_done) points += 1;
-      
-      // Step points allocation based on count range (6k, 8k, 10k+)
-      const steps = log.steps_value || 0;
-      if (steps >= 10000) {
-        points += 3;
-      } else if (steps >= 8000) {
-        points += 2;
-      } else if (steps >= 6000) {
-        points += 1;
-      } else if (log.steps_done) {
-        points += 1;
+      // Determine if the day is Sunday (Healing day)
+      let isSunday = false;
+      if (log.date) {
+        const [y, m, d] = log.date.split('-').map(Number);
+        isSunday = new Date(y, m - 1, d).getDay() === 0;
       }
 
-      if (log.sleep_done) points += 1;
-      if (log.junk_food_avoided) points += 1;
-      if (log.water_done) points += 1;
+      let coreDone = 0;
+      // 1. Gym / Workout (Sunday healing automatically counts)
+      if (log.gym_done || (isSunday && log.gym_done !== false)) coreDone += 1;
+      // 2. Steps goal
+      if (log.steps_done || (log.steps_value || 0) >= 6000) coreDone += 1;
+      // 3. Sleep goal
+      if (log.sleep_done) coreDone += 1;
+      // 4. Junk food avoided
+      if (log.junk_food_avoided) coreDone += 1;
+      // 5. Water target
+      if (log.water_done) coreDone += 1;
 
-      // Bonus 3 points for completing all core daily goals
-      const hasStepGoal = steps >= 6000 || log.steps_done;
-      if (log.gym_done && hasStepGoal && log.sleep_done && log.junk_food_avoided && log.water_done) {
-        points += 3;
-      }
-      return total + points;
+      // 10 points per completed goal (Max 50 points/day)
+      const earned = (log.points_earned !== undefined && log.points_earned !== null && log.points_earned > 0)
+        ? Math.max(log.points_earned, coreDone * 10)
+        : coreDone * 10;
+
+      return total + earned;
     }, 0);
 }
 

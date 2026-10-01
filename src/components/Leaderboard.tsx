@@ -71,7 +71,7 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({
             Group Fitness Leaderboard
           </h2>
           <p className="text-xs text-[#c5b4a5] mt-1">
-            Points allocated per completed goal, bonus points for step tiers (6k–10k+) and clean sweeps!
+            Earn 10 points per completed goal (up to 50 points per day) + Sunday Healing recovery!
           </p>
         </div>
 

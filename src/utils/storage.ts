@@ -210,41 +210,7 @@ export function initializeStorageIfEmpty(): {
   }
 
   let workouts: Workout[] = getStoredItemSafely<Workout[]>(STORAGE_KEYS.WORKOUTS, [])
-    .filter(w => w.user_id !== 'user_1790824958946_sy7b');
-  if (workouts.length === 0) {
-    workouts = [
-      {
-        id: "w_rakesh_1",
-        user_id: "user_1790779706015_wepw",
-        date: "2026-09-28",
-        exercise_name: "Barbell Bench Press",
-        exercise_type: "strength",
-        sets: 4,
-        reps: 10,
-        weight: 85,
-        weight_unit: "kg",
-        duration: 55,
-        notes: "Chest & Triceps Power",
-        is_private: false,
-        created_at: "2026-09-28T09:00:00.000Z"
-      },
-      {
-        id: "w_rakesh_2",
-        user_id: "user_1790779706015_wepw",
-        date: "2026-10-01",
-        exercise_name: "Treadmill Intervals & Core",
-        exercise_type: "cardio",
-        sets: 6,
-        reps: 1,
-        weight: 0,
-        weight_unit: "kg",
-        duration: 45,
-        notes: "Morning HIIT session",
-        is_private: false,
-        created_at: "2026-10-01T07:15:00.000Z"
-      }
-    ];
-  }
+    .filter(w => w.user_id !== 'user_1790824958946_sy7b' && w.id !== 'w_rakesh_1' && w.id !== 'w_rakesh_2');
 
   let weightLogs: WeightLog[] = getStoredItemSafely<WeightLog[]>(STORAGE_KEYS.WEIGHT_LOGS, [])
     .filter(wl => wl.user_id !== 'user_1790824958946_sy7b');

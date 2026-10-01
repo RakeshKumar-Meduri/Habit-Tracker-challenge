@@ -55,7 +55,7 @@ function mergeDb(base, incoming) {
   return {
     users: Array.isArray(incoming.users) ? incoming.users : (base.users || []),
     dailyLogs: Array.isArray(incoming.dailyLogs) ? incoming.dailyLogs : (base.dailyLogs || []),
-    workouts: Array.isArray(incoming.workouts) ? incoming.workouts : (base.workouts || []),
+    workouts: (Array.isArray(incoming.workouts) ? incoming.workouts : (base.workouts || [])).filter(w => w && w.id !== 'w_rakesh_1' && w.id !== 'w_rakesh_2'),
     weightLogs: Array.isArray(incoming.weightLogs) ? incoming.weightLogs : (base.weightLogs || []),
     missedReasons: Array.isArray(incoming.missedReasons) ? incoming.missedReasons : (base.missedReasons || []),
     reactions: Array.isArray(incoming.reactions) ? incoming.reactions : (base.reactions || []),
@@ -367,7 +367,7 @@ app.get('/api/sync', async (req, res) => {
     data: {
       users: db.users.filter(u => u.is_active !== false && u.username !== 'testuser123' && u.id !== 'user_1790589874177_elgx' && u.username !== 'testuser2' && u.id !== 'user_1790824958946_sy7b' && u.username !== 'tester1' && !u.username.startsWith('test')),
       dailyLogs: db.dailyLogs,
-      workouts: db.workouts,
+      workouts: (db.workouts || []).filter(w => w && w.id !== 'w_rakesh_1' && w.id !== 'w_rakesh_2'),
       weightLogs: db.weightLogs,
       missedReasons: db.missedReasons,
       reactions: db.reactions,
