@@ -204,21 +204,21 @@ export const ProfileSection: React.FC<ProfileSectionProps> = ({
       )}
 
       {/* Profile Header */}
-      <div className="bg-[#26201b] border border-[#3d322a] rounded-2xl p-6 shadow-xl flex flex-col md:flex-row items-center gap-6">
-        <div className="w-20 h-20 rounded-2xl bg-gradient-to-tr from-[#c68b59] to-[#785338] flex items-center justify-center text-3xl font-black text-[#f5efe6] shadow-lg shadow-[#c68b59]/20">
+      <div className="bg-[#26201b] border border-[#3d322a] rounded-2xl p-4 sm:p-6 shadow-xl flex flex-col md:flex-row items-center gap-5 sm:gap-6">
+        <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-gradient-to-tr from-[#c68b59] to-[#785338] flex items-center justify-center text-2xl sm:text-3xl font-black text-[#f5efe6] shadow-lg shadow-[#c68b59]/20 shrink-0">
           {targetUser.name.charAt(0)}
         </div>
 
-        <div className="text-center md:text-left flex-1">
-          <h2 className="text-2xl font-black text-[#f5efe6] flex items-center justify-center md:justify-start gap-2">
-            {targetUser.name}
+        <div className="text-center md:text-left flex-1 min-w-0">
+          <h2 className="text-xl sm:text-2xl font-black text-[#f5efe6] flex flex-wrap items-center justify-center md:justify-start gap-2">
+            <span>{targetUser.name}</span>
             {targetUser.is_private && (
-              <span className="text-xs px-2.5 py-0.5 rounded-full bg-[#c68b59]/20 text-[#d4a373] font-bold border border-[#c68b59]/30 flex items-center gap-1">
+              <span className="text-[10px] sm:text-xs px-2.5 py-0.5 rounded-full bg-[#c68b59]/20 text-[#d4a373] font-bold border border-[#c68b59]/30 flex items-center gap-1">
                 <Lock className="w-3 h-3" /> Private Profile
               </span>
             )}
             {targetUser.role === 'admin' && (
-              <span className="text-xs px-2.5 py-0.5 rounded-full bg-amber-950/40 text-amber-400 font-bold border border-amber-800/60">
+              <span className="text-[10px] sm:text-xs px-2.5 py-0.5 rounded-full bg-amber-950/40 text-amber-400 font-bold border border-amber-800/60">
                 Admin
               </span>
             )}
@@ -227,33 +227,33 @@ export const ProfileSection: React.FC<ProfileSectionProps> = ({
             @{targetUser.username} • Member since {targetUser.created_at || '2026'}
           </p>
 
-          <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 mt-3 text-xs">
-            <span className="bg-[#1c1815] px-3 py-1 rounded-xl border border-[#3d322a] text-[#c5b4a5]">
+          <div className="flex flex-wrap items-center justify-center md:justify-start gap-2 sm:gap-3 mt-3 text-xs">
+            <span className="bg-[#1c1815] px-2.5 py-1 rounded-xl border border-[#3d322a] text-[#c5b4a5]">
               Height: <strong className="text-[#f5efe6]">{displayHeight} cm</strong>
             </span>
-            <span className="bg-[#1c1815] px-3 py-1 rounded-xl border border-[#3d322a] text-[#c5b4a5]">
+            <span className="bg-[#1c1815] px-2.5 py-1 rounded-xl border border-[#3d322a] text-[#c5b4a5]">
               Current Weight: <strong className="text-[#d4a373]">{displayWeight} kg</strong>
             </span>
-            <span className="bg-[#1c1815] px-3 py-1 rounded-xl border border-[#3d322a] text-[#c5b4a5]">
+            <span className="bg-[#1c1815] px-2.5 py-1 rounded-xl border border-[#3d322a] text-[#c5b4a5]">
               Age: <strong className="text-[#f5efe6]">{displayAge} yrs</strong>
             </span>
           </div>
         </div>
 
         {/* Live Updating BMI Gauge Card */}
-        <div className="bg-[#1c1815] border border-[#3d322a] rounded-2xl p-5 text-center min-w-[170px] shadow-inner">
-          <span className="text-[11px] font-semibold text-[#c5b4a5] uppercase tracking-wider block">Live BMI Gauge</span>
-          <div className="text-3xl font-black text-[#f5efe6] mt-1">{bmi}</div>
+        <div className="w-full md:w-auto bg-[#1c1815] border border-[#3d322a] rounded-2xl p-4 sm:p-5 text-center min-w-[170px] shadow-inner">
+          <span className="text-[10px] sm:text-[11px] font-semibold text-[#c5b4a5] uppercase tracking-wider block">Live BMI Gauge</span>
+          <div className="text-2xl sm:text-3xl font-black text-[#f5efe6] mt-0.5">{bmi}</div>
           <span className={`text-xs mt-1 inline-block ${color}`}>
             {category}
           </span>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
         
         {/* Main Content Area */}
-        <div className="md:col-span-2 bg-[#26201b] border border-[#3d322a] rounded-2xl p-6 shadow-xl space-y-6">
+        <div className="md:col-span-2 bg-[#26201b] border border-[#3d322a] rounded-2xl p-4 sm:p-6 shadow-xl space-y-6">
           {isViewingOther ? (
             /* Teammate Profile Overview (Read-Only) */
             <div className="space-y-6">
@@ -495,9 +495,9 @@ export const ProfileSection: React.FC<ProfileSectionProps> = ({
         </div>
 
         {/* Timestamped Weight History Log & Delete Account Card */}
-        <div className="space-y-6 flex flex-col">
-          <div className="bg-[#26201b] border border-[#3d322a] rounded-2xl p-6 shadow-xl flex flex-col">
-            <h3 className="text-base font-bold text-[#f5efe6] mb-3 flex items-center gap-2">
+        <div className="space-y-4 sm:space-y-6 flex flex-col">
+          <div className="bg-[#26201b] border border-[#3d322a] rounded-2xl p-4 sm:p-6 shadow-xl flex flex-col">
+            <h3 className="text-sm sm:text-base font-bold text-[#f5efe6] mb-3 flex items-center gap-2">
               <Scale className="w-4 h-4 text-[#c68b59]" />
               {isViewingOther ? `${targetUser.name}'s Weight Log` : 'Weight History Log'}
             </h3>
@@ -524,9 +524,9 @@ export const ProfileSection: React.FC<ProfileSectionProps> = ({
 
           {/* Delete My Account Section (Only shown when viewing own profile) */}
           {!isViewingOther && (
-            <div className="bg-[#26201b] border border-rose-900/40 rounded-2xl p-6 shadow-xl space-y-3">
-              <h3 className="text-base font-bold text-rose-400 flex items-center gap-2">
-                <Trash2 className="w-5 h-5 text-rose-400" />
+            <div className="bg-[#26201b] border border-rose-900/40 rounded-2xl p-4 sm:p-6 shadow-xl space-y-3">
+              <h3 className="text-sm sm:text-base font-bold text-rose-400 flex items-center gap-2">
+                <Trash2 className="w-4 h-4 sm:w-5 sm:h-5 text-rose-400" />
                 Delete Account
               </h3>
               <p className="text-xs text-[#c5b4a5]">

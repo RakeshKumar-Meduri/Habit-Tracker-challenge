@@ -140,28 +140,28 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fadeIn font-sans overflow-y-auto">
-      <div className="relative w-full max-w-md bg-[#26201b] border border-[#3d322a] rounded-2xl p-6 sm:p-8 shadow-2xl my-8">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/85 backdrop-blur-md animate-fadeIn font-sans overflow-y-auto">
+      <div className="relative w-full max-w-md bg-[#26201b] border border-[#3d322a] rounded-2xl p-5 sm:p-8 shadow-2xl my-4 sm:my-8">
         
         {/* Close button only shown if not mandatory screen */}
         {!isMandatory && (
           <button
             onClick={onClose}
-            className="absolute top-4 right-4 text-[#c5b4a5] hover:text-[#f5efe6] p-1 rounded-lg hover:bg-[#322a24] transition cursor-pointer"
+            className="absolute top-4 right-4 text-[#c5b4a5] hover:text-[#f5efe6] p-1.5 rounded-lg hover:bg-[#322a24] transition cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
         )}
 
-        <div className="text-center mb-6">
-          <div className="w-14 h-14 mx-auto mb-3 rounded-2xl bg-gradient-to-tr from-[#c68b59] via-[#b87b4b] to-[#d4a373] flex items-center justify-center shadow-lg shadow-[#c68b59]/30">
+        <div className="text-center mb-5 sm:mb-6">
+          <div className="w-12 h-12 sm:w-14 sm:h-14 mx-auto mb-3 rounded-2xl bg-gradient-to-tr from-[#c68b59] via-[#b87b4b] to-[#d4a373] flex items-center justify-center shadow-lg shadow-[#c68b59]/30">
             {mode === 'login' ? (
-              <ShieldCheck className="w-7 h-7 text-[#1c1815]" />
+              <ShieldCheck className="w-6 h-6 sm:w-7 sm:h-7 text-[#1c1815]" />
             ) : (
-              <UserPlus className="w-7 h-7 text-[#1c1815]" />
+              <UserPlus className="w-6 h-6 sm:w-7 sm:h-7 text-[#1c1815]" />
             )}
           </div>
-          <h3 className="text-2xl font-black text-[#f5efe6]">
+          <h3 className="text-xl sm:text-2xl font-black text-[#f5efe6]">
             {mode === 'login' ? 'Sign In to PULSE' : 'Create Account'}
           </h3>
           <p className="text-xs text-[#c5b4a5] mt-1.5 leading-relaxed">
@@ -340,7 +340,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full py-3 mt-3 bg-gradient-to-r from-[#c68b59] to-[#b87b4b] hover:from-[#b87b4b] hover:to-[#a06738] text-[#1c1815] font-black rounded-xl text-sm transition shadow-lg shadow-[#c68b59]/20 disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
+              className="w-full py-3 min-h-[44px] mt-3 bg-gradient-to-r from-[#c68b59] to-[#b87b4b] hover:from-[#b87b4b] hover:to-[#a06738] text-[#1c1815] font-black rounded-xl text-sm transition shadow-lg shadow-[#c68b59]/20 disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed flex items-center justify-center"
             >
               {isSubmitting ? 'Registering...' : 'Complete Registration'}
             </button>

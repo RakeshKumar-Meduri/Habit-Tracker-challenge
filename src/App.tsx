@@ -744,7 +744,7 @@ export function App() {
       />
 
       {/* Main Container */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <main className="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6 pb-28 md:pb-8">
         
         {/* Tab 1: Checklist */}
         {activeTab === 'checklist' && currentUser && (
@@ -896,7 +896,7 @@ export function App() {
       )}
 
       {/* Footer */}
-      <footer className="border-t border-[#3d322a] bg-[#1c1815] py-6 text-center text-xs text-[#c5b4a5]">
+      <footer className="border-t border-[#3d322a] bg-[#1c1815] py-6 pb-24 md:pb-6 text-center text-xs text-[#c5b4a5]">
         <p>PULSE Fitness & Daily Goal Tracker — Real-Time Multi-User Edition</p>
       </footer>
     </div>

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import type { User, DailyLog, Workout, WeightLog } from '../types';
 import { calculateUserPoints, calculateGoalStreak } from '../utils/gamification';
-import { Swords } from 'lucide-react';
+import { Swords, Trophy, Flame, Dumbbell, TrendingDown, Zap, Sparkles } from 'lucide-react';
 
 interface HeadToHeadProps {
   users: User[];
@@ -17,15 +17,15 @@ export const HeadToHead: React.FC<HeadToHeadProps> = ({
   weightLogs,
 }) => {
   const [userAId, setUserAId] = useState<string>(users[0]?.id || '');
-  const [userBId, setUserBId] = useState<string>(users[1]?.id || '');
+  const [userBId, setUserBId] = useState<string>(users[1]?.id || users[0]?.id || '');
 
   if (users.length < 2) {
     return (
-      <div className="bg-[#26201b] border border-[#3d322a] rounded-2xl p-8 shadow-xl text-center max-w-xl mx-auto my-8">
+      <div className="bg-[#26201b] border border-[#3d322a] rounded-2xl p-6 sm:p-8 shadow-xl text-center max-w-xl mx-auto my-6 sm:my-8 font-sans">
         <div className="w-12 h-12 mx-auto mb-3 rounded-xl bg-[#c68b59]/10 border border-[#c68b59]/30 flex items-center justify-center">
           <Swords className="w-6 h-6 text-[#c68b59]" />
         </div>
-        <h3 className="text-xl font-black text-[#f5efe6]">Head-to-Head Face-Off</h3>
+        <h3 className="text-lg sm:text-xl font-black text-[#f5efe6]">Head-to-Head Face-Off</h3>
         <p className="text-xs text-[#c5b4a5] mt-2 leading-relaxed">
           At least 2 registered members are required for a side-by-side comparison. Invite friends or family to register and compete with you!
         </p>
@@ -34,7 +34,7 @@ export const HeadToHead: React.FC<HeadToHeadProps> = ({
   }
 
   const userA = users.find(u => u.id === userAId) || users[0];
-  const userB = users.find(u => u.id === userBId) || users[1];
+  const userB = users.find(u => u.id === userBId) || (users[1] || users[0]);
 
   const getStats = (user: User) => {
     if (!user) return {
@@ -86,45 +86,49 @@ export const HeadToHead: React.FC<HeadToHeadProps> = ({
   const statsB = getStats(userB);
 
   return (
-    <div className="space-y-6 max-w-5xl mx-auto">
+    <div className="space-y-6 max-w-5xl mx-auto font-sans">
       
       {/* Header */}
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl text-center">
-        <h2 className="text-2xl font-black text-white flex items-center justify-center gap-2">
-          <Swords className="w-7 h-7 text-cyan-400" />
-          Head-to-Head User Face-Off
+      <div className="bg-[#26201b] border border-[#3d322a] rounded-2xl p-4 sm:p-6 shadow-xl text-center">
+        <h2 className="text-xl sm:text-2xl font-black text-[#f5efe6] flex items-center justify-center gap-2">
+          <Swords className="w-6 h-6 sm:w-7 sm:h-7 text-[#c68b59]" />
+          Head-to-Head Member Face-Off
         </h2>
-        <p className="text-xs text-slate-400 mt-1">
-          Pick any two group members to compare consistency, streaks, and performance metrics side-by-side
+        <p className="text-xs text-[#c5b4a5] mt-1 max-w-md mx-auto">
+          Pick any two group members to compare consistency, streaks, and performance metrics side-by-side.
         </p>
 
         {/* User Selectors */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-xl mx-auto mt-6">
-          <div className="bg-slate-800 p-3 rounded-xl border border-slate-700">
-            <label className="block text-xs font-bold text-slate-400 mb-1">Select Competitor A</label>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-xl mx-auto mt-5">
+          <div className="bg-[#1c1815] p-3 rounded-xl border border-[#3d322a] text-left">
+            <label className="block text-[11px] font-bold text-[#c5b4a5] mb-1.5 flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-[#c68b59]"></span> Competitor A
+            </label>
             <select
               value={userAId}
               onChange={(e) => setUserAId(e.target.value)}
-              className="w-full bg-slate-900 border border-slate-700 text-white font-bold text-sm px-3 py-2 rounded-lg focus:outline-none"
+              className="w-full bg-[#26201b] border border-[#3d322a] text-[#f5efe6] font-bold text-xs sm:text-sm px-3 py-2 rounded-lg focus:outline-none focus:border-[#c68b59] cursor-pointer"
             >
               {users.map(u => (
                 <option key={u.id} value={u.id} disabled={u.id === userBId}>
-                  {u.name}
+                  {u.name} (@{u.username})
                 </option>
               ))}
             </select>
           </div>
 
-          <div className="bg-slate-800 p-3 rounded-xl border border-slate-700">
-            <label className="block text-xs font-bold text-slate-400 mb-1">Select Competitor B</label>
+          <div className="bg-[#1c1815] p-3 rounded-xl border border-[#3d322a] text-left">
+            <label className="block text-[11px] font-bold text-[#c5b4a5] mb-1.5 flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-[#d4a373]"></span> Competitor B
+            </label>
             <select
               value={userBId}
               onChange={(e) => setUserBId(e.target.value)}
-              className="w-full bg-slate-900 border border-slate-700 text-white font-bold text-sm px-3 py-2 rounded-lg focus:outline-none"
+              className="w-full bg-[#26201b] border border-[#3d322a] text-[#f5efe6] font-bold text-xs sm:text-sm px-3 py-2 rounded-lg focus:outline-none focus:border-[#c68b59] cursor-pointer"
             >
               {users.map(u => (
                 <option key={u.id} value={u.id} disabled={u.id === userAId}>
-                  {u.name}
+                  {u.name} (@{u.username})
                 </option>
               ))}
             </select>
@@ -133,94 +137,168 @@ export const HeadToHead: React.FC<HeadToHeadProps> = ({
       </div>
 
       {/* Comparison Cards Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
         
         {/* User A Card */}
-        <div className="bg-slate-900 border-2 border-emerald-500/40 rounded-2xl p-6 shadow-xl space-y-4">
-          <div className="flex items-center gap-4 border-b border-slate-800 pb-4">
-            <div className={`w-14 h-14 rounded-2xl bg-gradient-to-tr ${userA.avatar_color || 'from-emerald-500 to-teal-700'} text-xl font-black text-white flex items-center justify-center shadow-lg`}>
-              {userA.name.charAt(0)}
+        <div className="bg-[#26201b] border-2 border-[#c68b59]/50 rounded-2xl p-4 sm:p-6 shadow-xl space-y-4">
+          <div className="flex items-center gap-3.5 border-b border-[#3d322a] pb-4">
+            <div className={`w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-gradient-to-tr ${userA.avatar_color || 'from-[#c68b59] to-[#785338]'} text-lg sm:text-xl font-black text-[#f5efe6] flex items-center justify-center shadow-lg shrink-0`}>
+              {userA.name.charAt(0).toUpperCase()}
             </div>
-            <div>
-              <h3 className="text-xl font-black text-white">{userA.name}</h3>
-              <span className="text-xs text-slate-400">Current Weight: {userA.weight_current} kg</span>
+            <div className="min-w-0">
+              <h3 className="text-lg sm:text-xl font-black text-[#f5efe6] truncate">{userA.name}</h3>
+              <span className="text-xs text-[#c5b4a5] block">Current Weight: <strong className="text-[#d4a373]">{userA.weight_current} kg</strong></span>
             </div>
           </div>
 
           <div className="space-y-2 text-xs">
-            <div className="flex justify-between p-2.5 bg-slate-800/60 rounded-xl">
-              <span className="text-slate-400 font-semibold">Total Points:</span>
-              <strong className="text-amber-400 font-mono text-sm">{statsA.totalPoints} pts</strong>
+            <div className="flex items-center justify-between p-2.5 sm:p-3 bg-[#1c1815] rounded-xl border border-[#3d322a]">
+              <span className="text-[#c5b4a5] font-semibold flex items-center gap-1.5">
+                <Trophy className="w-3.5 h-3.5 text-[#c68b59]" /> Total Points:
+              </span>
+              <div className="flex items-center gap-2">
+                {statsA.totalPoints > statsB.totalPoints && (
+                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#c68b59]/20 text-[#d4a373] font-bold">Ahead</span>
+                )}
+                <strong className="text-[#d4a373] font-mono text-sm sm:text-base">{statsA.totalPoints} pts</strong>
+              </div>
             </div>
 
-            <div className="flex justify-between p-2.5 bg-slate-800/60 rounded-xl">
-              <span className="text-slate-400 font-semibold">Completed Goals:</span>
-              <strong className="text-emerald-400 font-mono text-sm">{statsA.totalGoalsCompleted}</strong>
+            <div className="flex items-center justify-between p-2.5 sm:p-3 bg-[#1c1815] rounded-xl border border-[#3d322a]">
+              <span className="text-[#c5b4a5] font-semibold flex items-center gap-1.5">
+                <Zap className="w-3.5 h-3.5 text-emerald-400" /> Completed Goals:
+              </span>
+              <div className="flex items-center gap-2">
+                {statsA.totalGoalsCompleted > statsB.totalGoalsCompleted && (
+                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-950/40 text-emerald-400 font-bold">Ahead</span>
+                )}
+                <strong className="text-emerald-400 font-mono text-sm sm:text-base">{statsA.totalGoalsCompleted}</strong>
+              </div>
             </div>
 
-            <div className="flex justify-between p-2.5 bg-slate-800/60 rounded-xl">
-              <span className="text-slate-400 font-semibold">Logged Workouts:</span>
-              <strong className="text-cyan-400 font-mono text-sm">{statsA.workoutCount} sessions</strong>
+            <div className="flex items-center justify-between p-2.5 sm:p-3 bg-[#1c1815] rounded-xl border border-[#3d322a]">
+              <span className="text-[#c5b4a5] font-semibold flex items-center gap-1.5">
+                <Dumbbell className="w-3.5 h-3.5 text-[#c68b59]" /> Logged Workouts:
+              </span>
+              <div className="flex items-center gap-2">
+                {statsA.workoutCount > statsB.workoutCount && (
+                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#c68b59]/20 text-[#d4a373] font-bold">Ahead</span>
+                )}
+                <strong className="text-[#f5efe6] font-mono text-sm sm:text-base">{statsA.workoutCount} sessions</strong>
+              </div>
             </div>
 
-            <div className="flex justify-between p-2.5 bg-slate-800/60 rounded-xl">
-              <span className="text-slate-400 font-semibold">Weight Loss:</span>
-              <strong className="text-emerald-400 font-mono text-sm">-{statsA.weightLoss} kg</strong>
+            <div className="flex items-center justify-between p-2.5 sm:p-3 bg-[#1c1815] rounded-xl border border-[#3d322a]">
+              <span className="text-[#c5b4a5] font-semibold flex items-center gap-1.5">
+                <TrendingDown className="w-3.5 h-3.5 text-emerald-400" /> Net Weight Progress:
+              </span>
+              <strong className="text-emerald-400 font-mono text-sm sm:text-base">-{statsA.weightLoss} kg</strong>
             </div>
 
-            <div className="flex justify-between p-2.5 bg-slate-800/60 rounded-xl">
-              <span className="text-slate-400 font-semibold">Active Gym Streak:</span>
-              <strong className="text-white font-mono text-sm">{statsA.gymStreak} days</strong>
+            <div className="flex items-center justify-between p-2.5 sm:p-3 bg-[#1c1815] rounded-xl border border-[#3d322a]">
+              <span className="text-[#c5b4a5] font-semibold flex items-center gap-1.5">
+                <Flame className="w-3.5 h-3.5 text-[#c68b59]" /> Active Gym Streak:
+              </span>
+              <div className="flex items-center gap-2">
+                {statsA.gymStreak > statsB.gymStreak && (
+                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#c68b59]/20 text-[#d4a373] font-bold">Ahead</span>
+                )}
+                <strong className="text-[#f5efe6] font-mono text-sm sm:text-base">{statsA.gymStreak} days</strong>
+              </div>
             </div>
 
-            <div className="flex justify-between p-2.5 bg-slate-800/60 rounded-xl">
-              <span className="text-slate-400 font-semibold">Clean Sweeps:</span>
-              <strong className="text-amber-400 font-mono text-sm">{statsA.cleanSweeps} days</strong>
+            <div className="flex items-center justify-between p-2.5 sm:p-3 bg-[#1c1815] rounded-xl border border-[#3d322a]">
+              <span className="text-[#c5b4a5] font-semibold flex items-center gap-1.5">
+                <Sparkles className="w-3.5 h-3.5 text-[#d4a373]" /> Clean Sweeps:
+              </span>
+              <div className="flex items-center gap-2">
+                {statsA.cleanSweeps > statsB.cleanSweeps && (
+                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#c68b59]/20 text-[#d4a373] font-bold">Ahead</span>
+                )}
+                <strong className="text-[#d4a373] font-mono text-sm sm:text-base">{statsA.cleanSweeps} days</strong>
+              </div>
             </div>
           </div>
         </div>
 
         {/* User B Card */}
-        <div className="bg-slate-900 border-2 border-cyan-500/40 rounded-2xl p-6 shadow-xl space-y-4">
-          <div className="flex items-center gap-4 border-b border-slate-800 pb-4">
-            <div className={`w-14 h-14 rounded-2xl bg-gradient-to-tr ${userB.avatar_color || 'from-violet-500 to-purple-700'} text-xl font-black text-white flex items-center justify-center shadow-lg`}>
-              {userB.name.charAt(0)}
+        <div className="bg-[#26201b] border-2 border-[#d4a373]/50 rounded-2xl p-4 sm:p-6 shadow-xl space-y-4">
+          <div className="flex items-center gap-3.5 border-b border-[#3d322a] pb-4">
+            <div className={`w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-gradient-to-tr ${userB.avatar_color || 'from-[#b87b4b] to-[#5a3a22]'} text-lg sm:text-xl font-black text-[#f5efe6] flex items-center justify-center shadow-lg shrink-0`}>
+              {userB.name.charAt(0).toUpperCase()}
             </div>
-            <div>
-              <h3 className="text-xl font-black text-white">{userB.name}</h3>
-              <span className="text-xs text-slate-400">Current Weight: {userB.weight_current} kg</span>
+            <div className="min-w-0">
+              <h3 className="text-lg sm:text-xl font-black text-[#f5efe6] truncate">{userB.name}</h3>
+              <span className="text-xs text-[#c5b4a5] block">Current Weight: <strong className="text-[#d4a373]">{userB.weight_current} kg</strong></span>
             </div>
           </div>
 
           <div className="space-y-2 text-xs">
-            <div className="flex justify-between p-2.5 bg-slate-800/60 rounded-xl">
-              <span className="text-slate-400 font-semibold">Total Points:</span>
-              <strong className="text-amber-400 font-mono text-sm">{statsB.totalPoints} pts</strong>
+            <div className="flex items-center justify-between p-2.5 sm:p-3 bg-[#1c1815] rounded-xl border border-[#3d322a]">
+              <span className="text-[#c5b4a5] font-semibold flex items-center gap-1.5">
+                <Trophy className="w-3.5 h-3.5 text-[#c68b59]" /> Total Points:
+              </span>
+              <div className="flex items-center gap-2">
+                {statsB.totalPoints > statsA.totalPoints && (
+                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#c68b59]/20 text-[#d4a373] font-bold">Ahead</span>
+                )}
+                <strong className="text-[#d4a373] font-mono text-sm sm:text-base">{statsB.totalPoints} pts</strong>
+              </div>
             </div>
 
-            <div className="flex justify-between p-2.5 bg-slate-800/60 rounded-xl">
-              <span className="text-slate-400 font-semibold">Completed Goals:</span>
-              <strong className="text-emerald-400 font-mono text-sm">{statsB.totalGoalsCompleted}</strong>
+            <div className="flex items-center justify-between p-2.5 sm:p-3 bg-[#1c1815] rounded-xl border border-[#3d322a]">
+              <span className="text-[#c5b4a5] font-semibold flex items-center gap-1.5">
+                <Zap className="w-3.5 h-3.5 text-emerald-400" /> Completed Goals:
+              </span>
+              <div className="flex items-center gap-2">
+                {statsB.totalGoalsCompleted > statsA.totalGoalsCompleted && (
+                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-950/40 text-emerald-400 font-bold">Ahead</span>
+                )}
+                <strong className="text-emerald-400 font-mono text-sm sm:text-base">{statsB.totalGoalsCompleted}</strong>
+              </div>
             </div>
 
-            <div className="flex justify-between p-2.5 bg-slate-800/60 rounded-xl">
-              <span className="text-slate-400 font-semibold">Logged Workouts:</span>
-              <strong className="text-cyan-400 font-mono text-sm">{statsB.workoutCount} sessions</strong>
+            <div className="flex items-center justify-between p-2.5 sm:p-3 bg-[#1c1815] rounded-xl border border-[#3d322a]">
+              <span className="text-[#c5b4a5] font-semibold flex items-center gap-1.5">
+                <Dumbbell className="w-3.5 h-3.5 text-[#c68b59]" /> Logged Workouts:
+              </span>
+              <div className="flex items-center gap-2">
+                {statsB.workoutCount > statsA.workoutCount && (
+                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#c68b59]/20 text-[#d4a373] font-bold">Ahead</span>
+                )}
+                <strong className="text-[#f5efe6] font-mono text-sm sm:text-base">{statsB.workoutCount} sessions</strong>
+              </div>
             </div>
 
-            <div className="flex justify-between p-2.5 bg-slate-800/60 rounded-xl">
-              <span className="text-slate-400 font-semibold">Weight Loss:</span>
-              <strong className="text-emerald-400 font-mono text-sm">-{statsB.weightLoss} kg</strong>
+            <div className="flex items-center justify-between p-2.5 sm:p-3 bg-[#1c1815] rounded-xl border border-[#3d322a]">
+              <span className="text-[#c5b4a5] font-semibold flex items-center gap-1.5">
+                <TrendingDown className="w-3.5 h-3.5 text-emerald-400" /> Net Weight Progress:
+              </span>
+              <strong className="text-emerald-400 font-mono text-sm sm:text-base">-{statsB.weightLoss} kg</strong>
             </div>
 
-            <div className="flex justify-between p-2.5 bg-slate-800/60 rounded-xl">
-              <span className="text-slate-400 font-semibold">Active Gym Streak:</span>
-              <strong className="text-white font-mono text-sm">{statsB.gymStreak} days</strong>
+            <div className="flex items-center justify-between p-2.5 sm:p-3 bg-[#1c1815] rounded-xl border border-[#3d322a]">
+              <span className="text-[#c5b4a5] font-semibold flex items-center gap-1.5">
+                <Flame className="w-3.5 h-3.5 text-[#c68b59]" /> Active Gym Streak:
+              </span>
+              <div className="flex items-center gap-2">
+                {statsB.gymStreak > statsA.gymStreak && (
+                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#c68b59]/20 text-[#d4a373] font-bold">Ahead</span>
+                )}
+                <strong className="text-[#f5efe6] font-mono text-sm sm:text-base">{statsB.gymStreak} days</strong>
+              </div>
             </div>
 
-            <div className="flex justify-between p-2.5 bg-slate-800/60 rounded-xl">
-              <span className="text-slate-400 font-semibold">Clean Sweeps:</span>
-              <strong className="text-amber-400 font-mono text-sm">{statsB.cleanSweeps} days</strong>
+            <div className="flex items-center justify-between p-2.5 sm:p-3 bg-[#1c1815] rounded-xl border border-[#3d322a]">
+              <span className="text-[#c5b4a5] font-semibold flex items-center gap-1.5">
+                <Sparkles className="w-3.5 h-3.5 text-[#d4a373]" /> Clean Sweeps:
+              </span>
+              <div className="flex items-center gap-2">
+                {statsB.cleanSweeps > statsA.cleanSweeps && (
+                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#c68b59]/20 text-[#d4a373] font-bold">Ahead</span>
+                )}
+                <strong className="text-[#d4a373] font-mono text-sm sm:text-base">{statsB.cleanSweeps} days</strong>
+              </div>
             </div>
           </div>
         </div>

@@ -53,51 +53,51 @@ export const WeeklyRecapModal: React.FC<WeeklyRecapModalProps> = ({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn">
-      <div className="relative w-full max-w-md bg-slate-900 border-2 border-amber-500/50 rounded-2xl p-6 shadow-2xl">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/85 backdrop-blur-md animate-fadeIn font-sans">
+      <div className="relative w-full max-w-md bg-[#26201b] border-2 border-[#c68b59]/60 rounded-2xl p-5 sm:p-7 shadow-2xl">
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 transition"
+          className="absolute top-4 right-4 text-[#c5b4a5] hover:text-[#f5efe6] p-1.5 rounded-lg hover:bg-[#322a24] transition cursor-pointer"
         >
           <X className="w-5 h-5" />
         </button>
 
         <div className="text-center mb-6">
-          <div className="w-14 h-14 mx-auto mb-3 rounded-2xl bg-gradient-to-tr from-amber-500 to-orange-600 flex items-center justify-center shadow-lg shadow-amber-500/30">
-            <Sparkles className="w-7 h-7 text-slate-950" />
+          <div className="w-14 h-14 mx-auto mb-3 rounded-2xl bg-gradient-to-tr from-[#c68b59] to-[#b87b4b] flex items-center justify-center shadow-lg shadow-[#c68b59]/30">
+            <Sparkles className="w-7 h-7 text-[#1c1815]" />
           </div>
-          <h3 className="text-xl font-black text-white">Your Weekly Auto-Recap</h3>
-          <p className="text-xs text-slate-400 mt-1">Here is how you performed over the past 7 days, {currentUser.name}!</p>
+          <h3 className="text-xl font-black text-[#f5efe6]">Your Weekly Auto-Recap</h3>
+          <p className="text-xs text-[#c5b4a5] mt-1">Here is how you performed over the past 7 days, {currentUser.name}!</p>
         </div>
 
         <div className="space-y-3">
           
-          <div className="flex items-center justify-between p-3.5 bg-slate-800/80 rounded-xl border border-slate-700/60">
-            <span className="text-xs font-bold text-slate-300 flex items-center gap-2">
-              <Trophy className="w-4 h-4 text-amber-400" /> Goal Completion Rate
+          <div className="flex items-center justify-between p-3.5 bg-[#1c1815] rounded-xl border border-[#3d322a]">
+            <span className="text-xs font-bold text-[#f5efe6] flex items-center gap-2">
+              <Trophy className="w-4 h-4 text-[#c68b59]" /> Goal Completion Rate
             </span>
-            <strong className="text-lg font-black text-amber-400 font-mono">{weeklyPercent}%</strong>
+            <strong className="text-base sm:text-lg font-black text-[#d4a373] font-mono">{weeklyPercent}%</strong>
           </div>
 
-          <div className="flex items-center justify-between p-3.5 bg-slate-800/80 rounded-xl border border-slate-700/60">
-            <span className="text-xs font-bold text-slate-300 flex items-center gap-2">
-              <Dumbbell className="w-4 h-4 text-emerald-400" /> Workouts Completed
+          <div className="flex items-center justify-between p-3.5 bg-[#1c1815] rounded-xl border border-[#3d322a]">
+            <span className="text-xs font-bold text-[#f5efe6] flex items-center gap-2">
+              <Dumbbell className="w-4 h-4 text-[#c68b59]" /> Workouts Completed
             </span>
-            <strong className="text-lg font-black text-emerald-400 font-mono">{userWorkouts.length} sessions</strong>
+            <strong className="text-base sm:text-lg font-black text-[#d4a373] font-mono">{userWorkouts.length} sessions</strong>
           </div>
 
-          <div className="flex items-center justify-between p-3.5 bg-slate-800/80 rounded-xl border border-slate-700/60">
-            <span className="text-xs font-bold text-slate-300 flex items-center gap-2">
+          <div className="flex items-center justify-between p-3.5 bg-[#1c1815] rounded-xl border border-[#3d322a]">
+            <span className="text-xs font-bold text-[#f5efe6] flex items-center gap-2">
               <Flame className="w-4 h-4 text-rose-400" /> 5/5 Clean Sweeps
             </span>
-            <strong className="text-lg font-black text-rose-400 font-mono">{cleanSweeps} days</strong>
+            <strong className="text-base sm:text-lg font-black text-rose-400 font-mono">{cleanSweeps} days</strong>
           </div>
 
-          <div className="flex items-center justify-between p-3.5 bg-slate-800/80 rounded-xl border border-slate-700/60">
-            <span className="text-xs font-bold text-slate-300 flex items-center gap-2">
-              <TrendingDown className="w-4 h-4 text-cyan-400" /> Net Weight Progress
+          <div className="flex items-center justify-between p-3.5 bg-[#1c1815] rounded-xl border border-[#3d322a]">
+            <span className="text-xs font-bold text-[#f5efe6] flex items-center gap-2">
+              <TrendingDown className="w-4 h-4 text-emerald-400" /> Net Weight Progress
             </span>
-            <strong className="text-lg font-black text-cyan-400 font-mono">
+            <strong className="text-base sm:text-lg font-black text-emerald-400 font-mono">
               {weightDelta >= 0 ? `-${weightDelta} kg` : `+${Math.abs(weightDelta)} kg`}
             </strong>
           </div>
@@ -106,7 +106,7 @@ export const WeeklyRecapModal: React.FC<WeeklyRecapModalProps> = ({
 
         <button
           onClick={onClose}
-          className="w-full py-3 mt-6 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-slate-950 font-bold rounded-xl text-sm transition shadow-lg shadow-amber-500/20"
+          className="w-full py-3 min-h-[44px] mt-6 bg-gradient-to-r from-[#c68b59] to-[#b87b4b] hover:from-[#b87b4b] hover:to-[#a06738] text-[#1c1815] font-black rounded-xl text-sm transition shadow-lg shadow-[#c68b59]/20 cursor-pointer flex items-center justify-center"
         >
           Let's Crush This Week! 💪
         </button>

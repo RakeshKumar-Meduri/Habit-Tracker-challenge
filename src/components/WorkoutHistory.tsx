@@ -35,7 +35,7 @@ export const WorkoutHistory: React.FC<WorkoutHistoryProps> = ({
     <div className="space-y-6 max-w-5xl mx-auto font-sans">
       
       {/* Header & Filter Controls */}
-      <div className="bg-[#26201b] border border-[#3d322a] rounded-2xl p-4 sm:p-6 shadow-xl flex flex-col md:flex-row items-center justify-between gap-4">
+      <div className="bg-[#26201b] border border-[#3d322a] rounded-2xl p-4 sm:p-6 shadow-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <h2 className="text-xl font-black text-[#f5efe6] flex items-center gap-2">
             <Dumbbell className="w-6 h-6 text-[#c68b59]" />
@@ -48,14 +48,15 @@ export const WorkoutHistory: React.FC<WorkoutHistoryProps> = ({
 
         <button
           onClick={onOpenWorkoutModal}
-          className="py-2.5 px-4 bg-gradient-to-r from-[#c68b59] to-[#b87b4b] hover:from-[#b87b4b] hover:to-[#a06738] text-[#1c1815] font-bold rounded-xl text-xs transition shadow-lg shadow-[#c68b59]/20 flex items-center gap-2 cursor-pointer"
+          className="w-full sm:w-auto justify-center py-2.5 px-4 min-h-[40px] bg-gradient-to-r from-[#c68b59] to-[#b87b4b] hover:from-[#b87b4b] hover:to-[#a06738] text-[#1c1815] font-bold rounded-xl text-xs transition shadow-lg shadow-[#c68b59]/20 flex items-center gap-2 cursor-pointer"
         >
-          + Log New Workout
+          <Dumbbell className="w-4 h-4" />
+          <span>+ Log New Workout</span>
         </button>
       </div>
 
       {/* Filters Bar */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-[#1c1815] p-4 rounded-xl border border-[#3d322a]">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-[#1c1815] p-3.5 sm:p-4 rounded-xl border border-[#3d322a]">
         <div>
           <label className="block text-xs font-semibold text-[#c5b4a5] mb-1 flex items-center gap-1">
             <Filter className="w-3.5 h-3.5 text-[#c68b59]" /> Filter by Member

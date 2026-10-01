@@ -157,9 +157,9 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
       )}
 
       {/* Header */}
-      <div className="bg-[#26201b] border border-[#3d322a] rounded-2xl p-6 shadow-xl">
-        <h2 className="text-xl font-black text-[#f5efe6] flex items-center gap-2">
-          <BarChart3 className="w-6 h-6 text-[#c68b59]" />
+      <div className="bg-[#26201b] border border-[#3d322a] rounded-2xl p-4 sm:p-6 shadow-xl">
+        <h2 className="text-lg sm:text-xl font-black text-[#f5efe6] flex items-center gap-2">
+          <BarChart3 className="w-5 h-5 sm:w-6 sm:h-6 text-[#c68b59]" />
           {isViewingOther ? `${targetUser.name}'s Health & Habit Analytics` : 'Personal Health Analytics Dashboard'}
         </h2>
         <p className="text-xs text-[#c5b4a5] mt-1">
@@ -170,54 +170,54 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
       </div>
 
       {/* Streak Counters Banner */}
-      <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
-        <div className="bg-[#26201b] border border-[#3d322a] rounded-2xl p-4 text-center">
-          <Dumbbell className="w-5 h-5 text-[#c68b59] mx-auto mb-1" />
-          <span className="text-[11px] font-semibold text-[#c5b4a5] block">Gym Streak</span>
-          <strong className="text-xl font-black text-[#f5efe6]">{gymStreak} days</strong>
+      <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5 sm:gap-3">
+        <div className="bg-[#26201b] border border-[#3d322a] rounded-2xl p-3 sm:p-4 text-center">
+          <Dumbbell className="w-4 h-4 sm:w-5 sm:h-5 text-[#c68b59] mx-auto mb-1" />
+          <span className="text-[10px] sm:text-[11px] font-semibold text-[#c5b4a5] block truncate">Gym Streak</span>
+          <strong className="text-base sm:text-xl font-black text-[#f5efe6]">{gymStreak} days</strong>
         </div>
-        <div className="bg-[#26201b] border border-[#3d322a] rounded-2xl p-4 text-center">
-          <Footprints className="w-5 h-5 text-[#d4a373] mx-auto mb-1" />
-          <span className="text-[11px] font-semibold text-[#c5b4a5] block">Step Streak</span>
-          <strong className="text-xl font-black text-[#f5efe6]">{stepStreak} days</strong>
+        <div className="bg-[#26201b] border border-[#3d322a] rounded-2xl p-3 sm:p-4 text-center">
+          <Footprints className="w-4 h-4 sm:w-5 sm:h-5 text-[#d4a373] mx-auto mb-1" />
+          <span className="text-[10px] sm:text-[11px] font-semibold text-[#c5b4a5] block truncate">Step Streak</span>
+          <strong className="text-base sm:text-xl font-black text-[#f5efe6]">{stepStreak} days</strong>
         </div>
-        <div className="bg-[#26201b] border border-[#3d322a] rounded-2xl p-4 text-center">
-          <Moon className="w-5 h-5 text-[#c68b59] mx-auto mb-1" />
-          <span className="text-[11px] font-semibold text-[#c5b4a5] block">Sleep Target</span>
-          <strong className="text-xl font-black text-[#f5efe6]">{sleepStreak} days</strong>
+        <div className="bg-[#26201b] border border-[#3d322a] rounded-2xl p-3 sm:p-4 text-center">
+          <Moon className="w-4 h-4 sm:w-5 sm:h-5 text-[#c68b59] mx-auto mb-1" />
+          <span className="text-[10px] sm:text-[11px] font-semibold text-[#c5b4a5] block truncate">Sleep Target</span>
+          <strong className="text-base sm:text-xl font-black text-[#f5efe6]">{sleepStreak} days</strong>
         </div>
-        <div className="bg-[#26201b] border border-[#3d322a] rounded-2xl p-4 text-center">
-          <UtensilsCrossed className="w-5 h-5 text-[#d4a373] mx-auto mb-1" />
-          <span className="text-[11px] font-semibold text-[#c5b4a5] block">No Junk Food</span>
-          <strong className="text-xl font-black text-[#f5efe6]">{junkStreak} days</strong>
+        <div className="bg-[#26201b] border border-[#3d322a] rounded-2xl p-3 sm:p-4 text-center">
+          <UtensilsCrossed className="w-4 h-4 sm:w-5 sm:h-5 text-[#d4a373] mx-auto mb-1" />
+          <span className="text-[10px] sm:text-[11px] font-semibold text-[#c5b4a5] block truncate">No Junk Food</span>
+          <strong className="text-base sm:text-xl font-black text-[#f5efe6]">{junkStreak} days</strong>
         </div>
-        <div className="bg-[#26201b] border border-[#3d322a] rounded-2xl p-4 text-center col-span-2 sm:col-span-1">
-          <Droplets className="w-5 h-5 text-[#c68b59] mx-auto mb-1" />
-          <span className="text-[11px] font-semibold text-[#c5b4a5] block">Water Target</span>
-          <strong className="text-xl font-black text-[#f5efe6]">{waterStreak} days</strong>
+        <div className="bg-[#26201b] border border-[#3d322a] rounded-2xl p-3 sm:p-4 text-center col-span-2 sm:col-span-1">
+          <Droplets className="w-4 h-4 sm:w-5 sm:h-5 text-[#c68b59] mx-auto mb-1" />
+          <span className="text-[10px] sm:text-[11px] font-semibold text-[#c5b4a5] block truncate">Water Target</span>
+          <strong className="text-base sm:text-xl font-black text-[#f5efe6]">{waterStreak} days</strong>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
         
         {/* Weight Trend Area Chart */}
-        <div className="bg-[#26201b] border border-[#3d322a] rounded-2xl p-6 shadow-xl">
-          <div className="flex items-center justify-between mb-4">
+        <div className="bg-[#26201b] border border-[#3d322a] rounded-2xl p-4 sm:p-6 shadow-xl min-w-0">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
             <div>
-              <h3 className="text-base font-bold text-[#f5efe6] flex items-center gap-2">
-                <TrendingDown className="w-5 h-5 text-[#c68b59]" />
+              <h3 className="text-sm sm:text-base font-bold text-[#f5efe6] flex items-center gap-2">
+                <TrendingDown className="w-4 h-4 sm:w-5 sm:h-5 text-[#c68b59]" />
                 Weight Trend Over Time
               </h3>
               <p className="text-xs text-[#c5b4a5]">Recorded weight entries (kg)</p>
             </div>
             {weightChartData.length >= 2 && (
-              <span className="text-xs font-bold text-[#d4a373] bg-[#c68b59]/15 px-2.5 py-1 rounded-full border border-[#c68b59]/30">
+              <span className="self-start sm:self-auto text-xs font-bold text-[#d4a373] bg-[#c68b59]/15 px-2.5 py-1 rounded-full border border-[#c68b59]/30">
                 -{(weightChartData[0].weight - weightChartData[weightChartData.length - 1].weight).toFixed(1)} kg lost
               </span>
             )}
           </div>
 
-          <div className="h-64 w-full">
+          <div className="h-60 sm:h-64 w-full min-w-0">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={weightChartData}>
                 <defs>
@@ -240,18 +240,18 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
         </div>
 
         {/* Sleep Duration Bar Chart */}
-        <div className="bg-[#26201b] border border-[#3d322a] rounded-2xl p-6 shadow-xl">
+        <div className="bg-[#26201b] border border-[#3d322a] rounded-2xl p-4 sm:p-6 shadow-xl min-w-0">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h3 className="text-base font-bold text-[#f5efe6] flex items-center gap-2">
-                <Moon className="w-5 h-5 text-[#c68b59]" />
+              <h3 className="text-sm sm:text-base font-bold text-[#f5efe6] flex items-center gap-2">
+                <Moon className="w-4 h-4 sm:w-5 sm:h-5 text-[#c68b59]" />
                 Nightly Sleep Duration (7–8h Target)
               </h3>
               <p className="text-xs text-[#c5b4a5]">Beige = target hit (7-8.5 hrs)</p>
             </div>
           </div>
 
-          <div className="h-64 w-full">
+          <div className="h-60 sm:h-64 w-full min-w-0">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={sleepChartData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#3d322a" />
@@ -272,11 +272,11 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
         </div>
 
         {/* Weekly Completion % Bar Chart */}
-        <div className="bg-[#26201b] border border-[#3d322a] rounded-2xl p-6 shadow-xl">
-          <h3 className="text-base font-bold text-[#f5efe6] mb-1">7-Day Completion Rate (%)</h3>
+        <div className="bg-[#26201b] border border-[#3d322a] rounded-2xl p-4 sm:p-6 shadow-xl min-w-0">
+          <h3 className="text-sm sm:text-base font-bold text-[#f5efe6] mb-1">7-Day Completion Rate (%)</h3>
           <p className="text-xs text-[#c5b4a5] mb-4">Daily percentage of core goals completed</p>
 
-          <div className="h-56 w-full">
+          <div className="h-52 sm:h-56 w-full min-w-0">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={weeklyBarData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#3d322a" />
@@ -293,11 +293,11 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
         </div>
 
         {/* Calendar Heatmap Grid */}
-        <div className="bg-[#26201b] border border-[#3d322a] rounded-2xl p-6 shadow-xl">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 mb-4">
+        <div className="bg-[#26201b] border border-[#3d322a] rounded-2xl p-4 sm:p-6 shadow-xl min-w-0">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4">
             <div>
-              <h3 className="text-base font-bold text-[#f5efe6] flex items-center gap-2">
-                <CalendarIcon className="w-5 h-5 text-[#c68b59]" />
+              <h3 className="text-sm sm:text-base font-bold text-[#f5efe6] flex items-center gap-2">
+                <CalendarIcon className="w-4 h-4 sm:w-5 sm:h-5 text-[#c68b59]" />
                 30-Day Activity Heatmap
               </h3>
               <p className="text-xs text-[#c5b4a5]">Goal completion grid</p>
@@ -307,7 +307,7 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
             <select
               value={selectedHeatmapGoal}
               onChange={(e) => setSelectedHeatmapGoal(e.target.value as GoalType)}
-              className="bg-[#1c1815] border border-[#3d322a] text-[#f5efe6] text-xs px-2.5 py-1.5 rounded-xl focus:outline-none focus:border-[#c68b59] cursor-pointer"
+              className="w-full sm:w-auto bg-[#1c1815] border border-[#3d322a] text-[#f5efe6] text-xs px-3 py-2 rounded-xl focus:outline-none focus:border-[#c68b59] cursor-pointer"
             >
               <option value="gym">Gym Goal</option>
               <option value="steps">Steps Goal</option>
@@ -317,19 +317,19 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
             </select>
           </div>
 
-          <div className="grid grid-cols-6 sm:grid-cols-10 gap-2 pt-2">
+          <div className="grid grid-cols-5 sm:grid-cols-10 gap-1.5 sm:gap-2 pt-2">
             {last30Logs.map((log) => (
               <div
                 key={log.id}
                 title={`${log.date}: ${selectedHeatmapGoal.toUpperCase()}`}
-                className={`h-8 rounded-lg border transition-transform hover:scale-110 flex items-center justify-center text-[10px] font-mono ${getHeatmapColor(log)}`}
+                className={`h-7 sm:h-8 rounded-lg border transition-transform hover:scale-105 flex items-center justify-center text-[10px] font-mono ${getHeatmapColor(log)}`}
               >
                 {log.date.slice(8)}
               </div>
             ))}
           </div>
 
-          <div className="flex items-center gap-4 mt-6 text-xs text-[#c5b4a5]">
+          <div className="flex items-center gap-4 mt-5 sm:mt-6 text-xs text-[#c5b4a5]">
             <span className="flex items-center gap-1.5">
               <span className="w-3 h-3 rounded bg-[#1c1815] border border-[#3d322a] inline-block"></span> Not Completed
             </span>

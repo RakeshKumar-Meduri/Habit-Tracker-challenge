@@ -89,7 +89,7 @@ export const ActivityFeed: React.FC<ActivityFeedProps> = ({
     <div className="space-y-6 max-w-3xl mx-auto font-sans">
       
       {/* Header */}
-      <div className="bg-[#26201b] border border-[#3d322a] rounded-2xl p-6 shadow-xl">
+      <div className="bg-[#26201b] border border-[#3d322a] rounded-2xl p-4 sm:p-6 shadow-xl">
         <h2 className="text-xl font-black text-[#f5efe6] flex items-center gap-2">
           <MessageSquare className="w-6 h-6 text-[#c68b59]" />
           Group Activity & Announcements
@@ -100,7 +100,7 @@ export const ActivityFeed: React.FC<ActivityFeedProps> = ({
       </div>
 
       {/* Feed List */}
-      <div className="space-y-4">
+      <div className="space-y-3.5 sm:space-y-4">
         {feedItems.length === 0 ? (
           <div className="bg-[#26201b] border border-[#3d322a] rounded-2xl p-6 text-center text-xs text-[#c5b4a5]">
             No activity logged yet.
@@ -112,24 +112,24 @@ export const ActivityFeed: React.FC<ActivityFeedProps> = ({
             return (
               <div
                 key={item.id}
-                className="bg-[#26201b] border border-[#3d322a] rounded-2xl p-5 shadow-lg space-y-3"
+                className="bg-[#26201b] border border-[#3d322a] rounded-2xl p-4 sm:p-5 shadow-lg space-y-3"
               >
                 {/* Header */}
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-[#c68b59] to-[#785338] text-sm font-black text-[#f5efe6] flex items-center justify-center shadow-md">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-[#c68b59] to-[#785338] text-sm font-black text-[#f5efe6] flex items-center justify-center shadow-md shrink-0">
                       {user?.name.charAt(0) || 'U'}
                     </div>
-                    <div>
-                      <h4 className="text-sm font-bold text-[#f5efe6] flex items-center gap-2">
-                        {user?.name}
+                    <div className="min-w-0">
+                      <h4 className="text-sm font-bold text-[#f5efe6] flex flex-wrap items-center gap-1.5 sm:gap-2">
+                        <span className="truncate">{user?.name}</span>
                         {item.type === 'clean_sweep' && (
-                          <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-[#c68b59]/20 text-[#d4a373] font-bold border border-[#c68b59]/30">
+                          <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#c68b59]/20 text-[#d4a373] font-bold border border-[#c68b59]/30 shrink-0">
                             FULL SWEEP
                           </span>
                         )}
                         {item.type === 'weight_change' && (
-                          <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-[#322a24] text-[#c5b4a5] font-bold border border-[#3d322a]">
+                          <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#322a24] text-[#c5b4a5] font-bold border border-[#3d322a] shrink-0">
                             WEIGHT LOG
                           </span>
                         )}
@@ -138,7 +138,7 @@ export const ActivityFeed: React.FC<ActivityFeedProps> = ({
                     </div>
                   </div>
 
-                  <div className="p-2 rounded-xl bg-[#1c1815] text-[#c68b59] border border-[#3d322a]">
+                  <div className="p-2 rounded-xl bg-[#1c1815] text-[#c68b59] border border-[#3d322a] shrink-0 ml-2">
                     {item.type === 'clean_sweep' && <Sparkles className="w-5 h-5" />}
                     {item.type === 'workout' && <Dumbbell className="w-5 h-5" />}
                     {item.type === 'weight_change' && <Scale className="w-5 h-5" />}
@@ -146,13 +146,13 @@ export const ActivityFeed: React.FC<ActivityFeedProps> = ({
                 </div>
 
                 {/* Content Box */}
-                <div className="bg-[#1c1815] p-3.5 rounded-xl border border-[#3d322a]">
+                <div className="bg-[#1c1815] p-3 sm:p-3.5 rounded-xl border border-[#3d322a]">
                   <h5 className="text-sm font-bold text-[#f5efe6]">{item.title}</h5>
                   <p className="text-xs text-[#c5b4a5] mt-0.5">{item.subtitle}</p>
                 </div>
 
                 {/* Real-Time Reactions */}
-                <div className="flex items-center gap-2 pt-1 border-t border-[#3d322a]/50">
+                <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 pt-1 border-t border-[#3d322a]/50">
                   {['🔥', '💪', '👏', '🎯'].map(emoji => {
                     const count = reactions.filter(r => r.target_id === item.id && r.emoji === emoji).length;
                     const hasReacted = reactions.some(r => r.target_id === item.id && r.emoji === emoji && r.from_user_id === currentUser.id);
@@ -160,7 +160,7 @@ export const ActivityFeed: React.FC<ActivityFeedProps> = ({
                       <button
                         key={emoji}
                         onClick={() => onAddReaction?.(item.id, item.type === 'workout' ? 'workout' : 'daily_log', emoji)}
-                        className={`px-2.5 py-1 rounded-lg text-xs flex items-center gap-1.5 transition cursor-pointer border ${
+                        className={`px-2.5 py-1.5 min-h-[36px] rounded-lg text-xs flex items-center gap-1.5 transition cursor-pointer border ${
                           hasReacted 
                             ? 'bg-[#c68b59]/20 border-[#c68b59]/50 text-[#f5efe6]' 
                             : 'bg-[#1c1815] border-[#3d322a] text-[#c5b4a5] hover:text-[#f5efe6] hover:bg-[#322a24]'
