@@ -7,6 +7,7 @@ export type RealtimeEventType =
   | 'USER_DELETED'
   | 'DAILY_LOG_UPDATED'
   | 'WORKOUTS_ADDED'
+  | 'WORKOUT_DELETED'
   | 'WEIGHT_LOG_ADDED'
   | 'MISSED_REASON_ADDED'
   | 'REACTION_ADDED'

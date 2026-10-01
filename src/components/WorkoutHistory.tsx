@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import type { Workout, User } from '../types';
-import { Dumbbell, Calendar, Filter, Lock, Globe, Clock } from 'lucide-react';
+import { Dumbbell, Calendar, Filter, Lock, Globe, Clock, Trash2 } from 'lucide-react';
 
 interface WorkoutHistoryProps {
   workouts: Workout[];
   users: User[];
   currentUser: User;
   onOpenWorkoutModal: () => void;
+  onDeleteWorkout?: (id: string) => void;
 }
 
 export const WorkoutHistory: React.FC<WorkoutHistoryProps> = ({
@@ -14,6 +15,7 @@ export const WorkoutHistory: React.FC<WorkoutHistoryProps> = ({
   users,
   currentUser,
   onOpenWorkoutModal,
+  onDeleteWorkout,
 }) => {
   const [selectedUserId, setSelectedUserId] = useState<string>('all');
   const [searchExercise, setSearchExercise] = useState('');
@@ -117,15 +119,30 @@ export const WorkoutHistory: React.FC<WorkoutHistoryProps> = ({
                     </div>
                   </div>
 
-                  {w.is_private ? (
-                    <span className="flex items-center gap-1 text-[11px] text-[#d4a373] bg-[#1c1815] px-2 py-0.5 rounded-full border border-[#3d322a]">
-                      <Lock className="w-3 h-3" /> Private
-                    </span>
-                  ) : (
-                    <span className="flex items-center gap-1 text-[11px] text-[#d4a373] bg-[#c68b59]/10 px-2 py-0.5 rounded-full border border-[#c68b59]/30">
-                      <Globe className="w-3 h-3" /> Public
-                    </span>
-                  )}
+                  <div className="flex items-center gap-2">
+                    {w.is_private ? (
+                      <span className="flex items-center gap-1 text-[11px] text-[#d4a373] bg-[#1c1815] px-2 py-0.5 rounded-full border border-[#3d322a]">
+                        <Lock className="w-3 h-3" /> Private
+                      </span>
+                    ) : (
+                      <span className="flex items-center gap-1 text-[11px] text-[#d4a373] bg-[#c68b59]/10 px-2 py-0.5 rounded-full border border-[#c68b59]/30">
+                        <Globe className="w-3 h-3" /> Public
+                      </span>
+                    )}
+                    {w.user_id === currentUser.id && onDeleteWorkout && (
+                      <button
+                        onClick={() => {
+                          if (window.confirm(`Delete workout "${w.exercise_name}"?`)) {
+                            onDeleteWorkout(w.id);
+                          }
+                        }}
+                        className="p-1.5 text-[#c5b4a5] hover:text-rose-400 hover:bg-rose-950/40 rounded-lg border border-transparent hover:border-rose-900/50 transition cursor-pointer"
+                        title="Delete Workout"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+                  </div>
                 </div>
 
                 {/* Exercise Details */}

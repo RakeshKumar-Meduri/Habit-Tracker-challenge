@@ -52,6 +52,7 @@ interface DailyChecklistProps {
   onUpdateDailyLog: (updatedLog: DailyLog) => void;
   onSaveMissedReason: (reason: MissedReason) => void;
   onOpenWorkoutModal: () => void;
+  onDeleteWorkout?: (id: string) => void;
   gymWorkoutsCount: number;
   onAddSupplement: (supp: Supplement) => void;
   onDeleteSupplement: (suppId: string) => void;
@@ -78,7 +79,8 @@ export const DailyChecklist: React.FC<DailyChecklistProps> = ({
   onUpdateDailyLog,
   onSaveMissedReason,
   onOpenWorkoutModal,
-  gymWorkoutsCount,
+  onDeleteWorkout,
+  gymWorkoutsCount: _gymWorkoutsCount,
   onAddSupplement,
   onDeleteSupplement,
   onToggleSupplementLog,
@@ -94,16 +96,20 @@ export const DailyChecklist: React.FC<DailyChecklistProps> = ({
   const [selectedTag, setSelectedTag] = useState<ReasonTag>('Tired');
   const [customReasonText, setCustomReasonText] = useState('');
 
-  // Supplement Form Modal State
+  // Supplement Form Modal & Inline Quick-Add State
   const [isAddSuppOpen, setIsAddSuppOpen] = useState(false);
   const [suppName, setSuppName] = useState('');
   const [suppDosage, setSuppDosage] = useState('');
   const [suppTiming, setSuppTiming] = useState('Morning');
+  const [inlineSuppName, setInlineSuppName] = useState('');
+  const [inlineSuppTiming, setInlineSuppTiming] = useState('');
 
-  // Custom Habit Form Modal State
+  // Custom Habit Form Modal & Inline Quick-Add State
   const [isAddHabitOpen, setIsAddHabitOpen] = useState(false);
   const [habitTitle, setHabitTitle] = useState('');
   const [habitDesc, setHabitDesc] = useState('');
+  const [inlineHabitTitle, setInlineHabitTitle] = useState('');
+  const [inlineHabitDesc, setInlineHabitDesc] = useState('');
 
   const stepTarget = adminSettings?.step_target || 10000;
   const sleepMin = adminSettings?.sleep_min_hours || 7.0;
@@ -130,11 +136,14 @@ export const DailyChecklist: React.FC<DailyChecklistProps> = ({
       })
     : (allDailyLogs?.find(l => l.user_id === currentUser.id && l.date === selectedDate) || dailyLog);
 
-  const targetWorkoutsCount = allWorkouts
-    ? allWorkouts.filter(w => w.user_id === targetUser.id && w.date === selectedDate).length
-    : (isViewingOther ? 0 : gymWorkoutsCount);
+  const targetWorkouts = allWorkouts
+    ? allWorkouts.filter(w => w.user_id === targetUser.id && w.date === selectedDate)
+    : [];
+  const targetWorkoutsCount = targetWorkouts.length;
 
   const todayStr = new Date().toISOString().split('T')[0];
+  const [selectedY, selectedM, selectedD] = selectedDate.split('-').map(Number);
+  const isSunday = new Date(selectedY, selectedM - 1, selectedD).getDay() === 0;
 
   const handleDateChange = (offset: number) => {
     const [y, m, d] = selectedDate.split('-').map(Number);
@@ -233,6 +242,23 @@ export const DailyChecklist: React.FC<DailyChecklistProps> = ({
     setIsAddSuppOpen(false);
   };
 
+  const handleInlineAddSupplement = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!inlineSuppName.trim()) return;
+
+    const newSupp: Supplement = {
+      id: `supp_${currentUser.id}_${Date.now()}`,
+      user_id: currentUser.id,
+      name: inlineSuppName.trim(),
+      dosage: inlineSuppTiming.trim() || 'Daily',
+      timing: inlineSuppTiming.trim() || 'Daily',
+    };
+
+    onAddSupplement(newSupp);
+    setInlineSuppName('');
+    setInlineSuppTiming('');
+  };
+
   const handleCreateHabit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!habitTitle.trim()) return;
@@ -250,6 +276,24 @@ export const DailyChecklist: React.FC<DailyChecklistProps> = ({
     setHabitTitle('');
     setHabitDesc('');
     setIsAddHabitOpen(false);
+  };
+
+  const handleInlineAddHabit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!inlineHabitTitle.trim()) return;
+
+    const newHabit: CustomHabit = {
+      id: `habit_${currentUser.id}_${Date.now()}`,
+      user_id: currentUser.id,
+      title: inlineHabitTitle.trim(),
+      description: inlineHabitDesc.trim(),
+      is_private: true,
+      created_at: new Date().toISOString(),
+    };
+
+    onAddCustomHabit(newHabit);
+    setInlineHabitTitle('');
+    setInlineHabitDesc('');
   };
 
   const userSupplements = supplements.filter(s => s.user_id === targetUser.id);
@@ -271,8 +315,10 @@ export const DailyChecklist: React.FC<DailyChecklistProps> = ({
   const habitsTotal = userHabits.length;
   const habitsPercent = habitsTotal > 0 ? Math.round((habitsCompletedCount / habitsTotal) * 100) : 0;
 
+  const isGymSatisfied = isSunday || displayedDailyLog.gym_done;
+
   const completedCount = [
-    displayedDailyLog.gym_done,
+    isGymSatisfied,
     displayedDailyLog.steps_done,
     displayedDailyLog.sleep_done,
     displayedDailyLog.junk_food_avoided,
@@ -286,13 +332,12 @@ export const DailyChecklist: React.FC<DailyChecklistProps> = ({
   const teamTotalTarget = activeMembersList.length * 5;
   const teamCompletedCount = activeMembersList.reduce((total, u) => {
     const log = allDailyLogs?.find(l => l.user_id === u.id && l.date === selectedDate);
-    if (!log) return total;
     let count = 0;
-    if (log.gym_done) count++;
-    if (log.steps_done) count++;
-    if (log.sleep_done) count++;
-    if (log.junk_food_avoided) count++;
-    if (log.water_done) count++;
+    if (isSunday || log?.gym_done) count++;
+    if (log?.steps_done) count++;
+    if (log?.sleep_done) count++;
+    if (log?.junk_food_avoided) count++;
+    if (log?.water_done) count++;
     return total + count;
   }, 0);
   const teamCompletionPercent = Math.min(100, Math.round((teamCompletedCount / teamTotalTarget) * 100));
@@ -405,7 +450,7 @@ export const DailyChecklist: React.FC<DailyChecklistProps> = ({
             {activeMembersList.map(user => {
               const uLog = allDailyLogs?.find(l => l.user_id === user.id && l.date === selectedDate);
               const uCompleted = [
-                uLog?.gym_done,
+                isSunday || uLog?.gym_done,
                 uLog?.steps_done,
                 uLog?.sleep_done,
                 uLog?.junk_food_avoided,
@@ -466,6 +511,11 @@ export const DailyChecklist: React.FC<DailyChecklistProps> = ({
                 Today
               </span>
             )}
+            {isSunday && (
+              <span className="text-[10px] px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-400 font-bold border border-emerald-500/30">
+                Sunday
+              </span>
+            )}
           </div>
 
           <button
@@ -501,6 +551,7 @@ export const DailyChecklist: React.FC<DailyChecklistProps> = ({
             <h3 className="text-sm font-bold text-[#f5efe6]">{isViewingOther ? `${targetUser.name}'s Goals` : 'Daily Goal Completion'}</h3>
             <p className="text-xs text-[#c5b4a5] mt-0.5">
               {completedCount} of 5 core goals completed for {selectedDate}
+              {isSunday && <span className="text-emerald-400 font-semibold ml-1">(Sunday Healing)</span>}
             </p>
           </div>
         </div>
@@ -510,20 +561,40 @@ export const DailyChecklist: React.FC<DailyChecklistProps> = ({
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         
         {/* Goal 1: Gym Routine */}
-        <div className={`relative bg-[#26201b] border rounded-2xl p-4 sm:p-5 transition-all overflow-hidden ${displayedDailyLog.gym_done ? 'border-emerald-500/40 bg-emerald-950/10' : 'border-[#3d322a]'}`}>
+        <div className={`relative bg-[#26201b] border rounded-2xl p-4 sm:p-5 transition-all overflow-hidden ${
+          (displayedDailyLog.gym_done || isSunday) ? 'border-emerald-500/40 bg-emerald-950/10' : 'border-[#3d322a]'
+        }`}>
           <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-3">
             <div className="flex items-center gap-3 min-w-0 flex-1">
-              <div className={`p-2.5 sm:p-3 rounded-xl shrink-0 ${displayedDailyLog.gym_done ? 'bg-emerald-500/20 text-emerald-400' : 'bg-[#1c1815] text-[#c5b4a5]'}`}>
+              <div className={`p-2.5 sm:p-3 rounded-xl shrink-0 ${
+                (displayedDailyLog.gym_done || isSunday) ? 'bg-emerald-500/20 text-emerald-400' : 'bg-[#1c1815] text-[#c5b4a5]'
+              }`}>
                 <Dumbbell className="w-5 h-5 sm:w-6 sm:h-6" />
               </div>
               <div className="min-w-0 flex-1">
-                <h4 className="font-bold text-[#f5efe6] text-sm sm:text-base truncate">1. Gym Routine</h4>
-                <p className="text-xs text-[#c5b4a5] truncate">Log strength or cardio workouts</p>
+                <div className="flex items-center gap-2">
+                  <h4 className="font-bold text-[#f5efe6] text-sm sm:text-base truncate">1. Gym Routine</h4>
+                  {isSunday && (
+                    <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 flex items-center gap-1 shrink-0">
+                      🌿 Healing
+                    </span>
+                  )}
+                </div>
+                <p className="text-xs text-[#c5b4a5] truncate">
+                  {isSunday ? 'Sunday Body Recovery — Rest & Healing Day' : 'Log strength or cardio workouts'}
+                </p>
               </div>
             </div>
 
-            {/* Action Buttons: Mark Done and Failed */}
-            {isViewingOther ? (
+            {/* Action Buttons: On Sunday show green Healing badge with no Mark Done or Failed buttons */}
+            {isSunday ? (
+              <div className="w-full xl:w-auto shrink-0 flex items-center">
+                <span className="w-full xl:w-auto px-4 py-2 rounded-xl text-xs font-black flex items-center justify-center gap-1.5 bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 shadow-sm min-h-[40px]">
+                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                  <span>Healing</span>
+                </span>
+              </div>
+            ) : isViewingOther ? (
               <span className={`w-full xl:w-auto justify-center px-3 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 whitespace-nowrap shrink-0 ${
                 displayedDailyLog.gym_done
                   ? 'bg-emerald-950/40 text-emerald-400 border border-emerald-800/60'
@@ -580,29 +651,58 @@ export const DailyChecklist: React.FC<DailyChecklistProps> = ({
                 onClick={onOpenWorkoutModal}
                 className="text-xs font-bold text-[#d4a373] hover:text-[#f5efe6] flex items-center gap-1 py-1.5 px-2.5 rounded-lg bg-[#c68b59]/10 border border-[#c68b59]/30 transition cursor-pointer"
               >
-                <Plus className="w-3.5 h-3.5" /> Log Details
+                <Plus className="w-3.5 h-3.5" /> {isSunday ? 'Optional: Log Workout' : 'Log Details'}
               </button>
             )}
           </div>
 
-          {/* Logged Failure Reason Banner */}
-          {!displayedDailyLog.gym_done && getGoalMissedReason('gym') && (
-            <div className="mt-3 p-2.5 bg-red-950/30 rounded-xl text-xs text-red-300 flex items-center justify-between border border-red-800/40">
-              <div className="flex items-center gap-2">
-                <AlertCircle className="w-4 h-4 text-red-400 shrink-0" />
-                <span className="break-words">
-                  <strong>Reason:</strong> [{getGoalMissedReason('gym')?.reason_tag}]{' '}
-                  {getGoalMissedReason('gym')?.reason_text}
-                </span>
+          {/* List of Logged Workouts on this date with Delete Button */}
+          {targetWorkouts.length > 0 && (
+            <div className="mt-3 space-y-1.5 pt-2 border-t border-[#3d322a]/60">
+              <span className="text-[11px] font-semibold text-[#c5b4a5] block">
+                Workouts logged for {selectedDate}:
+              </span>
+              <div className="space-y-1.5 max-h-48 overflow-y-auto">
+                {targetWorkouts.map((w) => (
+                  <div
+                    key={w.id}
+                    className="flex items-center justify-between p-2.5 bg-[#1c1815] border border-[#3d322a] rounded-xl text-xs"
+                  >
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2">
+                        <strong className="text-[#f5efe6] truncate">{w.exercise_name}</strong>
+                        {w.is_private ? (
+                          <span className="text-[9px] px-1.5 py-0.2 bg-[#26201b] text-[#c5b4a5] rounded border border-[#3d322a]">
+                            Private
+                          </span>
+                        ) : (
+                          <span className="text-[9px] px-1.5 py-0.2 bg-[#c68b59]/15 text-[#d4a373] rounded border border-[#c68b59]/30">
+                            Public
+                          </span>
+                        )}
+                      </div>
+                      <span className="text-[11px] text-[#c5b4a5] block mt-0.5">
+                        {w.sets} sets × {w.reps} reps {w.weight ? `@ ${w.weight}kg` : '(BW)'} • {w.duration}m
+                        {w.notes && <span className="italic ml-2 text-[#c5b4a5]/80 truncate">"{w.notes}"</span>}
+                      </span>
+                    </div>
+
+                    {!isViewingOther && onDeleteWorkout && (
+                      <button
+                        onClick={() => {
+                          if (window.confirm(`Delete logged workout "${w.exercise_name}"?`)) {
+                            onDeleteWorkout(w.id);
+                          }
+                        }}
+                        className="p-1.5 text-[#c5b4a5] hover:text-rose-400 hover:bg-rose-950/40 rounded-lg border border-transparent hover:border-rose-900/50 transition cursor-pointer ml-2 shrink-0"
+                        title="Delete this logged workout"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+                  </div>
+                ))}
               </div>
-              {!isViewingOther && (
-                <button
-                  onClick={() => setActiveMissedGoal('gym')}
-                  className="text-[11px] underline text-red-400 hover:text-red-300 font-semibold cursor-pointer shrink-0 ml-2"
-                >
-                  Edit
-                </button>
-              )}
             </div>
           )}
         </div>
@@ -1109,17 +1209,24 @@ export const DailyChecklist: React.FC<DailyChecklistProps> = ({
 
       </div>
 
-      {/* Supplements Tracker Section */}
+      {/* Supplements Daily Checklist Section */}
       <div className="bg-[#26201b] border border-[#3d322a] rounded-2xl p-4 sm:p-6 shadow-xl space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center gap-2.5">
-            <Pill className="w-5 h-5 text-[#c68b59] shrink-0" />
+            <div className="p-2.5 rounded-xl bg-[#c68b59]/15 text-[#d4a373] border border-[#c68b59]/30">
+              <Pill className="w-5 h-5 text-[#c68b59] shrink-0" />
+            </div>
             <div className="min-w-0">
-              <h3 className="text-sm sm:text-base font-bold text-[#f5efe6]">Supplements Tracker</h3>
+              <h3 className="text-sm sm:text-base font-bold text-[#f5efe6] flex items-center gap-2">
+                Daily Supplements Checklist
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#1c1815] text-[#d4a373] border border-[#3d322a] font-semibold">
+                  {selectedDate}
+                </span>
+              </h3>
               <p className="text-xs text-[#c5b4a5]">
                 {isViewingOther
                   ? `Viewing daily supplement intake for ${targetUser.name}`
-                  : 'Track, check off, and manage your daily supplement intake'}
+                  : 'Items persist on all days until deleted. Check off daily intake below.'}
               </p>
             </div>
           </div>
@@ -1127,19 +1234,47 @@ export const DailyChecklist: React.FC<DailyChecklistProps> = ({
           {!isViewingOther && (
             <button
               onClick={() => setIsAddSuppOpen(true)}
-              className="w-full sm:w-auto justify-center px-3 py-2 bg-[#c68b59] hover:bg-[#b87b4b] text-[#1c1815] text-xs font-bold rounded-xl transition flex items-center gap-1 cursor-pointer min-h-[38px]"
+              className="w-full sm:w-auto justify-center px-3 py-2 bg-[#1c1815] hover:bg-[#322a24] text-[#d4a373] border border-[#3d322a] text-xs font-bold rounded-xl transition flex items-center gap-1 cursor-pointer min-h-[38px]"
             >
-              <Plus className="w-3.5 h-3.5" /> Add Supplement
+              <Plus className="w-3.5 h-3.5" /> Detailed Stack Form
             </button>
           )}
         </div>
+
+        {/* Inline Quick Add Input Form for Supplements */}
+        {!isViewingOther && (
+          <form onSubmit={handleInlineAddSupplement} className="flex flex-col sm:flex-row items-center gap-2 bg-[#1c1815] p-2.5 rounded-xl border border-[#3d322a]">
+            <input
+              type="text"
+              value={inlineSuppName}
+              onChange={(e) => setInlineSuppName(e.target.value)}
+              placeholder="Add supplement (e.g. Creatine 5g, Fish Oil, Multivitamin)..."
+              className="w-full sm:flex-1 bg-[#26201b] border border-[#3d322a] text-[#f5efe6] text-xs px-3 py-2 rounded-lg focus:outline-none focus:border-[#c68b59]"
+            />
+            <input
+              type="text"
+              value={inlineSuppTiming}
+              onChange={(e) => setInlineSuppTiming(e.target.value)}
+              placeholder="Dosage / Time (e.g. 1 scoop Morning)"
+              className="w-full sm:w-44 bg-[#26201b] border border-[#3d322a] text-[#f5efe6] text-xs px-3 py-2 rounded-lg focus:outline-none focus:border-[#c68b59]"
+            />
+            <button
+              type="submit"
+              disabled={!inlineSuppName.trim()}
+              className="w-full sm:w-auto px-4 py-2 bg-gradient-to-r from-[#c68b59] to-[#b87b4b] hover:from-[#b87b4b] hover:to-[#a06738] disabled:opacity-50 text-[#1c1815] text-xs font-bold rounded-lg transition shrink-0 cursor-pointer flex items-center justify-center gap-1 shadow"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              <span>+ Add to Checklist</span>
+            </button>
+          </form>
+        )}
 
         {/* Daily Supplement Intake Tracking Bar */}
         {userSupplements.length > 0 && (
           <div className="bg-[#1c1815] border border-[#3d322a] rounded-xl p-3 sm:p-4 space-y-2">
             <div className="flex items-center justify-between gap-2">
               <div className="flex items-center gap-2">
-                <span className="text-xs text-[#c5b4a5]">Daily Intake Target:</span>
+                <span className="text-xs text-[#c5b4a5]">Checklist for {selectedDate}:</span>
                 <span className="text-xs font-mono font-bold text-[#f5efe6]">
                   {supplementsTakenCount} / {supplementsTotal} Taken
                 </span>
@@ -1166,11 +1301,14 @@ export const DailyChecklist: React.FC<DailyChecklistProps> = ({
         )}
 
         {userSupplements.length === 0 ? (
-          <p className="text-xs text-[#c5b4a5] italic py-2">
-            {isViewingOther
-              ? `No supplements configured by ${targetUser.name}.`
-              : 'No supplements added yet. Click "+ Add Supplement" to add your daily stack.'}
-          </p>
+          <div className="text-center py-6 bg-[#1c1815] border border-dashed border-[#3d322a] rounded-xl p-4">
+            <Pill className="w-8 h-8 text-[#c5b4a5]/40 mx-auto mb-2" />
+            <p className="text-xs text-[#c5b4a5]">
+              {isViewingOther
+                ? `No supplements configured by ${targetUser.name}.`
+                : 'No supplements added yet. Enter a supplement above to add it to your daily checklist.'}
+            </p>
+          </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {userSupplements.map((supp) => {
@@ -1181,37 +1319,33 @@ export const DailyChecklist: React.FC<DailyChecklistProps> = ({
                 <div
                   key={supp.id}
                   className={`p-3 sm:p-3.5 rounded-xl border flex items-center justify-between transition ${
-                    isTaken ? 'bg-[#c68b59]/10 border-[#c68b59]/40' : 'bg-[#1c1815] border-[#3d322a]'
+                    isTaken ? 'bg-emerald-950/15 border-emerald-500/40 shadow-sm' : 'bg-[#1c1815] border-[#3d322a]'
                   }`}
                 >
-                  <div className="flex items-center gap-3 min-w-0 flex-1">
-                    {/* If viewing other user, toggle is disabled and purely read-only */}
-                    {isViewingOther ? (
-                      <div
-                        className={`p-1.5 rounded-lg shrink-0 ${
-                          isTaken
-                            ? 'text-emerald-400 bg-emerald-950/40 border border-emerald-800/40'
-                            : 'text-[#c5b4a5] bg-[#1c1815] border border-[#3d322a]'
-                        }`}
-                        title={isTaken ? 'Taken on this date' : 'Not marked as taken'}
-                      >
-                        {isTaken ? <CheckCircle2 className="w-5 h-5 text-emerald-400" /> : <XCircle className="w-5 h-5" />}
-                      </div>
-                    ) : (
-                      <button
-                        onClick={() => onToggleSupplementLog(supp.id, selectedDate, !isTaken)}
-                        className={`p-1.5 rounded-lg transition cursor-pointer shrink-0 ${
-                          isTaken ? 'text-[#c68b59]' : 'text-[#c5b4a5] hover:text-[#f5efe6]'
-                        }`}
-                        title={isTaken ? 'Click to unmark intake' : 'Click to mark intake taken'}
-                      >
-                        {isTaken ? <CheckCircle2 className="w-5 h-5 text-[#c68b59]" /> : <XCircle className="w-5 h-5" />}
-                      </button>
-                    )}
+                  <div
+                    onClick={() => {
+                      if (!isViewingOther) {
+                        onToggleSupplementLog(supp.id, selectedDate, !isTaken);
+                      }
+                    }}
+                    className={`flex items-center gap-3 min-w-0 flex-1 ${!isViewingOther ? 'cursor-pointer select-none' : ''}`}
+                  >
+                    <div
+                      className={`p-1.5 rounded-lg shrink-0 transition ${
+                        isTaken
+                          ? 'text-emerald-400 bg-emerald-500/20 border border-emerald-500/30'
+                          : 'text-[#c5b4a5] bg-[#26201b] border border-[#3d322a] hover:border-[#c68b59]'
+                      }`}
+                      title={isTaken ? 'Mark as not taken' : 'Mark as taken'}
+                    >
+                      {isTaken ? <CheckCircle2 className="w-5 h-5 text-emerald-400" /> : <div className="w-5 h-5 rounded-full border-2 border-[#55463b]" />}
+                    </div>
 
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2">
-                        <h4 className="text-xs font-bold text-[#f5efe6] truncate">{supp.name}</h4>
+                        <h4 className={`text-xs font-bold truncate transition ${isTaken ? 'text-emerald-300 line-through' : 'text-[#f5efe6]'}`}>
+                          {supp.name}
+                        </h4>
                         <span
                           className={`text-[9px] px-1.5 py-0.2 rounded font-semibold border ${
                             isTaken
@@ -1229,9 +1363,13 @@ export const DailyChecklist: React.FC<DailyChecklistProps> = ({
                   {/* Only owner can delete their supplements */}
                   {!isViewingOther && (
                     <button
-                      onClick={() => onDeleteSupplement(supp.id)}
-                      className="p-1.5 text-[#c5b4a5] hover:text-rose-400 transition shrink-0 ml-2 cursor-pointer"
-                      title="Delete Supplement"
+                      onClick={() => {
+                        if (window.confirm(`Delete supplement "${supp.name}" from your daily checklist?`)) {
+                          onDeleteSupplement(supp.id);
+                        }
+                      }}
+                      className="p-1.5 text-[#c5b4a5] hover:text-rose-400 hover:bg-rose-950/40 rounded-lg transition shrink-0 ml-2 cursor-pointer"
+                      title="Delete from checklist permanently"
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
@@ -1267,32 +1405,60 @@ export const DailyChecklist: React.FC<DailyChecklistProps> = ({
         <div className="bg-[#26201b] border border-[#3d322a] rounded-2xl p-4 sm:p-6 shadow-xl space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="flex items-center gap-2.5">
-              <ListCheck className="w-5 h-5 text-[#c68b59] shrink-0" />
+              <div className="p-2.5 rounded-xl bg-[#c68b59]/15 text-[#d4a373] border border-[#c68b59]/30">
+                <ListCheck className="w-5 h-5 text-[#c68b59] shrink-0" />
+              </div>
               <div className="min-w-0">
                 <h3 className="text-sm sm:text-base font-bold text-[#f5efe6] flex items-center gap-2">
-                  Custom Private Habit Tracker
+                  Custom Private Habits Checklist
                   <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#1c1815] text-[#d4a373] border border-[#3d322a] flex items-center gap-1 font-semibold">
                     <Lock className="w-2.5 h-2.5" /> Private
                   </span>
                 </h3>
-                <p className="text-xs text-[#c5b4a5]">Add and track custom personal habits visible only to you</p>
+                <p className="text-xs text-[#c5b4a5]">Habits persist across all days until deleted. Check off daily below.</p>
               </div>
             </div>
 
             <button
               onClick={() => setIsAddHabitOpen(true)}
-              className="w-full sm:w-auto justify-center px-3 py-2 bg-[#c68b59] hover:bg-[#b87b4b] text-[#1c1815] text-xs font-bold rounded-xl transition flex items-center gap-1 cursor-pointer min-h-[38px]"
+              className="w-full sm:w-auto justify-center px-3 py-2 bg-[#1c1815] hover:bg-[#322a24] text-[#d4a373] border border-[#3d322a] text-xs font-bold rounded-xl transition flex items-center gap-1 cursor-pointer min-h-[38px]"
             >
-              <Plus className="w-3.5 h-3.5" /> Add Private Habit
+              <Plus className="w-3.5 h-3.5" /> Detailed Habit Form
             </button>
           </div>
+
+          {/* Inline Quick Add Input Form for Custom Habits */}
+          <form onSubmit={handleInlineAddHabit} className="flex flex-col sm:flex-row items-center gap-2 bg-[#1c1815] p-2.5 rounded-xl border border-[#3d322a]">
+            <input
+              type="text"
+              value={inlineHabitTitle}
+              onChange={(e) => setInlineHabitTitle(e.target.value)}
+              placeholder="Add personal habit (e.g. Read 20 pages, Cold shower, Meditate)..."
+              className="w-full sm:flex-1 bg-[#26201b] border border-[#3d322a] text-[#f5efe6] text-xs px-3 py-2 rounded-lg focus:outline-none focus:border-[#c68b59]"
+            />
+            <input
+              type="text"
+              value={inlineHabitDesc}
+              onChange={(e) => setInlineHabitDesc(e.target.value)}
+              placeholder="Target / Notes (e.g. 20 mins)"
+              className="w-full sm:w-44 bg-[#26201b] border border-[#3d322a] text-[#f5efe6] text-xs px-3 py-2 rounded-lg focus:outline-none focus:border-[#c68b59]"
+            />
+            <button
+              type="submit"
+              disabled={!inlineHabitTitle.trim()}
+              className="w-full sm:w-auto px-4 py-2 bg-gradient-to-r from-[#c68b59] to-[#b87b4b] hover:from-[#b87b4b] hover:to-[#a06738] disabled:opacity-50 text-[#1c1815] text-xs font-bold rounded-lg transition shrink-0 cursor-pointer flex items-center justify-center gap-1 shadow"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              <span>+ Add to Checklist</span>
+            </button>
+          </form>
 
           {/* Daily Habit Tracking Progress Bar */}
           {userHabits.length > 0 && (
             <div className="bg-[#1c1815] border border-[#3d322a] rounded-xl p-3 sm:p-4 space-y-2">
               <div className="flex items-center justify-between gap-2">
                 <div className="flex items-center gap-2">
-                  <span className="text-xs text-[#c5b4a5]">Personal Habits Progress:</span>
+                  <span className="text-xs text-[#c5b4a5]">Checklist for {selectedDate}:</span>
                   <span className="text-xs font-mono font-bold text-[#f5efe6]">
                     {habitsCompletedCount} / {habitsTotal} Completed
                   </span>
@@ -1319,9 +1485,12 @@ export const DailyChecklist: React.FC<DailyChecklistProps> = ({
           )}
 
           {userHabits.length === 0 ? (
-            <p className="text-xs text-[#c5b4a5] italic py-2">
-              No custom private habits added yet. Click "+ Add Private Habit" to create custom personal trackers.
-            </p>
+            <div className="text-center py-6 bg-[#1c1815] border border-dashed border-[#3d322a] rounded-xl p-4">
+              <ListCheck className="w-8 h-8 text-[#c5b4a5]/40 mx-auto mb-2" />
+              <p className="text-xs text-[#c5b4a5]">
+                No custom private habits added yet. Enter a habit above to add it to your daily checklist.
+              </p>
+            </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {userHabits.map((habit) => {
@@ -1332,22 +1501,28 @@ export const DailyChecklist: React.FC<DailyChecklistProps> = ({
                   <div
                     key={habit.id}
                     className={`p-3 sm:p-3.5 rounded-xl border flex items-center justify-between transition ${
-                      isCompleted ? 'bg-[#c68b59]/10 border-[#c68b59]/40' : 'bg-[#1c1815] border-[#3d322a]'
+                      isCompleted ? 'bg-emerald-950/15 border-emerald-500/40 shadow-sm' : 'bg-[#1c1815] border-[#3d322a]'
                     }`}
                   >
-                    <div className="flex items-center gap-3 min-w-0 flex-1">
-                      <button
-                        onClick={() => onToggleCustomHabitLog(habit.id, selectedDate, !isCompleted)}
-                        className={`p-1.5 rounded-lg transition cursor-pointer shrink-0 ${
-                          isCompleted ? 'text-[#c68b59]' : 'text-[#c5b4a5] hover:text-[#f5efe6]'
+                    <div
+                      onClick={() => onToggleCustomHabitLog(habit.id, selectedDate, !isCompleted)}
+                      className="flex items-center gap-3 min-w-0 flex-1 cursor-pointer select-none"
+                    >
+                      <div
+                        className={`p-1.5 rounded-lg transition shrink-0 ${
+                          isCompleted
+                            ? 'text-emerald-400 bg-emerald-500/20 border border-emerald-500/30'
+                            : 'text-[#c5b4a5] bg-[#26201b] border border-[#3d322a] hover:border-[#c68b59]'
                         }`}
                         title={isCompleted ? 'Mark uncompleted' : 'Mark completed'}
                       >
-                        {isCompleted ? <CheckCircle2 className="w-5 h-5 text-[#c68b59]" /> : <XCircle className="w-5 h-5" />}
-                      </button>
+                        {isCompleted ? <CheckCircle2 className="w-5 h-5 text-emerald-400" /> : <div className="w-5 h-5 rounded-full border-2 border-[#55463b]" />}
+                      </div>
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-2">
-                          <h4 className="text-xs font-bold text-[#f5efe6] truncate">{habit.title}</h4>
+                          <h4 className={`text-xs font-bold truncate transition ${isCompleted ? 'text-emerald-300 line-through' : 'text-[#f5efe6]'}`}>
+                            {habit.title}
+                          </h4>
                           <span
                             className={`text-[9px] px-1.5 py-0.2 rounded font-semibold border ${
                               isCompleted
@@ -1363,8 +1538,12 @@ export const DailyChecklist: React.FC<DailyChecklistProps> = ({
                     </div>
 
                     <button
-                      onClick={() => onDeleteCustomHabit(habit.id)}
-                      className="p-1.5 text-[#c5b4a5] hover:text-rose-400 transition shrink-0 ml-2 cursor-pointer"
+                      onClick={() => {
+                        if (window.confirm(`Delete habit "${habit.title}" from your daily checklist?`)) {
+                          onDeleteCustomHabit(habit.id);
+                        }
+                      }}
+                      className="p-1.5 text-[#c5b4a5] hover:text-rose-400 hover:bg-rose-950/40 rounded-lg transition shrink-0 ml-2 cursor-pointer"
                       title="Delete Habit"
                     >
                       <Trash2 className="w-4 h-4" />

@@ -161,6 +161,20 @@ export async function pushWorkoutsToServer(workouts: Workout[]): Promise<boolean
 }
 
 /**
+ * Delete workout on backend
+ */
+export async function deleteWorkoutOnServer(id: string): Promise<boolean> {
+  try {
+    const res = await fetch(`${API_BASE}/api/workouts/${encodeURIComponent(id)}`, {
+      method: 'DELETE',
+    });
+    return res.ok;
+  } catch {
+    return false;
+  }
+}
+
+/**
  * Push weight log to backend
  */
 export async function pushWeightLogToServer(weightLog: WeightLog): Promise<boolean> {

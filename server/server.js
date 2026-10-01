@@ -217,7 +217,7 @@ app.get('/api/sync', (req, res) => {
   res.json({
     success: true,
     data: {
-      users: db.users.filter(u => u.is_active !== false && u.username !== 'testuser123' && u.id !== 'user_1790589874177_elgx'),
+      users: db.users.filter(u => u.is_active !== false && u.username !== 'testuser123' && u.id !== 'user_1790589874177_elgx' && u.username !== 'testuser2' && u.id !== 'user_1790824958946_sy7b'),
       dailyLogs: db.dailyLogs,
       workouts: db.workouts,
       weightLogs: db.weightLogs,
@@ -392,6 +392,21 @@ app.post('/api/workouts', (req, res) => {
   });
 
   res.json({ success: true });
+});
+
+// Delete Workout
+app.delete('/api/workouts/:id', (req, res) => {
+  const { id } = req.params;
+  const initialLen = db.workouts.length;
+  db.workouts = db.workouts.filter(w => w.id !== id);
+  saveDatabase(db);
+
+  broadcast({
+    type: 'WORKOUT_DELETED',
+    payload: { id },
+  });
+
+  res.json({ success: true, deleted: db.workouts.length < initialLen });
 });
 
 // Add Weight Log

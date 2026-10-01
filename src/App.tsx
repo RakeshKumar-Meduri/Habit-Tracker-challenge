@@ -34,6 +34,7 @@ import {
   pushCustomHabitToServer,
   deleteCustomHabitOnServer,
   pushCustomHabitLogToServer,
+  deleteWorkoutOnServer,
 } from './services/apiService';
 import { realtimeClient } from './services/realtimeService';
 
@@ -323,6 +324,14 @@ export function App() {
             });
             return Array.from(map.values());
           });
+          break;
+        }
+
+        case 'WORKOUT_DELETED': {
+          const { id } = msg.payload || {};
+          if (id) {
+            setWorkouts(prev => prev.filter(w => w.id !== id));
+          }
           break;
         }
 
@@ -631,6 +640,12 @@ export function App() {
     }
   };
 
+  // Delete Logged Workout
+  const handleDeleteWorkout = (workoutId: string) => {
+    setWorkouts(prev => prev.filter(w => w.id !== workoutId));
+    deleteWorkoutOnServer(workoutId);
+  };
+
   // Update User Profile & Weight Log
   const handleUpdateProfile = (updatedUser: User, newWeightEntry?: WeightLog) => {
     setUsers(prev => prev.map(u => u.id === updatedUser.id ? updatedUser : u));
@@ -785,6 +800,7 @@ export function App() {
             onSaveMissedReason={handleSaveMissedReason}
             onOpenWorkoutModal={() => setIsWorkoutModalOpen(true)}
             gymWorkoutsCount={currentGymWorkoutsCount}
+            onDeleteWorkout={handleDeleteWorkout}
             onAddSupplement={handleAddSupplement}
             onDeleteSupplement={handleDeleteSupplement}
             onToggleSupplementLog={handleToggleSupplementLog}
@@ -801,6 +817,7 @@ export function App() {
             users={activeUsers}
             currentUser={currentUser}
             onOpenWorkoutModal={() => setIsWorkoutModalOpen(true)}
+            onDeleteWorkout={handleDeleteWorkout}
           />
         )}
 
