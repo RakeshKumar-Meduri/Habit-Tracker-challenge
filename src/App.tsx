@@ -50,6 +50,7 @@ import { ActivityFeed } from './components/ActivityFeed';
 import { ExcuseAnalytics } from './components/ExcuseAnalytics';
 import { GamificationSection } from './components/GamificationSection';
 import { WeeklyRecapModal } from './components/WeeklyRecapModal';
+import { Trophy, Swords, Award } from 'lucide-react';
 
 export function App() {
   // Synchronous lazy state initialization from storage to prevent empty-state wipes
@@ -793,6 +794,45 @@ export function App() {
             dailyLogs={dailyLogs}
             weightLogs={weightLogs}
           />
+        )}
+
+        {/* Mobile Sub-Navigation for Community Views (Rankings / H2H / Badges) */}
+        {(activeTab === 'leaderboard' || activeTab === 'comparison' || activeTab === 'badges') && currentUser && (
+          <div className="md:hidden flex items-center p-1 bg-[#26201b] border border-[#3d322a] rounded-2xl mb-4 shadow-lg">
+            <button
+              onClick={() => setActiveTab('leaderboard')}
+              className={`flex-1 py-2 px-2 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition cursor-pointer active:scale-95 ${
+                activeTab === 'leaderboard'
+                  ? 'bg-gradient-to-r from-[#c68b59] to-[#b87b4b] text-[#1c1815] shadow-md shadow-[#c68b59]/30'
+                  : 'text-[#c5b4a5] hover:text-[#f5efe6]'
+              }`}
+            >
+              <Trophy className="w-3.5 h-3.5" />
+              <span>Rankings</span>
+            </button>
+            <button
+              onClick={() => setActiveTab('comparison')}
+              className={`flex-1 py-2 px-2 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition cursor-pointer active:scale-95 ${
+                activeTab === 'comparison'
+                  ? 'bg-gradient-to-r from-[#c68b59] to-[#b87b4b] text-[#1c1815] shadow-md shadow-[#c68b59]/30'
+                  : 'text-[#c5b4a5] hover:text-[#f5efe6]'
+              }`}
+            >
+              <Swords className="w-3.5 h-3.5" />
+              <span>Head-to-Head</span>
+            </button>
+            <button
+              onClick={() => setActiveTab('badges')}
+              className={`flex-1 py-2 px-2 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition cursor-pointer active:scale-95 ${
+                activeTab === 'badges'
+                  ? 'bg-gradient-to-r from-[#c68b59] to-[#b87b4b] text-[#1c1815] shadow-md shadow-[#c68b59]/30'
+                  : 'text-[#c5b4a5] hover:text-[#f5efe6]'
+              }`}
+            >
+              <Award className="w-3.5 h-3.5" />
+              <span>Badges</span>
+            </button>
+          </div>
         )}
 
         {/* Tab 4: Leaderboard & Feed */}

@@ -321,8 +321,8 @@ export const Navbar: React.FC<NavbarProps> = ({
 
           </div>
 
-          {/* Top Tab Navigation Strip (Horizontal scroll with smooth touch) */}
-          <nav className="flex items-center gap-1 overflow-x-auto py-2 scrollbar-none border-t border-[#3d322a]/60 no-scrollbar touch-pan-x">
+          {/* Top Tab Navigation Strip (Horizontal scroll with smooth touch - Desktop & Tablet) */}
+          <nav className="hidden md:flex items-center gap-1 overflow-x-auto py-2 scrollbar-none border-t border-[#3d322a]/60 no-scrollbar touch-pan-x">
             {navItems.map((item) => {
               const Icon = item.icon;
               const isActive = activeTab === item.id;
@@ -353,7 +353,7 @@ export const Navbar: React.FC<NavbarProps> = ({
         <div className="grid grid-cols-5 gap-1 max-w-md mx-auto">
           {bottomNavItems.map((item) => {
             const Icon = item.icon;
-            const isActive = activeTab === item.id;
+            const isActive = activeTab === item.id || (item.id === 'leaderboard' && (activeTab === 'comparison' || activeTab === 'badges'));
             return (
               <button
                 key={item.id}
