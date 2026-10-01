@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import type { User } from '../types';
 import { 
   CheckSquare, 
+  Calendar,
   Dumbbell, 
   BarChart3, 
   Trophy, 
@@ -64,6 +65,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
   const navItems = [
     { id: 'checklist', label: 'Checklist', icon: CheckSquare },
+    { id: 'calendar', label: 'Calendar', icon: Calendar },
     { id: 'workouts', label: 'Workouts', icon: Dumbbell },
     { id: 'analytics', label: 'Analytics', icon: BarChart3 },
     { id: 'leaderboard', label: 'Leaderboard', icon: Trophy },
@@ -75,6 +77,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   // Primary tabs for mobile bottom navigation bar
   const bottomNavItems = [
     { id: 'checklist', label: 'Checklist', icon: CheckSquare },
+    { id: 'calendar', label: 'Calendar', icon: Calendar },
     { id: 'workouts', label: 'Workouts', icon: Dumbbell },
     { id: 'analytics', label: 'Analytics', icon: BarChart3 },
     { id: 'leaderboard', label: 'Rankings', icon: Trophy },
@@ -271,6 +274,17 @@ export const Navbar: React.FC<NavbarProps> = ({
                     <button
                       onClick={() => {
                         setIsMobileMenuOpen(false);
+                        setActiveTab('calendar');
+                      }}
+                      className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-[#f5efe6] hover:bg-[#26201b] transition cursor-pointer"
+                    >
+                      <Calendar className="w-4 h-4 text-[#c68b59]" />
+                      Activity Calendar
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        setIsMobileMenuOpen(false);
                         setActiveTab('comparison');
                       }}
                       className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-[#f5efe6] hover:bg-[#26201b] transition cursor-pointer"
@@ -350,7 +364,7 @@ export const Navbar: React.FC<NavbarProps> = ({
         aria-label="Mobile Navigation"
         className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#1c1815]/95 border-t border-[#3d322a] backdrop-blur-lg px-2 pt-1.5 pb-[calc(0.5rem+env(safe-area-inset-bottom,0px))] shadow-2xl"
       >
-        <div className="grid grid-cols-5 gap-1 max-w-md mx-auto">
+        <div className="grid grid-cols-6 gap-0.5 sm:gap-1 max-w-md mx-auto">
           {bottomNavItems.map((item) => {
             const Icon = item.icon;
             const isActive = activeTab === item.id || (item.id === 'leaderboard' && (activeTab === 'comparison' || activeTab === 'badges'));

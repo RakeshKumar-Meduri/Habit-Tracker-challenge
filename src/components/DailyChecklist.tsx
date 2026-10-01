@@ -60,6 +60,7 @@ interface DailyChecklistProps {
   onAddCustomHabit: (habit: CustomHabit) => void;
   onDeleteCustomHabit: (habitId: string) => void;
   onToggleCustomHabitLog: (habitId: string, date: string, completed: boolean) => void;
+  onOpenCalendar?: () => void;
 }
 
 export const DailyChecklist: React.FC<DailyChecklistProps> = ({
@@ -87,6 +88,7 @@ export const DailyChecklist: React.FC<DailyChecklistProps> = ({
   onAddCustomHabit,
   onDeleteCustomHabit,
   onToggleCustomHabitLog,
+  onOpenCalendar,
 }) => {
   const [selectedMemberId, setSelectedMemberId] = useState<string>(currentUser.id);
   const isViewingOther = selectedMemberId !== currentUser.id;
@@ -525,6 +527,17 @@ export const DailyChecklist: React.FC<DailyChecklistProps> = ({
           >
             <ChevronRight className="w-5 h-5" />
           </button>
+
+          {onOpenCalendar && (
+            <button
+              onClick={onOpenCalendar}
+              className="p-1.5 px-2.5 hover:bg-[#322a24] text-[#d4a373] hover:text-[#f5efe6] rounded-lg transition flex items-center gap-1.5 cursor-pointer border border-[#3d322a] ml-1 bg-[#26201b]"
+              title="Open Month Calendar View"
+            >
+              <Calendar className="w-3.5 h-3.5 text-[#c68b59]" />
+              <span className="hidden sm:inline text-xs font-bold">Calendar</span>
+            </button>
+          )}
         </div>
 
         {/* Daily Completion Meter */}

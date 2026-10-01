@@ -72,7 +72,7 @@ export function initializeStorageIfEmpty(): {
   adminSettings: AdminSettings;
 } {
   let users: User[] = getStoredItemSafely<User[]>(STORAGE_KEYS.USERS, [])
-    .filter(u => u.username !== 'testuser123' && u.id !== 'user_1790589874177_elgx' && u.username !== 'testuser2' && u.id !== 'user_1790824958946_sy7b')
+    .filter(u => u.username !== 'testuser123' && u.id !== 'user_1790589874177_elgx' && u.username !== 'testuser2' && u.id !== 'user_1790824958946_sy7b' && u.username !== 'tester1' && !u.username.startsWith('test'))
     .map(u => ({
       ...u,
       username: u.username || u.name.toLowerCase().replace(/\s+/g, '_'),

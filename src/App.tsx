@@ -41,6 +41,7 @@ import { realtimeClient } from './services/realtimeService';
 import { Navbar } from './components/Navbar';
 import { AuthModal } from './components/AuthModal';
 import { DailyChecklist } from './components/DailyChecklist';
+import { CalendarView } from './components/CalendarView';
 import { WorkoutModal } from './components/WorkoutModal';
 import { WorkoutHistory } from './components/WorkoutHistory';
 import { ProfileSection } from './components/ProfileSection';
@@ -134,7 +135,7 @@ export function App() {
 
     if (Array.isArray(serverData.users)) {
       const cleanServerUsers = serverData.users.filter(
-        (u: any) => u.username !== 'testuser123' && u.id !== 'user_1790589874177_elgx' && u.username !== 'testuser2' && u.id !== 'user_1790824958946_sy7b'
+        (u: any) => u.username !== 'testuser123' && u.id !== 'user_1790589874177_elgx' && u.username !== 'testuser2' && u.id !== 'user_1790824958946_sy7b' && u.username !== 'tester1' && !u.username.startsWith('test')
       );
 
       // Merge server users with existing local users so locally registered users are NEVER wiped
@@ -142,7 +143,7 @@ export function App() {
         const serverUserMap = new Map(cleanServerUsers.map((u: User) => [u.id, u]));
         const merged = [...cleanServerUsers];
         prev.forEach(pu => {
-          if (pu.username !== 'testuser2' && pu.id !== 'user_1790824958946_sy7b') {
+          if (pu.username !== 'testuser2' && pu.id !== 'user_1790824958946_sy7b' && pu.username !== 'tester1' && !pu.username.startsWith('test')) {
             if (!serverUserMap.has(pu.id) && !merged.some(m => m.username.toLowerCase() === pu.username.toLowerCase())) {
               merged.push(pu);
             }
@@ -807,6 +808,30 @@ export function App() {
             onAddCustomHabit={handleAddCustomHabit}
             onDeleteCustomHabit={handleDeleteCustomHabit}
             onToggleCustomHabitLog={handleToggleCustomHabitLog}
+            onOpenCalendar={() => setActiveTab('calendar')}
+          />
+        )}
+
+        {/* Tab: Activity Calendar */}
+        {activeTab === 'calendar' && currentUser && (
+          <CalendarView
+            currentUser={currentUser}
+            allUsers={activeUsers}
+            dailyLogs={dailyLogs}
+            workouts={workouts}
+            weightLogs={weightLogs}
+            missedReasons={missedReasons}
+            supplements={supplements}
+            supplementLogs={supplementLogs}
+            customHabits={customHabits}
+            customHabitLogs={customHabitLogs}
+            selectedDate={selectedDate}
+            onSelectDate={(date) => setSelectedDate(date)}
+            onNavigateToChecklist={(date) => {
+              setSelectedDate(date);
+              setActiveTab('checklist');
+            }}
+            onOpenWorkoutModal={() => setIsWorkoutModalOpen(true)}
           />
         )}
 

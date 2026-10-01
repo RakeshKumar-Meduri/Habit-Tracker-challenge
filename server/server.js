@@ -365,7 +365,7 @@ app.get('/api/sync', async (req, res) => {
   res.json({
     success: true,
     data: {
-      users: db.users.filter(u => u.is_active !== false && u.username !== 'testuser123' && u.id !== 'user_1790589874177_elgx' && u.username !== 'testuser2' && u.id !== 'user_1790824958946_sy7b'),
+      users: db.users.filter(u => u.is_active !== false && u.username !== 'testuser123' && u.id !== 'user_1790589874177_elgx' && u.username !== 'testuser2' && u.id !== 'user_1790824958946_sy7b' && u.username !== 'tester1' && !u.username.startsWith('test')),
       dailyLogs: db.dailyLogs,
       workouts: db.workouts,
       weightLogs: db.weightLogs,
