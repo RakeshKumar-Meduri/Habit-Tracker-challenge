@@ -81,6 +81,45 @@ export function initializeStorageIfEmpty(): {
       must_change_password: u.must_change_password || false,
     }));
 
+  if (users.length === 0) {
+    users = [
+      {
+        id: "user_1790779706015_wepw",
+        name: "Rakesh Kumar",
+        username: "rakesh_meduri",
+        password_hash: "65a455568ff0aa5c723e94192cd3b7505d9eb7f6042798251d05dfa5fb6d6ceb",
+        role: "member",
+        height: 180,
+        weight_current: 105,
+        age: 21,
+        gender: "male",
+        is_private: false,
+        avatar_color: "from-rose-500 to-pink-700",
+        created_at: "2026-09-28",
+        is_active: true,
+        must_change_password: false,
+        birthday: "2005-01-01",
+        body_shape_photo: ""
+      },
+      {
+        id: "user_1790824958946_sy7b",
+        name: "Test User",
+        username: "testuser2",
+        password_hash: "1e62ff825a77a929e21f55318d2ef65d5e6434ec4af849e932df1ec1bb14de0c",
+        role: "member",
+        height: 175,
+        weight_current: 70,
+        age: 25,
+        gender: "male",
+        is_private: false,
+        avatar_color: "from-[#c68b59] to-[#785338]",
+        created_at: "2026-09-28",
+        is_active: true,
+        must_change_password: false
+      }
+    ];
+  }
+
   // Resolve current logged in user STRICTLY from valid unexpired auth session
   let currentUserId = '';
   const sessionStr = localStorage.getItem(STORAGE_KEYS.AUTH_SESSION);
@@ -107,9 +146,351 @@ export function initializeStorageIfEmpty(): {
     } catch {}
   }
 
-  const dailyLogs: DailyLog[] = getStoredItemSafely<DailyLog[]>(STORAGE_KEYS.DAILY_LOGS, []);
-  const workouts: Workout[] = getStoredItemSafely<Workout[]>(STORAGE_KEYS.WORKOUTS, []);
-  const weightLogs: WeightLog[] = getStoredItemSafely<WeightLog[]>(STORAGE_KEYS.WEIGHT_LOGS, []);
+  let dailyLogs: DailyLog[] = getStoredItemSafely<DailyLog[]>(STORAGE_KEYS.DAILY_LOGS, []);
+  if (dailyLogs.length === 0) {
+    dailyLogs = [
+      {
+        id: "dl_user_1790779706015_wepw_2026-09-28",
+        user_id: "user_1790779706015_wepw",
+        date: "2026-09-28",
+        gym_done: true,
+        steps_done: true,
+        sleep_done: true,
+        junk_food_avoided: true,
+        water_done: true,
+        water_intake_ml: 2500,
+        sleep_start: "23:00",
+        sleep_end: "07:00",
+        sleep_duration: 8,
+        points_earned: 50,
+        steps_value: 10500,
+        steps_target: 10000,
+        water_target_ml: 2500
+      },
+      {
+        id: "dl_user_1790824958946_sy7b_2026-09-28",
+        user_id: "user_1790824958946_sy7b",
+        date: "2026-09-28",
+        gym_done: true,
+        steps_done: true,
+        sleep_done: true,
+        junk_food_avoided: true,
+        water_done: true,
+        water_intake_ml: 2500,
+        sleep_start: "23:30",
+        sleep_end: "07:00",
+        sleep_duration: 7.5,
+        points_earned: 50,
+        steps_value: 8500,
+        steps_target: 10000,
+        water_target_ml: 2500
+      },
+      {
+        id: "dl_user_1790779706015_wepw_2026-09-29",
+        user_id: "user_1790779706015_wepw",
+        date: "2026-09-29",
+        gym_done: true,
+        steps_done: true,
+        sleep_done: true,
+        junk_food_avoided: true,
+        water_done: true,
+        water_intake_ml: 2500,
+        sleep_start: "23:00",
+        sleep_end: "07:00",
+        sleep_duration: 8,
+        points_earned: 50,
+        steps_value: 11000,
+        steps_target: 10000,
+        water_target_ml: 2500
+      },
+      {
+        id: "dl_user_1790824958946_sy7b_2026-09-29",
+        user_id: "user_1790824958946_sy7b",
+        date: "2026-09-29",
+        gym_done: true,
+        steps_done: true,
+        sleep_done: true,
+        junk_food_avoided: true,
+        water_done: true,
+        water_intake_ml: 2500,
+        sleep_start: "23:00",
+        sleep_end: "07:00",
+        sleep_duration: 8,
+        points_earned: 50,
+        steps_value: 9000,
+        steps_target: 10000,
+        water_target_ml: 2500
+      },
+      {
+        id: "dl_user_1790779706015_wepw_2026-09-30",
+        user_id: "user_1790779706015_wepw",
+        date: "2026-09-30",
+        gym_done: false,
+        steps_done: false,
+        sleep_done: false,
+        junk_food_avoided: false,
+        water_done: true,
+        water_intake_ml: 2500,
+        sleep_start: "23:00",
+        sleep_end: "07:00",
+        sleep_duration: 8,
+        points_earned: 10,
+        steps_value: 4000,
+        steps_target: 10000,
+        water_target_ml: 2500
+      },
+      {
+        id: "dl_user_1790824958946_sy7b_2026-09-30",
+        user_id: "user_1790824958946_sy7b",
+        date: "2026-09-30",
+        gym_done: true,
+        steps_done: true,
+        sleep_done: true,
+        junk_food_avoided: true,
+        water_done: true,
+        water_intake_ml: 2500,
+        sleep_start: "23:00",
+        sleep_end: "07:00",
+        sleep_duration: 8,
+        points_earned: 50,
+        steps_value: 10200,
+        steps_target: 10000,
+        water_target_ml: 2500
+      },
+      {
+        id: "dl_user_1790779706015_wepw_2026-10-01",
+        user_id: "user_1790779706015_wepw",
+        date: "2026-10-01",
+        gym_done: true,
+        steps_done: true,
+        sleep_done: false,
+        junk_food_avoided: true,
+        water_done: true,
+        water_intake_ml: 2500,
+        sleep_start: "23:00",
+        sleep_end: "07:00",
+        sleep_duration: 8,
+        points_earned: 40,
+        steps_value: 10400,
+        steps_target: 10000,
+        water_target_ml: 2500
+      },
+      {
+        id: "dl_user_1790824958946_sy7b_2026-10-01",
+        user_id: "user_1790824958946_sy7b",
+        date: "2026-10-01",
+        gym_done: true,
+        steps_done: true,
+        sleep_done: true,
+        junk_food_avoided: false,
+        water_done: true,
+        water_intake_ml: 2500,
+        sleep_start: "23:00",
+        sleep_end: "07:00",
+        sleep_duration: 8,
+        points_earned: 40,
+        steps_value: 8500,
+        steps_target: 10000,
+        water_target_ml: 2500
+      }
+    ];
+  } else {
+    // If dailyLogs exists but missing Test User's logs, merge them in
+    const hasFriendLogs = dailyLogs.some(l => l.user_id === "user_1790824958946_sy7b");
+    if (!hasFriendLogs) {
+      dailyLogs = [
+        ...dailyLogs,
+        {
+          id: "dl_user_1790824958946_sy7b_2026-09-28",
+          user_id: "user_1790824958946_sy7b",
+          date: "2026-09-28",
+          gym_done: true,
+          steps_done: true,
+          sleep_done: true,
+          junk_food_avoided: true,
+          water_done: true,
+          water_intake_ml: 2500,
+          sleep_start: "23:30",
+          sleep_end: "07:00",
+          sleep_duration: 7.5,
+          points_earned: 50,
+          steps_value: 8500,
+          steps_target: 10000,
+          water_target_ml: 2500
+        },
+        {
+          id: "dl_user_1790824958946_sy7b_2026-09-29",
+          user_id: "user_1790824958946_sy7b",
+          date: "2026-09-29",
+          gym_done: true,
+          steps_done: true,
+          sleep_done: true,
+          junk_food_avoided: true,
+          water_done: true,
+          water_intake_ml: 2500,
+          sleep_start: "23:00",
+          sleep_end: "07:00",
+          sleep_duration: 8,
+          points_earned: 50,
+          steps_value: 9000,
+          steps_target: 10000,
+          water_target_ml: 2500
+        },
+        {
+          id: "dl_user_1790824958946_sy7b_2026-09-30",
+          user_id: "user_1790824958946_sy7b",
+          date: "2026-09-30",
+          gym_done: true,
+          steps_done: true,
+          sleep_done: true,
+          junk_food_avoided: true,
+          water_done: true,
+          water_intake_ml: 2500,
+          sleep_start: "23:00",
+          sleep_end: "07:00",
+          sleep_duration: 8,
+          points_earned: 50,
+          steps_value: 10200,
+          steps_target: 10000,
+          water_target_ml: 2500
+        },
+        {
+          id: "dl_user_1790824958946_sy7b_2026-10-01",
+          user_id: "user_1790824958946_sy7b",
+          date: "2026-10-01",
+          gym_done: true,
+          steps_done: true,
+          sleep_done: true,
+          junk_food_avoided: false,
+          water_done: true,
+          water_intake_ml: 2500,
+          sleep_start: "23:00",
+          sleep_end: "07:00",
+          sleep_duration: 8,
+          points_earned: 40,
+          steps_value: 8500,
+          steps_target: 10000,
+          water_target_ml: 2500
+        }
+      ];
+    }
+  }
+
+  let workouts: Workout[] = getStoredItemSafely<Workout[]>(STORAGE_KEYS.WORKOUTS, []);
+  if (workouts.length === 0) {
+    workouts = [
+      {
+        id: "w_rakesh_1",
+        user_id: "user_1790779706015_wepw",
+        date: "2026-09-28",
+        exercise_name: "Barbell Bench Press",
+        exercise_type: "strength",
+        sets: 4,
+        reps: 10,
+        weight: 85,
+        weight_unit: "kg",
+        duration: 55,
+        notes: "Chest & Triceps Power",
+        is_private: false,
+        created_at: "2026-09-28T09:00:00.000Z"
+      },
+      {
+        id: "w_testuser_1",
+        user_id: "user_1790824958946_sy7b",
+        date: "2026-09-28",
+        exercise_name: "Lat Pulldowns",
+        exercise_type: "strength",
+        sets: 4,
+        reps: 12,
+        weight: 60,
+        weight_unit: "kg",
+        duration: 50,
+        notes: "Back & Biceps Hypertrophy",
+        is_private: false,
+        created_at: "2026-09-28T18:00:00.000Z"
+      },
+      {
+        id: "w_testuser_2",
+        user_id: "user_1790824958946_sy7b",
+        date: "2026-09-30",
+        exercise_name: "Barbell Squats",
+        exercise_type: "strength",
+        sets: 4,
+        reps: 8,
+        weight: 90,
+        weight_unit: "kg",
+        duration: 60,
+        notes: "Leg Day Strength",
+        is_private: false,
+        created_at: "2026-09-30T17:30:00.000Z"
+      },
+      {
+        id: "w_rakesh_2",
+        user_id: "user_1790779706015_wepw",
+        date: "2026-10-01",
+        exercise_name: "Treadmill Intervals & Core",
+        exercise_type: "cardio",
+        sets: 6,
+        reps: 1,
+        weight: 0,
+        weight_unit: "kg",
+        duration: 45,
+        notes: "Morning HIIT session",
+        is_private: false,
+        created_at: "2026-10-01T07:15:00.000Z"
+      },
+      {
+        id: "w_testuser_3",
+        user_id: "user_1790824958946_sy7b",
+        date: "2026-10-01",
+        exercise_name: "Kettlebell Swings & Box Jumps",
+        exercise_type: "other",
+        sets: 4,
+        reps: 20,
+        weight: 24,
+        weight_unit: "kg",
+        duration: 45,
+        notes: "Full body conditioning",
+        is_private: false,
+        created_at: "2026-10-01T08:00:00.000Z"
+      }
+    ];
+  }
+
+  let weightLogs: WeightLog[] = getStoredItemSafely<WeightLog[]>(STORAGE_KEYS.WEIGHT_LOGS, []);
+  if (weightLogs.length === 0) {
+    weightLogs = [
+      {
+        id: "wl_user_1790779706015_wepw_1",
+        user_id: "user_1790779706015_wepw",
+        weight: 106.5,
+        date: "2026-09-28",
+        timestamp: "2026-09-28T07:00:00.000Z"
+      },
+      {
+        id: "wl_user_1790779706015_wepw_2",
+        user_id: "user_1790779706015_wepw",
+        weight: 105.0,
+        date: "2026-09-30",
+        timestamp: "2026-09-30T16:37:30.639Z"
+      },
+      {
+        id: "wl_user_1790824958946_sy7b_1",
+        user_id: "user_1790824958946_sy7b",
+        weight: 71.2,
+        date: "2026-09-28",
+        timestamp: "2026-09-28T07:30:00.000Z"
+      },
+      {
+        id: "wl_user_1790824958946_sy7b_2",
+        user_id: "user_1790824958946_sy7b",
+        weight: 70.0,
+        date: "2026-10-01",
+        timestamp: "2026-10-01T08:00:00.000Z"
+      }
+    ];
+  }
+
   const missedReasons: MissedReason[] = getStoredItemSafely<MissedReason[]>(STORAGE_KEYS.MISSED_REASONS, []);
   const reactions: Reaction[] = getStoredItemSafely<Reaction[]>(STORAGE_KEYS.REACTIONS, []);
   const badges: Badge[] = getStoredItemSafely<Badge[]>(STORAGE_KEYS.BADGES, []);
@@ -126,6 +507,15 @@ export function initializeStorageIfEmpty(): {
   }
   if (currentUserId) {
     localStorage.setItem(STORAGE_KEYS.CURRENT_USER_ID, currentUserId);
+  }
+  if (dailyLogs.length > 0) {
+    localStorage.setItem(STORAGE_KEYS.DAILY_LOGS, JSON.stringify(dailyLogs));
+  }
+  if (workouts.length > 0) {
+    localStorage.setItem(STORAGE_KEYS.WORKOUTS, JSON.stringify(workouts));
+  }
+  if (weightLogs.length > 0) {
+    localStorage.setItem(STORAGE_KEYS.WEIGHT_LOGS, JSON.stringify(weightLogs));
   }
 
   return {

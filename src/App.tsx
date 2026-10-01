@@ -152,7 +152,7 @@ export function App() {
         serverData.dailyLogs.forEach((l: any) => {
           const key = `${l.user_id}_${l.date}`;
           const existing = map.get(key);
-          map.set(key, existing ? { ...l, ...existing } : l);
+          map.set(key, existing ? { ...existing, ...l } : l);
         });
         return Array.from(map.values());
       });
@@ -286,10 +286,10 @@ export function App() {
 
         case 'DAILY_LOG_UPDATED': {
           const log = msg.payload as DailyLog;
-          if (log && log.id) {
+          if (log && log.user_id && log.date) {
             setDailyLogs(prev => {
-              const map = new Map(prev.map(l => [l.id, l]));
-              map.set(log.id, log);
+              const map = new Map(prev.map(l => [`${l.user_id}_${l.date}`, l]));
+              map.set(`${log.user_id}_${log.date}`, log);
               return Array.from(map.values());
             });
           }
