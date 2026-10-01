@@ -133,14 +133,30 @@ export function App() {
 
     if (Array.isArray(serverData.users)) {
       const cleanServerUsers = serverData.users.filter(
-        (u: any) => u.username !== 'testuser123' && u.id !== 'user_1790589874177_elgx'
+        (u: any) => u.username !== 'testuser123' && u.id !== 'user_1790589874177_elgx' && u.username !== 'testuser2' && u.id !== 'user_1790824958946_sy7b'
       );
-      setUsers(cleanServerUsers);
+
+      // Merge server users with existing local users so locally registered users are NEVER wiped
+      setUsers(prev => {
+        const serverUserMap = new Map(cleanServerUsers.map((u: User) => [u.id, u]));
+        const merged = [...cleanServerUsers];
+        prev.forEach(pu => {
+          if (pu.username !== 'testuser2' && pu.id !== 'user_1790824958946_sy7b') {
+            if (!serverUserMap.has(pu.id) && !merged.some(m => m.username.toLowerCase() === pu.username.toLowerCase())) {
+              merged.push(pu);
+            }
+          }
+        });
+        return merged;
+      });
 
       setCurrentUserId(currId => {
-        if (currId && !cleanServerUsers.some((u: any) => u.id === currId)) {
-          logoutSession();
-          return '';
+        if (currId && cleanServerUsers.length > 0) {
+          const found = cleanServerUsers.find((u: any) => u.id === currId);
+          if (found && found.is_active === false) {
+            logoutSession();
+            return '';
+          }
         }
         return currId;
       });
@@ -148,20 +164,22 @@ export function App() {
 
     if (Array.isArray(serverData.dailyLogs)) {
       setDailyLogs(prev => {
-        const map = new Map(prev.map(l => [`${l.user_id}_${l.date}`, l]));
+        const map = new Map(prev.filter(l => l.user_id !== 'user_1790824958946_sy7b').map(l => [`${l.user_id}_${l.date}`, l]));
         serverData.dailyLogs.forEach((l: any) => {
-          const key = `${l.user_id}_${l.date}`;
-          const existing = map.get(key);
-          map.set(key, existing ? { ...existing, ...l } : l);
+          if (l.user_id !== 'user_1790824958946_sy7b') {
+            const key = `${l.user_id}_${l.date}`;
+            const existing = map.get(key);
+            map.set(key, existing ? { ...existing, ...l } : l);
+          }
         });
         return Array.from(map.values());
       });
     }
     if (Array.isArray(serverData.workouts)) {
       setWorkouts(prev => {
-        const map = new Map(prev.map(w => [w.id, w]));
+        const map = new Map(prev.filter(w => w.user_id !== 'user_1790824958946_sy7b').map(w => [w.id, w]));
         serverData.workouts.forEach((w: any) => {
-          if (!map.has(w.id)) {
+          if (w.user_id !== 'user_1790824958946_sy7b' && !map.has(w.id)) {
             map.set(w.id, w);
           }
         });
@@ -170,9 +188,9 @@ export function App() {
     }
     if (Array.isArray(serverData.weightLogs)) {
       setWeightLogs(prev => {
-        const map = new Map(prev.map(w => [w.id, w]));
+        const map = new Map(prev.filter(w => w.user_id !== 'user_1790824958946_sy7b').map(w => [w.id, w]));
         serverData.weightLogs.forEach((w: any) => {
-          if (!map.has(w.id)) {
+          if (w.user_id !== 'user_1790824958946_sy7b' && !map.has(w.id)) {
             map.set(w.id, w);
           }
         });

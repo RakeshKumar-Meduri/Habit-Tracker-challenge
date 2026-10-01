@@ -255,6 +255,22 @@ export const DailyChecklist: React.FC<DailyChecklistProps> = ({
   const userSupplements = supplements.filter(s => s.user_id === targetUser.id);
   const userHabits = customHabits.filter(h => h.user_id === targetUser.id);
 
+  // Supplements Tracking Stats for targetUser on selectedDate
+  const supplementsTakenCount = userSupplements.filter(s => {
+    const l = supplementLogs.find(log => log.supplement_id === s.id && log.date === selectedDate);
+    return !!l?.taken;
+  }).length;
+  const supplementsTotal = userSupplements.length;
+  const supplementsPercent = supplementsTotal > 0 ? Math.round((supplementsTakenCount / supplementsTotal) * 100) : 0;
+
+  // Custom Habits Tracking Stats for targetUser on selectedDate
+  const habitsCompletedCount = userHabits.filter(h => {
+    const l = customHabitLogs.find(log => log.habit_id === h.id && log.date === selectedDate);
+    return !!l?.completed;
+  }).length;
+  const habitsTotal = userHabits.length;
+  const habitsPercent = habitsTotal > 0 ? Math.round((habitsCompletedCount / habitsTotal) * 100) : 0;
+
   const completedCount = [
     displayedDailyLog.gym_done,
     displayedDailyLog.steps_done,
@@ -1100,20 +1116,61 @@ export const DailyChecklist: React.FC<DailyChecklistProps> = ({
             <Pill className="w-5 h-5 text-[#c68b59] shrink-0" />
             <div className="min-w-0">
               <h3 className="text-sm sm:text-base font-bold text-[#f5efe6]">Supplements Tracker</h3>
-              <p className="text-xs text-[#c5b4a5]">Add, delete, and check off daily supplement intake</p>
+              <p className="text-xs text-[#c5b4a5]">
+                {isViewingOther
+                  ? `Viewing daily supplement intake for ${targetUser.name}`
+                  : 'Track, check off, and manage your daily supplement intake'}
+              </p>
             </div>
           </div>
 
-          <button
-            onClick={() => setIsAddSuppOpen(true)}
-            className="w-full sm:w-auto justify-center px-3 py-2 bg-[#c68b59] hover:bg-[#b87b4b] text-[#1c1815] text-xs font-bold rounded-xl transition flex items-center gap-1 cursor-pointer min-h-[38px]"
-          >
-            <Plus className="w-3.5 h-3.5" /> Add Supplement
-          </button>
+          {!isViewingOther && (
+            <button
+              onClick={() => setIsAddSuppOpen(true)}
+              className="w-full sm:w-auto justify-center px-3 py-2 bg-[#c68b59] hover:bg-[#b87b4b] text-[#1c1815] text-xs font-bold rounded-xl transition flex items-center gap-1 cursor-pointer min-h-[38px]"
+            >
+              <Plus className="w-3.5 h-3.5" /> Add Supplement
+            </button>
+          )}
         </div>
 
+        {/* Daily Supplement Intake Tracking Bar */}
+        {userSupplements.length > 0 && (
+          <div className="bg-[#1c1815] border border-[#3d322a] rounded-xl p-3 sm:p-4 space-y-2">
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-[#c5b4a5]">Daily Intake Target:</span>
+                <span className="text-xs font-mono font-bold text-[#f5efe6]">
+                  {supplementsTakenCount} / {supplementsTotal} Taken
+                </span>
+              </div>
+              <span
+                className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${
+                  supplementsTakenCount === supplementsTotal && supplementsTotal > 0
+                    ? 'bg-emerald-950/60 text-emerald-400 border-emerald-800/60'
+                    : 'bg-[#26201b] text-[#d4a373] border-[#3d322a]'
+                }`}
+              >
+                {supplementsTakenCount === supplementsTotal && supplementsTotal > 0
+                  ? '✨ All Taken'
+                  : `${supplementsPercent}% Done`}
+              </span>
+            </div>
+            <div className="w-full bg-[#26201b] h-2 rounded-full overflow-hidden border border-[#3d322a]/60">
+              <div
+                className="h-full bg-gradient-to-r from-[#c68b59] to-emerald-500 rounded-full transition-all duration-300"
+                style={{ width: `${supplementsPercent}%` }}
+              />
+            </div>
+          </div>
+        )}
+
         {userSupplements.length === 0 ? (
-          <p className="text-xs text-[#c5b4a5] italic py-2">No supplements added yet. Click "+ Add Supplement" to add your daily stack.</p>
+          <p className="text-xs text-[#c5b4a5] italic py-2">
+            {isViewingOther
+              ? `No supplements configured by ${targetUser.name}.`
+              : 'No supplements added yet. Click "+ Add Supplement" to add your daily stack.'}
+          </p>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {userSupplements.map((supp) => {
@@ -1127,28 +1184,58 @@ export const DailyChecklist: React.FC<DailyChecklistProps> = ({
                     isTaken ? 'bg-[#c68b59]/10 border-[#c68b59]/40' : 'bg-[#1c1815] border-[#3d322a]'
                   }`}
                 >
-                  <div className="flex items-center gap-3 min-w-0">
-                    <button
-                      onClick={() => onToggleSupplementLog(supp.id, selectedDate, !isTaken)}
-                      className={`p-1.5 rounded-lg transition cursor-pointer shrink-0 ${
-                        isTaken ? 'text-[#c68b59]' : 'text-[#c5b4a5] hover:text-[#f5efe6]'
-                      }`}
-                    >
-                      {isTaken ? <CheckCircle2 className="w-5 h-5 text-[#c68b59]" /> : <XCircle className="w-5 h-5" />}
-                    </button>
-                    <div className="min-w-0">
-                      <h4 className="text-xs font-bold text-[#f5efe6] truncate">{supp.name}</h4>
+                  <div className="flex items-center gap-3 min-w-0 flex-1">
+                    {/* If viewing other user, toggle is disabled and purely read-only */}
+                    {isViewingOther ? (
+                      <div
+                        className={`p-1.5 rounded-lg shrink-0 ${
+                          isTaken
+                            ? 'text-emerald-400 bg-emerald-950/40 border border-emerald-800/40'
+                            : 'text-[#c5b4a5] bg-[#1c1815] border border-[#3d322a]'
+                        }`}
+                        title={isTaken ? 'Taken on this date' : 'Not marked as taken'}
+                      >
+                        {isTaken ? <CheckCircle2 className="w-5 h-5 text-emerald-400" /> : <XCircle className="w-5 h-5" />}
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => onToggleSupplementLog(supp.id, selectedDate, !isTaken)}
+                        className={`p-1.5 rounded-lg transition cursor-pointer shrink-0 ${
+                          isTaken ? 'text-[#c68b59]' : 'text-[#c5b4a5] hover:text-[#f5efe6]'
+                        }`}
+                        title={isTaken ? 'Click to unmark intake' : 'Click to mark intake taken'}
+                      >
+                        {isTaken ? <CheckCircle2 className="w-5 h-5 text-[#c68b59]" /> : <XCircle className="w-5 h-5" />}
+                      </button>
+                    )}
+
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2">
+                        <h4 className="text-xs font-bold text-[#f5efe6] truncate">{supp.name}</h4>
+                        <span
+                          className={`text-[9px] px-1.5 py-0.2 rounded font-semibold border ${
+                            isTaken
+                              ? 'bg-emerald-950/60 text-emerald-300 border-emerald-800/60'
+                              : 'bg-[#26201b] text-[#c5b4a5] border-[#3d322a]'
+                          }`}
+                        >
+                          {isTaken ? 'Taken' : 'Pending'}
+                        </span>
+                      </div>
                       <p className="text-[11px] text-[#c5b4a5] truncate">{supp.dosage} • {supp.timing}</p>
                     </div>
                   </div>
 
-                  <button
-                    onClick={() => onDeleteSupplement(supp.id)}
-                    className="p-1.5 text-[#c5b4a5] hover:text-rose-400 transition shrink-0 ml-2"
-                    title="Delete Supplement"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
+                  {/* Only owner can delete their supplements */}
+                  {!isViewingOther && (
+                    <button
+                      onClick={() => onDeleteSupplement(supp.id)}
+                      className="p-1.5 text-[#c5b4a5] hover:text-rose-400 transition shrink-0 ml-2 cursor-pointer"
+                      title="Delete Supplement"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  )}
                 </div>
               );
             })}
@@ -1157,72 +1244,138 @@ export const DailyChecklist: React.FC<DailyChecklistProps> = ({
       </div>
 
       {/* Custom Private Habit Tracker Section */}
-      <div className="bg-[#26201b] border border-[#3d322a] rounded-2xl p-4 sm:p-6 shadow-xl space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div className="flex items-center gap-2.5">
-            <ListCheck className="w-5 h-5 text-[#c68b59] shrink-0" />
+      {isViewingOther ? (
+        <div className="bg-[#26201b] border border-[#3d322a] rounded-2xl p-4 sm:p-6 shadow-xl">
+          <div className="flex items-center gap-3">
+            <div className="p-3 rounded-xl bg-[#1c1815] text-[#c68b59] border border-[#3d322a] shrink-0">
+              <Lock className="w-5 h-5" />
+            </div>
             <div className="min-w-0">
               <h3 className="text-sm sm:text-base font-bold text-[#f5efe6] flex items-center gap-2">
                 Custom Private Habit Tracker
-                <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#1c1815] text-[#d4a373] border border-[#3d322a] flex items-center gap-1 font-semibold">
-                  <Lock className="w-2.5 h-2.5" /> Private
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#1c1815] text-[#d4a373] border border-[#3d322a] font-semibold flex items-center gap-1">
+                  <Lock className="w-2.5 h-2.5" /> Private to {targetUser.name}
                 </span>
               </h3>
-              <p className="text-xs text-[#c5b4a5]">Add custom personal habits visible only to you</p>
+              <p className="text-xs text-[#c5b4a5] mt-0.5">
+                Personal habits are strictly private and can only be viewed and modified by their owner.
+              </p>
             </div>
           </div>
-
-          <button
-            onClick={() => setIsAddHabitOpen(true)}
-            className="w-full sm:w-auto justify-center px-3 py-2 bg-[#c68b59] hover:bg-[#b87b4b] text-[#1c1815] text-xs font-bold rounded-xl transition flex items-center gap-1 cursor-pointer min-h-[38px]"
-          >
-            <Plus className="w-3.5 h-3.5" /> Add Private Habit
-          </button>
         </div>
+      ) : (
+        <div className="bg-[#26201b] border border-[#3d322a] rounded-2xl p-4 sm:p-6 shadow-xl space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="flex items-center gap-2.5">
+              <ListCheck className="w-5 h-5 text-[#c68b59] shrink-0" />
+              <div className="min-w-0">
+                <h3 className="text-sm sm:text-base font-bold text-[#f5efe6] flex items-center gap-2">
+                  Custom Private Habit Tracker
+                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#1c1815] text-[#d4a373] border border-[#3d322a] flex items-center gap-1 font-semibold">
+                    <Lock className="w-2.5 h-2.5" /> Private
+                  </span>
+                </h3>
+                <p className="text-xs text-[#c5b4a5]">Add and track custom personal habits visible only to you</p>
+              </div>
+            </div>
 
-        {userHabits.length === 0 ? (
-          <p className="text-xs text-[#c5b4a5] italic py-2">No custom private habits added yet. Click "+ Add Private Habit" to create custom personal trackers.</p>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {userHabits.map((habit) => {
-              const log = customHabitLogs.find(l => l.habit_id === habit.id && l.date === selectedDate);
-              const isCompleted = !!log?.completed;
+            <button
+              onClick={() => setIsAddHabitOpen(true)}
+              className="w-full sm:w-auto justify-center px-3 py-2 bg-[#c68b59] hover:bg-[#b87b4b] text-[#1c1815] text-xs font-bold rounded-xl transition flex items-center gap-1 cursor-pointer min-h-[38px]"
+            >
+              <Plus className="w-3.5 h-3.5" /> Add Private Habit
+            </button>
+          </div>
 
-              return (
-                <div
-                  key={habit.id}
-                  className={`p-3 sm:p-3.5 rounded-xl border flex items-center justify-between transition ${
-                    isCompleted ? 'bg-[#c68b59]/10 border-[#c68b59]/40' : 'bg-[#1c1815] border-[#3d322a]'
+          {/* Daily Habit Tracking Progress Bar */}
+          {userHabits.length > 0 && (
+            <div className="bg-[#1c1815] border border-[#3d322a] rounded-xl p-3 sm:p-4 space-y-2">
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-[#c5b4a5]">Personal Habits Progress:</span>
+                  <span className="text-xs font-mono font-bold text-[#f5efe6]">
+                    {habitsCompletedCount} / {habitsTotal} Completed
+                  </span>
+                </div>
+                <span
+                  className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${
+                    habitsCompletedCount === habitsTotal && habitsTotal > 0
+                      ? 'bg-emerald-950/60 text-emerald-400 border-emerald-800/60'
+                      : 'bg-[#26201b] text-[#d4a373] border-[#3d322a]'
                   }`}
                 >
-                  <div className="flex items-center gap-3 min-w-0">
-                    <button
-                      onClick={() => onToggleCustomHabitLog(habit.id, selectedDate, !isCompleted)}
-                      className={`p-1.5 rounded-lg transition cursor-pointer shrink-0 ${
-                        isCompleted ? 'text-[#c68b59]' : 'text-[#c5b4a5] hover:text-[#f5efe6]'
-                      }`}
-                    >
-                      {isCompleted ? <CheckCircle2 className="w-5 h-5 text-[#c68b59]" /> : <XCircle className="w-5 h-5" />}
-                    </button>
-                    <div className="min-w-0">
-                      <h4 className="text-xs font-bold text-[#f5efe6] truncate">{habit.title}</h4>
-                      {habit.description && <p className="text-[11px] text-[#c5b4a5] truncate">{habit.description}</p>}
-                    </div>
-                  </div>
+                  {habitsCompletedCount === habitsTotal && habitsTotal > 0
+                    ? '🔥 All Habits Done'
+                    : `${habitsPercent}% Complete`}
+                </span>
+              </div>
+              <div className="w-full bg-[#26201b] h-2 rounded-full overflow-hidden border border-[#3d322a]/60">
+                <div
+                  className="h-full bg-gradient-to-r from-[#c68b59] to-[#d4a373] rounded-full transition-all duration-300"
+                  style={{ width: `${habitsPercent}%` }}
+                />
+              </div>
+            </div>
+          )}
 
-                  <button
-                    onClick={() => onDeleteCustomHabit(habit.id)}
-                    className="p-1.5 text-[#c5b4a5] hover:text-rose-400 transition shrink-0 ml-2"
-                    title="Delete Habit"
+          {userHabits.length === 0 ? (
+            <p className="text-xs text-[#c5b4a5] italic py-2">
+              No custom private habits added yet. Click "+ Add Private Habit" to create custom personal trackers.
+            </p>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {userHabits.map((habit) => {
+                const log = customHabitLogs.find(l => l.habit_id === habit.id && l.date === selectedDate);
+                const isCompleted = !!log?.completed;
+
+                return (
+                  <div
+                    key={habit.id}
+                    className={`p-3 sm:p-3.5 rounded-xl border flex items-center justify-between transition ${
+                      isCompleted ? 'bg-[#c68b59]/10 border-[#c68b59]/40' : 'bg-[#1c1815] border-[#3d322a]'
+                    }`}
                   >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </div>
+                    <div className="flex items-center gap-3 min-w-0 flex-1">
+                      <button
+                        onClick={() => onToggleCustomHabitLog(habit.id, selectedDate, !isCompleted)}
+                        className={`p-1.5 rounded-lg transition cursor-pointer shrink-0 ${
+                          isCompleted ? 'text-[#c68b59]' : 'text-[#c5b4a5] hover:text-[#f5efe6]'
+                        }`}
+                        title={isCompleted ? 'Mark uncompleted' : 'Mark completed'}
+                      >
+                        {isCompleted ? <CheckCircle2 className="w-5 h-5 text-[#c68b59]" /> : <XCircle className="w-5 h-5" />}
+                      </button>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2">
+                          <h4 className="text-xs font-bold text-[#f5efe6] truncate">{habit.title}</h4>
+                          <span
+                            className={`text-[9px] px-1.5 py-0.2 rounded font-semibold border ${
+                              isCompleted
+                                ? 'bg-emerald-950/60 text-emerald-300 border-emerald-800/60'
+                                : 'bg-[#26201b] text-[#c5b4a5] border-[#3d322a]'
+                            }`}
+                          >
+                            {isCompleted ? 'Done' : 'To Do'}
+                          </span>
+                        </div>
+                        {habit.description && <p className="text-[11px] text-[#c5b4a5] truncate">{habit.description}</p>}
+                      </div>
+                    </div>
+
+                    <button
+                      onClick={() => onDeleteCustomHabit(habit.id)}
+                      className="p-1.5 text-[#c5b4a5] hover:text-rose-400 transition shrink-0 ml-2 cursor-pointer"
+                      title="Delete Habit"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Add Supplement Modal */}
       {isAddSuppOpen && (

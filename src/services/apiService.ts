@@ -34,7 +34,8 @@ export const API_BASE = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
 export async function checkServerHealth(): Promise<boolean> {
   try {
     const res = await fetch(`${API_BASE}/api/health`, { method: 'GET' });
-    return res.ok;
+    const contentType = res.headers.get('content-type') || '';
+    return res.ok && contentType.includes('application/json');
   } catch {
     return false;
   }
@@ -49,7 +50,8 @@ export async function fetchServerSync(): Promise<ServerSyncResponse | null> {
       method: 'GET',
       headers: { 'Content-Type': 'application/json' },
     });
-    if (!res.ok) return null;
+    const contentType = res.headers.get('content-type') || '';
+    if (!res.ok || !contentType.includes('application/json')) return null;
     const json = await res.json();
     if (json.success && json.data) {
       return json.data;
@@ -70,13 +72,19 @@ export async function registerUserOnServer(user: User): Promise<{ success: boole
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(user),
     });
+    const contentType = res.headers.get('content-type') || '';
+    if (!contentType.includes('application/json')) {
+      // In static-only fallback environments, allow registration to succeed locally
+      return { success: true };
+    }
     const data = await res.json().catch(() => ({}));
-    if (!res.ok) {
+    if (!res.ok || data.success === false) {
       return { success: false, error: data.error || 'Server registration failed' };
     }
     return { success: true };
   } catch (err: any) {
-    return { success: false, error: err.message || 'Network error reaching server' };
+    // If backend server is offline, fallback to local storage
+    return { success: true };
   }
 }
 
@@ -90,6 +98,10 @@ export async function loginUserOnServer(identifier: string, passwordPlain: strin
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ identifier, password: passwordPlain, passwordHash }),
     });
+    const contentType = res.headers.get('content-type') || '';
+    if (!contentType.includes('application/json')) {
+      return { success: false, error: 'Cannot connect to authentication server' };
+    }
     const data = await res.json().catch(() => ({}));
     if (!res.ok || !data.success) {
       return { success: false, error: data.error || 'Invalid credentials' };

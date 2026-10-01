@@ -16,9 +16,10 @@ const PORT = process.env.PORT || 3001;
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 
-// Database file path
-const DATA_DIR = path.join(__dirname, 'data');
+// Database file path (support Vercel serverless /tmp and local data directory)
+const DATA_DIR = process.env.VERCEL ? '/tmp' : path.join(__dirname, 'data');
 const DB_FILE = path.join(DATA_DIR, 'pulse_db.json');
+const SEED_DB_FILE = path.join(__dirname, 'data', 'pulse_db.json');
 
 const DEFAULT_DB = {
   users: [],
@@ -45,13 +46,26 @@ const DEFAULT_DB = {
 
 // Ensure data directory exists
 if (!fs.existsSync(DATA_DIR)) {
-  fs.mkdirSync(DATA_DIR, { recursive: true });
+  try {
+    fs.mkdirSync(DATA_DIR, { recursive: true });
+  } catch {}
 }
 
 function loadDatabase() {
   try {
+    if (process.env.VERCEL) {
+      if (!fs.existsSync(DB_FILE) && fs.existsSync(SEED_DB_FILE)) {
+        try {
+          fs.copyFileSync(SEED_DB_FILE, DB_FILE);
+        } catch {}
+      }
+    }
     if (fs.existsSync(DB_FILE)) {
       const data = fs.readFileSync(DB_FILE, 'utf-8');
+      return { ...DEFAULT_DB, ...JSON.parse(data) };
+    }
+    if (fs.existsSync(SEED_DB_FILE)) {
+      const data = fs.readFileSync(SEED_DB_FILE, 'utf-8');
       return { ...DEFAULT_DB, ...JSON.parse(data) };
     }
   } catch (err) {
@@ -226,17 +240,18 @@ app.post('/api/auth/register', (req, res) => {
     return res.status(400).json({ success: false, error: 'Username is required.' });
   }
 
-  const cleanUsername = newUser.username.trim().toLowerCase();
-  const existing = db.users.find(u => u.username.toLowerCase() === cleanUsername);
+  const cleanUsername = newUser.username.trim().replace(/^@+/, '').toLowerCase();
+  const existing = db.users.find(u => u.username.replace(/^@+/, '').toLowerCase() === cleanUsername);
   if (existing) {
     return res.status(409).json({ success: false, error: `Username @${cleanUsername} is already registered.` });
   }
 
   // Ensure password hash is populated
   if (!newUser.password_hash && newUser.passwordPlain) {
-    newUser.password_hash = hashPassword(newUser.passwordPlain);
+    newUser.password_hash = hashPassword(newUser.passwordPlain.trim());
   }
 
+  newUser.username = cleanUsername;
   db.users.push(newUser);
   saveDatabase(db);
 
@@ -256,9 +271,13 @@ app.post('/api/auth/login', (req, res) => {
     return res.status(400).json({ success: false, error: 'Identifier and password are required.' });
   }
 
-  const clean = identifier.trim().toLowerCase();
+  const rawClean = identifier.trim();
+  const clean = rawClean.replace(/^@+/, '').toLowerCase();
   const user = db.users.find(
-    u => u.username.toLowerCase() === clean || (u.name && u.name.toLowerCase() === clean)
+    u => u.username.replace(/^@+/, '').toLowerCase() === clean ||
+         (u.name && u.name.toLowerCase() === clean) ||
+         u.id === clean ||
+         u.username.toLowerCase() === rawClean.toLowerCase()
   );
 
   if (!user || user.is_active === false) {
@@ -266,7 +285,11 @@ app.post('/api/auth/login', (req, res) => {
   }
 
   const computedHash = passwordHash || hashPassword(password);
-  if (user.password_hash !== computedHash) {
+  let isMatch = user.password_hash === computedHash;
+  if (!isMatch && password) {
+    isMatch = user.password_hash === hashPassword(password.trim());
+  }
+  if (!isMatch) {
     return res.status(401).json({ success: false, error: 'Incorrect password.' });
   }
 
@@ -668,6 +691,10 @@ if (fs.existsSync(distPath)) {
   });
 }
 
-server.listen(PORT, () => {
-  console.log(`[PULSE Server] HTTP & WebSocket Server running on port ${PORT}`);
-});
+if (!process.env.VERCEL) {
+  server.listen(PORT, () => {
+    console.log(`[PULSE Server] HTTP & WebSocket Server running on port ${PORT}`);
+  });
+}
+
+export default app;

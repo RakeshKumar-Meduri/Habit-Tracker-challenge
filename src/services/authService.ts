@@ -89,11 +89,11 @@ export function clearFailedLogin(username: string) {
 }
 
 /**
- * Check if a username already exists (case-insensitive)
+ * Check if a username already exists (case-insensitive, trims & strips leading @)
  */
 export function checkUsernameExists(users: User[], username: string): boolean {
-  const cleanUsername = username.trim().toLowerCase();
-  return users.some(u => u.username.trim().toLowerCase() === cleanUsername);
+  const cleanUsername = username.trim().replace(/^@+/, '').toLowerCase();
+  return users.some(u => u.username.trim().replace(/^@+/, '').toLowerCase() === cleanUsername);
 }
 
 /**
@@ -105,7 +105,8 @@ export async function authorizeCredentials(
   identifier: string, // username or display name
   passwordInput: string
 ): Promise<LoginResult> {
-  const searchKey = identifier.trim().toLowerCase();
+  const rawInput = identifier.trim();
+  const searchKey = rawInput.replace(/^@+/, '').toLowerCase();
 
   // 1. Check Rate Limiter
   const rateLimitStatus = checkRateLimit(searchKey);
@@ -118,9 +119,26 @@ export async function authorizeCredentials(
     };
   }
 
-  // 2. User Lookup (by username or full name)
-  const targetUser = users.find(
-    u => u.username.toLowerCase() === searchKey || u.name.toLowerCase() === searchKey
+  // Ensure newly registered users on this device are always available even if React props are stale
+  let storedUsers: User[] = [];
+  try {
+    const raw = localStorage.getItem(STORAGE_KEYS.USERS);
+    if (raw) storedUsers = JSON.parse(raw);
+  } catch {}
+
+  const allCandidateUsers = [...users];
+  storedUsers.forEach(su => {
+    if (!allCandidateUsers.some(u => u.id === su.id)) {
+      allCandidateUsers.push(su);
+    }
+  });
+
+  // 2. User Lookup (by username with or without '@', display name, or exact ID)
+  const targetUser = allCandidateUsers.find(
+    u => u.username.trim().replace(/^@+/, '').toLowerCase() === searchKey ||
+         u.name.trim().toLowerCase() === searchKey ||
+         u.id === searchKey ||
+         u.username.trim().toLowerCase() === rawInput.toLowerCase()
   );
 
   if (!targetUser) {
@@ -147,8 +165,12 @@ export async function authorizeCredentials(
     };
   }
 
-  // 4. Password Verification
-  const isMatch = await verifyPassword(passwordInput, targetUser.password_hash);
+  // 4. Password Verification (tests both exact password and trimmed password for mobile keyboard autocorrect tolerance)
+  let isMatch = await verifyPassword(passwordInput, targetUser.password_hash);
+  if (!isMatch && passwordInput.trim() !== passwordInput) {
+    isMatch = await verifyPassword(passwordInput.trim(), targetUser.password_hash);
+  }
+
   if (!isMatch) {
     const failedInfo = recordFailedLogin(searchKey);
     if (failedInfo.isLockedOut) {
@@ -220,8 +242,9 @@ export async function registerNewUser(
     gender?: 'male' | 'female' | 'other' | '';
   }
 ): Promise<{ success: boolean; error?: string; user?: User; session?: AuthSession }> {
-  const cleanUsername = userData.username.trim().toLowerCase();
+  const cleanUsername = userData.username.trim().replace(/^@+/, '').toLowerCase();
   const cleanName = userData.fullName.trim() || cleanUsername;
+  const cleanPassword = userData.passwordPlain.trim();
 
   if (!cleanUsername) {
     return { success: false, error: 'Please enter a username.' };
@@ -229,14 +252,27 @@ export async function registerNewUser(
   if (cleanUsername.length < 3) {
     return { success: false, error: 'Username must be at least 3 characters long.' };
   }
-  if (!userData.passwordPlain || userData.passwordPlain.length < 6) {
+  if (!cleanPassword || cleanPassword.length < 6) {
     return { success: false, error: 'Password must be at least 6 characters long.' };
   }
-  if (checkUsernameExists(existingUsers, cleanUsername)) {
+
+  // Cross check with both in-memory users and localStorage users
+  let allUsers = [...existingUsers];
+  try {
+    const raw = localStorage.getItem(STORAGE_KEYS.USERS);
+    if (raw) {
+      const stored: User[] = JSON.parse(raw);
+      stored.forEach(su => {
+        if (!allUsers.some(u => u.id === su.id)) allUsers.push(su);
+      });
+    }
+  } catch {}
+
+  if (checkUsernameExists(allUsers, cleanUsername)) {
     return { success: false, error: `Username '@${cleanUsername}' is already taken. Please choose another.` };
   }
 
-  const hashed = await hashPassword(userData.passwordPlain);
+  const hashed = await hashPassword(cleanPassword);
 
   const gradients = [
     'from-[#c68b59] to-[#785338]',

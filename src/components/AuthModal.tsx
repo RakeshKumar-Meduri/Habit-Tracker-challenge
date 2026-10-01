@@ -95,7 +95,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         return;
       }
 
-      setError(serverResult.error || localResult.error || 'Authentication failed.');
+      setError(localResult.error || serverResult.error || 'Authentication failed. Please verify your username and password.');
       if (localResult.isLockout && localResult.lockoutSeconds) {
         setLockoutTimer(localResult.lockoutSeconds);
       }
@@ -125,10 +125,10 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         return;
       }
 
-      // Synchronize with backend server & check uniqueness across all users
+      // Synchronize with backend server (non-blocking for network errors)
       const serverRes = await registerUserOnServer(regResult.user);
-      if (!serverRes.success) {
-        setError(serverRes.error || 'Registration failed on server.');
+      if (!serverRes.success && serverRes.error && !serverRes.error.toLowerCase().includes('network') && !serverRes.error.toLowerCase().includes('connect')) {
+        setError(serverRes.error);
         return;
       }
 
