@@ -656,12 +656,14 @@ export function App() {
 
   // Delete Logged Workout
   const handleDeleteWorkout = (workoutId: string) => {
+    const idStr = String(workoutId);
+    let updatedWorkouts: Workout[] = [];
     setWorkouts(prev => {
-      const updated = prev.filter(w => w.id !== workoutId);
-      saveStateToStorage(STORAGE_KEYS.WORKOUTS, updated);
-      return updated;
+      updatedWorkouts = prev.filter(w => String(w.id) !== idStr);
+      saveStateToStorage(STORAGE_KEYS.WORKOUTS, updatedWorkouts);
+      return updatedWorkouts;
     });
-    deleteWorkoutOnServer(workoutId);
+    deleteWorkoutOnServer(idStr);
   };
 
   // Update User Profile & Weight Log

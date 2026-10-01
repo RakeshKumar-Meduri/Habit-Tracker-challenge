@@ -253,9 +253,7 @@ export function initializeStorageIfEmpty(): {
   if (dailyLogs.length > 0) {
     localStorage.setItem(STORAGE_KEYS.DAILY_LOGS, JSON.stringify(dailyLogs));
   }
-  if (workouts.length > 0) {
-    localStorage.setItem(STORAGE_KEYS.WORKOUTS, JSON.stringify(workouts));
-  }
+  localStorage.setItem(STORAGE_KEYS.WORKOUTS, JSON.stringify(workouts));
   if (weightLogs.length > 0) {
     localStorage.setItem(STORAGE_KEYS.WEIGHT_LOGS, JSON.stringify(weightLogs));
   }

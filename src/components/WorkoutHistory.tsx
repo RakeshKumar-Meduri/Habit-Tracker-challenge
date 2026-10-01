@@ -129,7 +129,7 @@ export const WorkoutHistory: React.FC<WorkoutHistoryProps> = ({
                         <Globe className="w-3 h-3" /> Public
                       </span>
                     )}
-                    {w.user_id === currentUser.id && onDeleteWorkout && (
+                    {(w.user_id === currentUser.id || currentUser.role === 'admin' || !w.user_id) && onDeleteWorkout && (
                       <button
                         type="button"
                         onClick={() => onDeleteWorkout(w.id)}
