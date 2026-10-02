@@ -222,3 +222,33 @@ html, body {
   background: rgba(255, 255, 255, 0.85);
   border: 1px solid var(--border);
 }
+
+/* Mobile-safe Date Input styling preventing margin blowout */
+input[type="date"] {
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+  min-width: 0 !important;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+[data-theme="dark"] input[type="date"] {
+  color-scheme: dark;
+}
+
+[data-theme="light"] input[type="date"],
+.light-theme input[type="date"] {
+  color-scheme: light;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  opacity: 0.8;
+  filter: invert(0.8);
+}
+
+[data-theme="light"] input[type="date"]::-webkit-calendar-picker-indicator,
+.light-theme input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: none;
+}
+

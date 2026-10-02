@@ -403,7 +403,7 @@ app.get('/api/sync', async (req, res) => {
   res.json({
     success: true,
     data: {
-      users: db.users.filter(u => u.is_active !== false && u.username !== 'testuser123' && u.id !== 'user_1790589874177_elgx' && u.username !== 'testuser2' && u.id !== 'user_1790824958946_sy7b' && u.username !== 'tester1' && !u.username.startsWith('test')),
+      users: db.users.filter(u => u.is_active !== false),
       dailyLogs: db.dailyLogs,
       workouts: (db.workouts || []).filter(w => w && w.id && !tombstoneSet.has(String(w.id).trim()) && w.id !== 'w_rakesh_1' && w.id !== 'w_rakesh_2' && w.exercise_name !== 'Barbell Bench Press' && w.exercise_name !== 'Treadmill Intervals & Core'),
       weightLogs: db.weightLogs,
@@ -794,19 +794,26 @@ app.post('/api/badges', async (req, res) => {
 
 // Supplements
 app.post('/api/supplements', async (req, res) => {
-  const supp = req.body;
-  if (!supp || !supp.id) return res.status(400).json({ error: 'Invalid supplement' });
+  const incoming = req.body;
+  if (!incoming) return res.status(400).json({ error: 'Invalid supplement data' });
+
+  const items = (Array.isArray(incoming) ? incoming : [incoming]).filter(s => s && s.id);
+  if (items.length === 0) return res.status(400).json({ error: 'No valid supplements provided' });
 
   await mutate(d => {
-    d.supplements = [...(d.supplements || []).filter(s => s.id !== supp.id), supp];
+    const map = new Map((d.supplements || []).map(s => [s.id, s]));
+    items.forEach(s => map.set(s.id, s));
+    d.supplements = Array.from(map.values());
   });
 
-  broadcast({
-    type: 'SUPPLEMENT_ADDED',
-    payload: supp,
+  items.forEach(supp => {
+    broadcast({
+      type: 'SUPPLEMENT_ADDED',
+      payload: supp,
+    });
   });
 
-  res.json({ success: true, supplement: supp });
+  res.json({ success: true, count: items.length, supplements: items });
 });
 
 app.delete('/api/supplements/:id', async (req, res) => {
@@ -844,19 +851,26 @@ app.post('/api/supplement-logs', async (req, res) => {
 
 // Custom Habits
 app.post('/api/custom-habits', async (req, res) => {
-  const habit = req.body;
-  if (!habit || !habit.id) return res.status(400).json({ error: 'Invalid habit' });
+  const incoming = req.body;
+  if (!incoming) return res.status(400).json({ error: 'Invalid habit data' });
+
+  const items = (Array.isArray(incoming) ? incoming : [incoming]).filter(h => h && h.id);
+  if (items.length === 0) return res.status(400).json({ error: 'No valid habits provided' });
 
   await mutate(d => {
-    d.customHabits = [...(d.customHabits || []).filter(h => h.id !== habit.id), habit];
+    const map = new Map((d.customHabits || []).map(h => [h.id, h]));
+    items.forEach(h => map.set(h.id, h));
+    d.customHabits = Array.from(map.values());
   });
 
-  broadcast({
-    type: 'CUSTOM_HABIT_ADDED',
-    payload: habit,
+  items.forEach(habit => {
+    broadcast({
+      type: 'CUSTOM_HABIT_ADDED',
+      payload: habit,
+    });
   });
 
-  res.json({ success: true, habit });
+  res.json({ success: true, count: items.length, habits: items });
 });
 
 app.delete('/api/custom-habits/:id', async (req, res) => {

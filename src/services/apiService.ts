@@ -273,7 +273,7 @@ export async function pushBadgesToServer(badges: Badge[]): Promise<boolean> {
 /**
  * Supplement API
  */
-export async function pushSupplementToServer(supplement: Supplement): Promise<boolean> {
+export async function pushSupplementToServer(supplement: Supplement | Supplement[]): Promise<boolean> {
   try {
     const res = await fetch(`${API_BASE}/api/supplements`, {
       method: 'POST',
@@ -313,7 +313,7 @@ export async function pushSupplementLogToServer(log: SupplementLog): Promise<boo
 /**
  * Custom Habit API
  */
-export async function pushCustomHabitToServer(habit: CustomHabit): Promise<boolean> {
+export async function pushCustomHabitToServer(habit: CustomHabit | CustomHabit[]): Promise<boolean> {
   try {
     const res = await fetch(`${API_BASE}/api/custom-habits`, {
       method: 'POST',

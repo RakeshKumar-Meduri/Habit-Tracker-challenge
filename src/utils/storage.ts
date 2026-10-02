@@ -72,7 +72,7 @@ export function initializeStorageIfEmpty(): {
   adminSettings: AdminSettings;
 } {
   let users: User[] = getStoredItemSafely<User[]>(STORAGE_KEYS.USERS, [])
-    .filter(u => u.username !== 'testuser123' && u.id !== 'user_1790589874177_elgx' && u.username !== 'testuser2' && u.id !== 'user_1790824958946_sy7b' && u.username !== 'tester1' && !u.username.startsWith('test'))
+    .filter(u => u && u.is_active !== false)
     .map(u => ({
       ...u,
       username: u.username || u.name.toLowerCase().replace(/\s+/g, '_'),
@@ -130,8 +130,7 @@ export function initializeStorageIfEmpty(): {
     } catch {}
   }
 
-  let dailyLogs: DailyLog[] = getStoredItemSafely<DailyLog[]>(STORAGE_KEYS.DAILY_LOGS, [])
-    .filter(l => l.user_id !== 'user_1790824958946_sy7b');
+  let dailyLogs: DailyLog[] = getStoredItemSafely<DailyLog[]>(STORAGE_KEYS.DAILY_LOGS, []);
   if (dailyLogs.length === 0) {
     dailyLogs = [
       {
@@ -222,7 +221,7 @@ export function initializeStorageIfEmpty(): {
       if (!w) return false;
       const wid = String(w.id || (w as any)._id || '').trim();
       if (!wid || tombstoneSet.has(wid)) return false;
-      if (w.user_id === 'user_1790824958946_sy7b' || w.id === 'w_rakesh_1' || w.id === 'w_rakesh_2') return false;
+      if (w.id === 'w_rakesh_1' || w.id === 'w_rakesh_2') return false;
       if (w.exercise_name === 'Barbell Bench Press' || w.exercise_name === 'Treadmill Intervals & Core') return false;
       return true;
     });
@@ -244,8 +243,7 @@ export function initializeStorageIfEmpty(): {
     return l;
   });
 
-  let weightLogs: WeightLog[] = getStoredItemSafely<WeightLog[]>(STORAGE_KEYS.WEIGHT_LOGS, [])
-    .filter(wl => wl.user_id !== 'user_1790824958946_sy7b');
+  let weightLogs: WeightLog[] = getStoredItemSafely<WeightLog[]>(STORAGE_KEYS.WEIGHT_LOGS, []);
   if (weightLogs.length === 0) {
     weightLogs = [
       {

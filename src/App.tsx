@@ -170,7 +170,7 @@ export function App() {
 
     if (Array.isArray(serverData.users)) {
       const cleanServerUsers = serverData.users.filter(
-        (u: any) => u.username !== 'testuser123' && u.id !== 'user_1790589874177_elgx' && u.username !== 'testuser2' && u.id !== 'user_1790824958946_sy7b' && u.username !== 'tester1' && !u.username.startsWith('test')
+        (u: any) => u && u.is_active !== false
       );
 
       // Merge server users with existing local users so locally registered users are NEVER wiped
@@ -178,7 +178,7 @@ export function App() {
         const serverUserMap = new Map(cleanServerUsers.map((u: User) => [u.id, u]));
         const merged = [...cleanServerUsers];
         prev.forEach(pu => {
-          if (pu.username !== 'testuser2' && pu.id !== 'user_1790824958946_sy7b' && pu.username !== 'tester1' && !pu.username.startsWith('test')) {
+          if (pu && pu.is_active !== false) {
             if (!serverUserMap.has(pu.id) && !merged.some(m => m.username.toLowerCase() === pu.username.toLowerCase())) {
               merged.push(pu);
             }
@@ -201,13 +201,11 @@ export function App() {
 
     if (Array.isArray(serverData.dailyLogs)) {
       setDailyLogs(prev => {
-        const map = new Map(prev.filter(l => l.user_id !== 'user_1790824958946_sy7b').map(l => [`${l.user_id}_${l.date}`, l]));
+        const map = new Map(prev.map(l => [`${l.user_id}_${l.date}`, l]));
         serverData.dailyLogs.forEach((l: any) => {
-          if (l.user_id !== 'user_1790824958946_sy7b') {
-            const key = `${l.user_id}_${l.date}`;
-            const existing = map.get(key);
-            map.set(key, existing ? { ...existing, ...l } : l);
-          }
+          const key = `${l.user_id}_${l.date}`;
+          const existing = map.get(key);
+          map.set(key, existing ? { ...existing, ...l } : l);
         });
         return Array.from(map.values());
       });
@@ -230,7 +228,7 @@ export function App() {
           if (!w) return false;
           const wid = String(w.id || w._id || '').trim();
           if (!wid || tombstoneSet.has(wid)) return false;
-          if (w.user_id === 'user_1790824958946_sy7b' || w.id === 'w_rakesh_1' || w.id === 'w_rakesh_2') return false;
+          if (w.id === 'w_rakesh_1' || w.id === 'w_rakesh_2') return false;
           if (w.exercise_name === 'Barbell Bench Press' || w.exercise_name === 'Treadmill Intervals & Core') return false;
           return true;
         }
@@ -240,9 +238,9 @@ export function App() {
     }
     if (Array.isArray(serverData.weightLogs)) {
       setWeightLogs(prev => {
-        const map = new Map(prev.filter(w => w.user_id !== 'user_1790824958946_sy7b').map(w => [w.id, w]));
+        const map = new Map(prev.map(w => [w.id, w]));
         serverData.weightLogs.forEach((w: any) => {
-          if (w.user_id !== 'user_1790824958946_sy7b' && !map.has(w.id)) {
+          if (!map.has(w.id)) {
             map.set(w.id, w);
           }
         });
@@ -266,11 +264,17 @@ export function App() {
     }
     if (Array.isArray(serverData.supplements)) {
       setSupplements(prev => {
-        const map = new Map(prev.map(s => [s.id, s]));
+        const serverSuppMap = new Map(serverData.supplements.map((s: any) => [s.id, s]));
+        // Two-way synchronization: If local storage has supplements not yet on the server, push them to the server
+        const unSyncedLocal = prev.filter(s => s && s.id && !serverSuppMap.has(s.id));
+        if (unSyncedLocal.length > 0) {
+          pushSupplementToServer(unSyncedLocal);
+        }
+        const mergedMap = new Map(prev.map(s => [s.id, s]));
         serverData.supplements.forEach((s: any) => {
-          map.set(s.id, s);
+          mergedMap.set(s.id, s);
         });
-        return Array.from(map.values());
+        return Array.from(mergedMap.values());
       });
     }
     if (Array.isArray(serverData.supplementLogs)) {
@@ -284,11 +288,16 @@ export function App() {
     }
     if (Array.isArray(serverData.customHabits)) {
       setCustomHabits(prev => {
-        const map = new Map(prev.map(h => [h.id, h]));
+        const serverHabitMap = new Map(serverData.customHabits.map((h: any) => [h.id, h]));
+        const unSyncedHabits = prev.filter(h => h && h.id && !serverHabitMap.has(h.id));
+        if (unSyncedHabits.length > 0) {
+          pushCustomHabitToServer(unSyncedHabits);
+        }
+        const mergedMap = new Map(prev.map(h => [h.id, h]));
         serverData.customHabits.forEach((h: any) => {
-          map.set(h.id, h);
+          mergedMap.set(h.id, h);
         });
-        return Array.from(map.values());
+        return Array.from(mergedMap.values());
       });
     }
     if (Array.isArray(serverData.customHabitLogs)) {
