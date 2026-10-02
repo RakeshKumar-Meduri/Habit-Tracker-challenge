@@ -223,6 +223,22 @@ export async function pushMissedReasonToServer(reason: MissedReason): Promise<bo
 }
 
 /**
+ * Delete missed reason from backend (allows undoing "Failed" status)
+ */
+export async function deleteMissedReasonOnServer(id: string): Promise<boolean> {
+  try {
+    const res = await fetch(`${API_BASE}/api/missed-reasons/delete`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id }),
+    });
+    return res.ok;
+  } catch {
+    return false;
+  }
+}
+
+/**
  * Push reaction to backend
  */
 export async function pushReactionToServer(reaction: Reaction): Promise<boolean> {

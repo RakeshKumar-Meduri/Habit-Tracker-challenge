@@ -45,6 +45,7 @@ import {
   pushCustomHabitLogToServer,
   deleteWorkoutOnServer,
   clearAllWorkoutsOnServer,
+  deleteMissedReasonOnServer,
 } from './services/apiService';
 import { realtimeClient } from './services/realtimeService';
 
@@ -408,6 +409,14 @@ export function App() {
           break;
         }
 
+        case 'MISSED_REASON_DELETED': {
+          const { id } = msg.payload || {};
+          if (id) {
+            setMissedReasons(prev => prev.filter(x => x.id !== id));
+          }
+          break;
+        }
+
         case 'REACTION_ADDED': {
           const rx = msg.payload as Reaction;
           if (rx && rx.id) {
@@ -592,11 +601,14 @@ export function App() {
 
   // Toggle Dark/Light Theme
   const handleToggleTheme = () => {
-    setIsDarkMode(!isDarkMode);
-    if (isDarkMode) {
-      document.documentElement.classList.add('light-theme');
-    } else {
+    const nextDark = !isDarkMode;
+    setIsDarkMode(nextDark);
+    if (nextDark) {
       document.documentElement.classList.remove('light-theme');
+      document.documentElement.setAttribute('data-theme', 'dark');
+    } else {
+      document.documentElement.classList.add('light-theme');
+      document.documentElement.setAttribute('data-theme', 'light');
     }
   };
 
@@ -677,8 +689,24 @@ export function App() {
     pushMissedReasonToServer(newReason);
   };
 
+  // Remove Missed Reason (Undo "Failed" status)
+  const handleRemoveMissedReason = (reasonId: string) => {
+    setMissedReasons(prev => prev.filter(r => r.id !== reasonId));
+    deleteMissedReasonOnServer(reasonId);
+  };
+
   // Save Multiple Workouts / Routine
   const handleSaveWorkouts = (newWorkouts: Workout[]) => {
+    if (newWorkouts.length === 0) return;
+    const targetDate = newWorkouts[0].date;
+    const isGymFailed = missedReasons.some(
+      r => r.goal_type === 'gym' && r.user_id === currentUser?.id && r.date === targetDate
+    );
+    if (isGymFailed) {
+      alert(`Cannot log workout: The gym routine for ${targetDate} is marked as Failed. Please remove the Failed status in the Daily Checklist first.`);
+      return;
+    }
+
     setWorkouts(prev => {
       const merged = [...newWorkouts, ...prev.filter(w => !newWorkouts.some(nw => nw.id === w.id))];
       saveWorkoutsDirectly(merged);
@@ -686,31 +714,25 @@ export function App() {
     });
     pushWorkoutsToServer(newWorkouts);
     
-    // Auto-mark gym goal as done for that date ONLY if gym was not marked as failed
-    if (currentUser && newWorkouts.length > 0) {
-      const targetDate = newWorkouts[0].date;
-      const isGymFailed = missedReasons.some(
-        r => r.goal_type === 'gym' && r.user_id === currentUser.id && r.date === targetDate
-      );
-      if (!isGymFailed) {
-        const targetLog = dailyLogs.find(l => l.user_id === currentUser.id && l.date === targetDate) || {
-          id: `dl_${currentUser.id}_${targetDate}`,
-          user_id: currentUser.id,
-          date: targetDate,
-          gym_done: false,
-          steps_done: false,
-          sleep_done: false,
-          junk_food_avoided: false,
-          water_done: false,
-          water_intake_ml: 0,
-          sleep_start: '23:00',
-          sleep_end: '07:00',
-          sleep_duration: 8.0,
-          points_earned: 0,
-        };
-        if (!targetLog.gym_done) {
-          handleUpdateDailyLog({ ...targetLog, gym_done: true });
-        }
+    // Auto-mark gym goal as done for that date
+    if (currentUser) {
+      const targetLog = dailyLogs.find(l => l.user_id === currentUser.id && l.date === targetDate) || {
+        id: `dl_${currentUser.id}_${targetDate}`,
+        user_id: currentUser.id,
+        date: targetDate,
+        gym_done: false,
+        steps_done: false,
+        sleep_done: false,
+        junk_food_avoided: false,
+        water_done: false,
+        water_intake_ml: 0,
+        sleep_start: '23:00',
+        sleep_end: '07:00',
+        sleep_duration: 8.0,
+        points_earned: 0,
+      };
+      if (!targetLog.gym_done) {
+        handleUpdateDailyLog({ ...targetLog, gym_done: true });
       }
     }
   };
@@ -890,7 +912,7 @@ export function App() {
   const currentGymWorkoutsCount = workouts.filter(w => w.user_id === currentUser?.id && w.date === selectedDate).length;
 
   return (
-    <div className="min-h-screen bg-[#1c1815] text-[#f5efe6] flex flex-col font-sans selection:bg-[#c68b59] selection:text-[#1c1815]">
+    <div className="min-h-screen bg-[var(--bg)] text-[var(--text)] flex flex-col font-sans selection:bg-[#D98B4A] selection:text-[#0B0B0D]">
       
       {/* Top Navbar */}
       <Navbar
@@ -928,6 +950,7 @@ export function App() {
             customHabitLogs={customHabitLogs}
             onUpdateDailyLog={handleUpdateDailyLog}
             onSaveMissedReason={handleSaveMissedReason}
+            onRemoveMissedReason={handleRemoveMissedReason}
             onOpenWorkoutModal={() => setIsWorkoutModalOpen(true)}
             gymWorkoutsCount={currentGymWorkoutsCount}
             onDeleteWorkout={handleDeleteWorkout}
@@ -971,6 +994,8 @@ export function App() {
             workouts={workouts}
             users={activeUsers}
             currentUser={currentUser}
+            missedReasons={missedReasons}
+            selectedDate={selectedDate}
             onOpenWorkoutModal={() => setIsWorkoutModalOpen(true)}
             onDeleteWorkout={handleDeleteWorkout}
             onClearAllWorkouts={handleClearAllWorkouts}
@@ -989,13 +1014,13 @@ export function App() {
 
         {/* Mobile Sub-Navigation for Community Views (Rankings / H2H / Badges) */}
         {(activeTab === 'leaderboard' || activeTab === 'comparison' || activeTab === 'badges') && currentUser && (
-          <div className="md:hidden flex items-center p-1 bg-[#26201b] border border-[#3d322a] rounded-2xl mb-4 shadow-lg">
+          <div className="md:hidden flex items-center p-1 bg-[#131316] border border-[#26262C] rounded-xl mb-4 shadow-sm">
             <button
               onClick={() => setActiveTab('leaderboard')}
-              className={`flex-1 py-2 px-2 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition cursor-pointer active:scale-95 ${
+              className={`flex-1 py-2 px-2 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition cursor-pointer active:scale-95 ${
                 activeTab === 'leaderboard'
-                  ? 'bg-gradient-to-r from-[#c68b59] to-[#b87b4b] text-[#1c1815] shadow-md shadow-[#c68b59]/30'
-                  : 'text-[#c5b4a5] hover:text-[#f5efe6]'
+                  ? 'bg-[#D98B4A] text-[#0B0B0D] shadow-sm'
+                  : 'text-[#A1A1AA] hover:text-[#F4F4F5]'
               }`}
             >
               <Trophy className="w-3.5 h-3.5" />
@@ -1003,10 +1028,10 @@ export function App() {
             </button>
             <button
               onClick={() => setActiveTab('comparison')}
-              className={`flex-1 py-2 px-2 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition cursor-pointer active:scale-95 ${
+              className={`flex-1 py-2 px-2 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition cursor-pointer active:scale-95 ${
                 activeTab === 'comparison'
-                  ? 'bg-gradient-to-r from-[#c68b59] to-[#b87b4b] text-[#1c1815] shadow-md shadow-[#c68b59]/30'
-                  : 'text-[#c5b4a5] hover:text-[#f5efe6]'
+                  ? 'bg-[#D98B4A] text-[#0B0B0D] shadow-sm'
+                  : 'text-[#A1A1AA] hover:text-[#F4F4F5]'
               }`}
             >
               <Swords className="w-3.5 h-3.5" />
@@ -1014,10 +1039,10 @@ export function App() {
             </button>
             <button
               onClick={() => setActiveTab('badges')}
-              className={`flex-1 py-2 px-2 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition cursor-pointer active:scale-95 ${
+              className={`flex-1 py-2 px-2 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition cursor-pointer active:scale-95 ${
                 activeTab === 'badges'
-                  ? 'bg-gradient-to-r from-[#c68b59] to-[#b87b4b] text-[#1c1815] shadow-md shadow-[#c68b59]/30'
-                  : 'text-[#c5b4a5] hover:text-[#f5efe6]'
+                  ? 'bg-[#D98B4A] text-[#0B0B0D] shadow-sm'
+                  : 'text-[#A1A1AA] hover:text-[#F4F4F5]'
               }`}
             >
               <Award className="w-3.5 h-3.5" />
@@ -1112,6 +1137,7 @@ export function App() {
           onClose={() => setIsWorkoutModalOpen(false)}
           currentUser={currentUser}
           selectedDate={selectedDate}
+          missedReasons={missedReasons}
           onSaveWorkouts={handleSaveWorkouts}
         />
       )}

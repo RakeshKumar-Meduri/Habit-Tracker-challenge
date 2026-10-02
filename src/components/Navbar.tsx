@@ -86,21 +86,21 @@ export const Navbar: React.FC<NavbarProps> = ({
 
   return (
     <>
-      <header className="sticky top-0 z-40 bg-[#26201b]/95 border-b border-[#3d322a] backdrop-blur-md transition-colors font-sans">
+      <header className="sticky top-0 z-40 bg-[#131316]/95 border-b border-[#26262C] backdrop-blur-md transition-colors font-sans">
         <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-14 sm:h-16 gap-2 sm:gap-4">
             
             {/* Brand Logo & Title */}
             <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
-              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-tr from-[#c68b59] via-[#b87b4b] to-[#d4a373] flex items-center justify-center shadow-lg shadow-[#c68b59]/20 shrink-0">
-                <Dumbbell className="w-4 h-4 sm:w-6 sm:h-6 text-[#1c1815] stroke-[2.5]" />
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-[#D98B4A] flex items-center justify-center shadow-md shadow-[#D98B4A]/20 shrink-0">
+                <Dumbbell className="w-4 h-4 sm:w-6 sm:h-6 text-[#0B0B0D] stroke-[2.5]" />
               </div>
               <div className="min-w-0">
-                <h1 className="text-base sm:text-lg font-black tracking-tight text-[#f5efe6] flex items-center gap-1.5 leading-none">
-                  PULSE <span className="text-[#d4a373] text-[10px] sm:text-xs px-1.5 py-0.5 rounded-full bg-[#c68b59]/10 border border-[#c68b59]/30 font-bold">FITNESS</span>
+                <h1 className="text-base sm:text-lg font-black tracking-tight text-[#F4F4F5] flex items-center gap-1.5 leading-none">
+                  PULSE <span className="text-[#D98B4A] text-[10px] sm:text-xs px-1.5 py-0.5 rounded-full bg-[rgba(217,139,74,0.12)] border border-[#D98B4A]/30 font-bold">FITNESS</span>
                 </h1>
                 <div className="flex items-center gap-2 mt-0.5">
-                  <p className="text-[10px] sm:text-[11px] text-[#c5b4a5] hidden xs:block truncate">Group Tracker</p>
+                  <p className="text-[10px] sm:text-[11px] text-[#A1A1AA] hidden xs:block truncate">Group Tracker</p>
                   {realtimeStatus && (() => {
                     const totalUsers = allUsers ? allUsers.length : 0;
                     const effectiveCount = totalUsers > 0
@@ -109,12 +109,12 @@ export const Navbar: React.FC<NavbarProps> = ({
                     return (
                       <span className={`inline-flex items-center gap-1 px-1.5 sm:px-2 py-0.5 rounded-full text-[9px] sm:text-[10px] font-semibold border ${
                         realtimeStatus.isConnected
-                          ? 'bg-emerald-950/40 border-emerald-800/60 text-emerald-400'
-                          : 'bg-amber-950/40 border-amber-800/60 text-amber-400'
+                          ? 'bg-[#34D399]/15 border-[#34D399]/30 text-[#34D399]'
+                          : 'bg-amber-500/10 border-amber-500/25 text-[#FBBF24]'
                       }`}>
-                        <span className={`w-1.5 h-1.5 rounded-full ${realtimeStatus.isConnected ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'}`} />
-                        <span className="hidden sm:inline">{realtimeStatus.isConnected ? `Live Sync (${effectiveCount} online)` : 'Syncing...'}</span>
-                        <span className="sm:hidden">{realtimeStatus.isConnected ? `${effectiveCount} on` : 'sync'}</span>
+                        <span className={`w-1.5 h-1.5 rounded-full ${realtimeStatus.isConnected ? 'bg-[#34D399] animate-pulse' : 'bg-[#FBBF24]'}`} />
+                        <span className="hidden sm:inline tabular-nums">{realtimeStatus.isConnected ? `Live Sync (${effectiveCount} online)` : 'Syncing...'}</span>
+                        <span className="sm:hidden tabular-nums">{realtimeStatus.isConnected ? `${effectiveCount} on` : 'sync'}</span>
                       </span>
                     );
                   })()}
@@ -128,17 +128,17 @@ export const Navbar: React.FC<NavbarProps> = ({
               {currentUser && (
                 <div 
                   onClick={() => setActiveTab('profile')}
-                  className="flex items-center gap-2 bg-[#1c1815] border border-[#3d322a] rounded-xl px-3 py-1.5 text-xs shadow-inner cursor-pointer hover:border-[#c68b59]/50 transition"
+                  className="flex items-center gap-2 bg-[#1B1B20] border border-[#26262C] rounded-lg px-3 py-1.5 text-xs shadow-sm cursor-pointer hover:border-[#D98B4A]/50 transition"
                   title="View Profile"
                 >
-                  <div className={`w-6 h-6 rounded-full bg-gradient-to-tr ${currentUser.avatar_color || 'from-[#c68b59] to-[#785338]'} text-[11px] font-bold text-[#f5efe6] flex items-center justify-center shrink-0 shadow`}>
+                  <div className="w-6 h-6 rounded-full bg-[#1B1B20] border border-[#26262C] text-[11px] font-bold text-[#F4F4F5] flex items-center justify-center shrink-0">
                     {currentUser.name.charAt(0).toUpperCase()}
                   </div>
                   <div className="flex flex-col text-left">
-                    <span className="text-xs text-[#f5efe6] font-semibold truncate max-w-[100px] lg:max-w-[140px]">
+                    <span className="text-xs text-[#F4F4F5] font-semibold truncate max-w-[100px] lg:max-w-[140px]">
                       {currentUser.name}
                     </span>
-                    <span className="text-[10px] text-[#c5b4a5] font-mono leading-none">
+                    <span className="text-[10px] text-[#A1A1AA] font-mono leading-none">
                       @{currentUser.username}
                     </span>
                   </div>
@@ -149,9 +149,9 @@ export const Navbar: React.FC<NavbarProps> = ({
               <button
                 onClick={onOpenRecap}
                 title="Weekly Recap"
-                className="p-2 rounded-xl bg-[#1c1815] hover:bg-[#322a24] text-[#d4a373] border border-[#3d322a] transition flex items-center gap-1.5 text-xs font-semibold cursor-pointer"
+                className="p-2 rounded-lg bg-[#1B1B20] hover:bg-[#26262C] text-[#D98B4A] border border-[#26262C] transition flex items-center gap-1.5 text-xs font-semibold cursor-pointer"
               >
-                <Sparkles className="w-4 h-4 text-[#c68b59]" />
+                <Sparkles className="w-4 h-4 text-[#D98B4A]" />
                 <span className="hidden lg:inline">Weekly Recap</span>
               </button>
 
@@ -160,9 +160,9 @@ export const Navbar: React.FC<NavbarProps> = ({
                 <button
                   onClick={onExportCSV}
                   title="Export My Data as CSV"
-                  className="p-2 rounded-xl bg-[#1c1815] hover:bg-[#322a24] text-[#d4a373] border border-[#3d322a] transition flex items-center gap-1.5 text-xs font-semibold cursor-pointer"
+                  className="p-2 rounded-lg bg-[#1B1B20] hover:bg-[#26262C] text-[#D98B4A] border border-[#26262C] transition flex items-center gap-1.5 text-xs font-semibold cursor-pointer"
                 >
-                  <Download className="w-4 h-4 text-[#d4a373]" />
+                  <Download className="w-4 h-4 text-[#D98B4A]" />
                   <span className="hidden lg:inline">CSV Export</span>
                 </button>
               )}
@@ -171,9 +171,9 @@ export const Navbar: React.FC<NavbarProps> = ({
               <button
                 onClick={onToggleTheme}
                 title="Toggle Theme"
-                className="p-2 rounded-xl bg-[#1c1815] hover:bg-[#322a24] text-[#c5b4a5] border border-[#3d322a] transition cursor-pointer"
+                className="p-2 rounded-lg bg-[#1B1B20] hover:bg-[#26262C] text-[#A1A1AA] hover:text-[#F4F4F5] border border-[#26262C] transition cursor-pointer"
               >
-                {isDarkMode ? <Sun className="w-4 h-4 text-[#d4a373]" /> : <Moon className="w-4 h-4 text-[#c5b4a5]" />}
+                {isDarkMode ? <Sun className="w-4 h-4 text-[#D98B4A]" /> : <Moon className="w-4 h-4 text-[#A1A1AA]" />}
               </button>
 
               {/* Auth / Logout */}
@@ -181,7 +181,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 <button
                   onClick={onLogout}
                   title="Sign Out"
-                  className="p-2 rounded-xl bg-rose-950/40 hover:bg-rose-900/50 text-rose-300 border border-rose-800/40 transition flex items-center gap-1 text-xs font-semibold cursor-pointer"
+                  className="p-2 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-[#F87171] border border-rose-500/25 transition flex items-center gap-1 text-xs font-semibold cursor-pointer"
                 >
                   <LogOut className="w-4 h-4" />
                   <span className="hidden md:inline">Log Out</span>
@@ -189,7 +189,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               ) : (
                 <button
                   onClick={onOpenAuth}
-                  className="py-1.5 px-3 bg-[#c68b59] hover:bg-[#b87b4b] text-[#1c1815] font-bold rounded-xl text-xs transition shadow-md shadow-[#c68b59]/20 cursor-pointer"
+                  className="py-1.5 px-3 bg-[#D98B4A] hover:bg-[#E69A5C] text-[#0B0B0D] font-bold rounded-lg text-xs transition shadow-sm cursor-pointer"
                 >
                   Sign In
                 </button>
@@ -202,16 +202,16 @@ export const Navbar: React.FC<NavbarProps> = ({
               <button
                 onClick={onToggleTheme}
                 aria-label="Toggle Theme"
-                className="w-9 h-9 rounded-xl bg-[#1c1815] text-[#c5b4a5] border border-[#3d322a] flex items-center justify-center transition cursor-pointer active:scale-95"
+                className="w-9 h-9 rounded-lg bg-[#1B1B20] text-[#A1A1AA] border border-[#26262C] flex items-center justify-center transition cursor-pointer active:scale-95"
               >
-                {isDarkMode ? <Sun className="w-4 h-4 text-[#d4a373]" /> : <Moon className="w-4 h-4 text-[#c5b4a5]" />}
+                {isDarkMode ? <Sun className="w-4 h-4 text-[#D98B4A]" /> : <Moon className="w-4 h-4 text-[#A1A1AA]" />}
               </button>
 
               {/* Current User Mini Avatar (Tap to go to Profile) */}
               {currentUser ? (
                 <button
                   onClick={() => setActiveTab('profile')}
-                  className={`w-9 h-9 rounded-xl bg-gradient-to-tr ${currentUser.avatar_color || 'from-[#c68b59] to-[#785338]'} text-xs font-bold text-[#f5efe6] flex items-center justify-center shadow border border-[#3d322a] cursor-pointer active:scale-95`}
+                  className="w-9 h-9 rounded-lg bg-[#1B1B20] text-xs font-bold text-[#F4F4F5] flex items-center justify-center shadow-sm border border-[#26262C] cursor-pointer active:scale-95"
                   title={`Signed in as ${currentUser.name} (View Profile)`}
                 >
                   {currentUser.name.charAt(0).toUpperCase()}
@@ -219,7 +219,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               ) : (
                 <button
                   onClick={onOpenAuth}
-                  className="py-1.5 px-2.5 bg-[#c68b59] text-[#1c1815] font-bold rounded-xl text-xs shadow-md cursor-pointer"
+                  className="py-1.5 px-2.5 bg-[#D98B4A] text-[#0B0B0D] font-bold rounded-lg text-xs shadow-sm cursor-pointer"
                 >
                   Sign In
                 </button>
@@ -230,8 +230,8 @@ export const Navbar: React.FC<NavbarProps> = ({
                 <button
                   onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                   aria-label="Open Menu"
-                  className={`w-9 h-9 rounded-xl bg-[#1c1815] border border-[#3d322a] flex items-center justify-center text-[#c5b4a5] hover:text-[#f5efe6] transition cursor-pointer active:scale-95 ${
-                    isMobileMenuOpen ? 'border-[#c68b59] text-[#d4a373]' : ''
+                  className={`w-9 h-9 rounded-lg bg-[#1B1B20] border border-[#26262C] flex items-center justify-center text-[#A1A1AA] hover:text-[#F4F4F5] transition cursor-pointer active:scale-95 ${
+                    isMobileMenuOpen ? 'border-[#D98B4A] text-[#D98B4A]' : ''
                   }`}
                 >
                   {isMobileMenuOpen ? <X className="w-4 h-4" /> : <MoreVertical className="w-4 h-4" />}
@@ -239,11 +239,11 @@ export const Navbar: React.FC<NavbarProps> = ({
 
                 {/* Mobile Dropdown Popover */}
                 {isMobileMenuOpen && (
-                  <div className="absolute right-0 top-11 w-52 bg-[#1c1815] border border-[#3d322a] rounded-2xl p-2 shadow-2xl z-50 animate-fadeIn space-y-1">
+                  <div className="absolute right-0 top-11 w-52 bg-[#131316] border border-[#26262C] rounded-xl p-2 shadow-2xl z-50 animate-fadeIn space-y-1">
                     {currentUser && (
-                      <div className="px-3 py-2 border-b border-[#3d322a] mb-1">
-                        <p className="text-xs font-bold text-[#f5efe6] truncate">{currentUser.name}</p>
-                        <p className="text-[10px] text-[#c5b4a5] font-mono">@{currentUser.username}</p>
+                      <div className="px-3 py-2 border-b border-[#26262C] mb-1">
+                        <p className="text-xs font-bold text-[#F4F4F5] truncate">{currentUser.name}</p>
+                        <p className="text-[10px] text-[#A1A1AA] font-mono">@{currentUser.username}</p>
                       </div>
                     )}
 
@@ -252,9 +252,9 @@ export const Navbar: React.FC<NavbarProps> = ({
                         setIsMobileMenuOpen(false);
                         onOpenRecap();
                       }}
-                      className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-[#d4a373] hover:bg-[#26201b] transition cursor-pointer"
+                      className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold text-[#D98B4A] hover:bg-[#1B1B20] transition cursor-pointer"
                     >
-                      <Sparkles className="w-4 h-4 text-[#c68b59]" />
+                      <Sparkles className="w-4 h-4 text-[#D98B4A]" />
                       Weekly Recap
                     </button>
 
@@ -264,9 +264,9 @@ export const Navbar: React.FC<NavbarProps> = ({
                           setIsMobileMenuOpen(false);
                           onExportCSV();
                         }}
-                        className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-[#f5efe6] hover:bg-[#26201b] transition cursor-pointer"
+                        className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold text-[#F4F4F5] hover:bg-[#1B1B20] transition cursor-pointer"
                       >
-                        <Download className="w-4 h-4 text-[#d4a373]" />
+                        <Download className="w-4 h-4 text-[#D98B4A]" />
                         Export Data (CSV)
                       </button>
                     )}
@@ -276,9 +276,9 @@ export const Navbar: React.FC<NavbarProps> = ({
                         setIsMobileMenuOpen(false);
                         setActiveTab('calendar');
                       }}
-                      className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-[#f5efe6] hover:bg-[#26201b] transition cursor-pointer"
+                      className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold text-[#F4F4F5] hover:bg-[#1B1B20] transition cursor-pointer"
                     >
-                      <Calendar className="w-4 h-4 text-[#c68b59]" />
+                      <Calendar className="w-4 h-4 text-[#D98B4A]" />
                       Activity Calendar
                     </button>
 
@@ -287,7 +287,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                         setIsMobileMenuOpen(false);
                         setActiveTab('comparison');
                       }}
-                      className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-[#f5efe6] hover:bg-[#26201b] transition cursor-pointer"
+                      className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold text-[#F4F4F5] hover:bg-[#1B1B20] transition cursor-pointer"
                     >
                       <Swords className="w-4 h-4 text-cyan-400" />
                       Head-to-Head
@@ -298,20 +298,20 @@ export const Navbar: React.FC<NavbarProps> = ({
                         setIsMobileMenuOpen(false);
                         setActiveTab('badges');
                       }}
-                      className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-[#f5efe6] hover:bg-[#26201b] transition cursor-pointer"
+                      className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold text-[#F4F4F5] hover:bg-[#1B1B20] transition cursor-pointer"
                     >
-                      <Award className="w-4 h-4 text-amber-400" />
+                      <Award className="w-4 h-4 text-[#FBBF24]" />
                       Badges & Challenges
                     </button>
 
-                    <div className="pt-1 border-t border-[#3d322a]">
+                    <div className="pt-1 border-t border-[#26262C]">
                       {currentUser ? (
                         <button
                           onClick={() => {
                             setIsMobileMenuOpen(false);
                             onLogout();
                           }}
-                          className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-rose-400 hover:bg-rose-950/30 transition cursor-pointer"
+                          className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold text-[#F87171] hover:bg-rose-500/10 transition cursor-pointer"
                         >
                           <LogOut className="w-4 h-4" />
                           Sign Out
@@ -322,7 +322,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                             setIsMobileMenuOpen(false);
                             onOpenAuth();
                           }}
-                          className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold text-[#c68b59] hover:bg-[#26201b] transition cursor-pointer"
+                          className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-bold text-[#D98B4A] hover:bg-[#1B1B20] transition cursor-pointer"
                         >
                           Sign In / Register
                         </button>
@@ -336,7 +336,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           </div>
 
           {/* Top Tab Navigation Strip (Horizontal scroll with smooth touch - Desktop & Tablet) */}
-          <nav className="hidden md:flex items-center gap-1 overflow-x-auto py-2 scrollbar-none border-t border-[#3d322a]/60 no-scrollbar touch-pan-x">
+          <nav className="hidden md:flex items-center gap-1 overflow-x-auto py-2 scrollbar-none border-t border-[#26262C]/60 no-scrollbar touch-pan-x">
             {navItems.map((item) => {
               const Icon = item.icon;
               const isActive = activeTab === item.id;
@@ -344,13 +344,13 @@ export const Navbar: React.FC<NavbarProps> = ({
                 <button
                   key={item.id}
                   onClick={() => setActiveTab(item.id)}
-                  className={`flex items-center gap-1.5 sm:gap-2 px-3 py-1.5 sm:py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer shrink-0 ${
+                  className={`flex items-center gap-1.5 sm:gap-2 px-3 py-1.5 sm:py-2 rounded-lg text-xs font-semibold whitespace-nowrap transition-all cursor-pointer shrink-0 ${
                     isActive
-                      ? 'bg-gradient-to-r from-[#c68b59]/25 to-[#b87b4b]/20 text-[#d4a373] border border-[#c68b59]/40 shadow-sm'
-                      : 'text-[#c5b4a5] hover:text-[#f5efe6] hover:bg-[#1c1815]'
+                      ? 'bg-[rgba(217,139,74,0.12)] text-[#D98B4A] border border-[#D98B4A]/30 shadow-sm'
+                      : 'text-[#A1A1AA] hover:text-[#F4F4F5] hover:bg-[#1B1B20]'
                   }`}
                 >
-                  <Icon className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${isActive ? 'text-[#c68b59]' : 'text-[#c5b4a5]'}`} />
+                  <Icon className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${isActive ? 'text-[#D98B4A]' : 'text-[#A1A1AA]'}`} />
                   {item.label}
                 </button>
               );
@@ -362,7 +362,7 @@ export const Navbar: React.FC<NavbarProps> = ({
       {/* Modern Native-Style Bottom Navigation Bar for Mobile (< 768px) */}
       <nav 
         aria-label="Mobile Navigation"
-        className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#1c1815]/95 border-t border-[#3d322a] backdrop-blur-lg px-2 pt-1.5 pb-[calc(0.5rem+env(safe-area-inset-bottom,0px))] shadow-2xl"
+        className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#131316]/95 border-t border-[#26262C] backdrop-blur-lg px-2 pt-1.5 pb-[calc(0.5rem+env(safe-area-inset-bottom,0px))] shadow-2xl"
       >
         <div className="grid grid-cols-6 gap-0.5 sm:gap-1 max-w-md mx-auto">
           {bottomNavItems.map((item) => {
@@ -372,20 +372,20 @@ export const Navbar: React.FC<NavbarProps> = ({
               <button
                 key={item.id}
                 onClick={() => setActiveTab(item.id)}
-                className={`flex flex-col items-center justify-center py-1 rounded-xl transition-all cursor-pointer select-none active:scale-95 ${
+                className={`flex flex-col items-center justify-center py-1 rounded-lg transition-all cursor-pointer select-none active:scale-95 ${
                   isActive
-                    ? 'text-[#d4a373] font-bold'
-                    : 'text-[#c5b4a5] hover:text-[#f5efe6]'
+                    ? 'text-[#D98B4A] font-bold'
+                    : 'text-[#A1A1AA] hover:text-[#F4F4F5]'
                 }`}
               >
                 <div className={`p-1 rounded-lg transition ${
-                  isActive ? 'bg-[#c68b59]/20 text-[#c68b59]' : ''
+                  isActive ? 'bg-[rgba(217,139,74,0.12)] text-[#D98B4A]' : ''
                 }`}>
                   <Icon className={`w-5 h-5 ${isActive ? 'stroke-[2.5]' : 'stroke-2'}`} />
                 </div>
                 <span className="text-[10px] mt-0.5 tracking-tight leading-none">{item.label}</span>
                 {isActive && (
-                  <span className="w-1 h-1 rounded-full bg-[#c68b59] mt-0.5 animate-pulse" />
+                  <span className="w-1 h-1 rounded-full bg-[#D98B4A] mt-0.5 animate-pulse" />
                 )}
               </button>
             );

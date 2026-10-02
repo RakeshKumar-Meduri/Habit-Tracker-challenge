@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
-import type { Workout, User } from '../types';
-import { Dumbbell, X, Plus, Trash2, Flame, HeartPulse, Sparkles, Lock, Globe } from 'lucide-react';
+import type { Workout, User, MissedReason } from '../types';
+import { Dumbbell, X, Plus, Trash2, Flame, HeartPulse, Sparkles, Lock, Globe, AlertCircle } from 'lucide-react';
 
 interface WorkoutModalProps {
   isOpen: boolean;
   onClose: () => void;
   currentUser: User;
   selectedDate: string;
+  missedReasons?: MissedReason[];
   onSaveWorkouts: (workouts: Workout[]) => void;
 }
 
@@ -33,6 +34,7 @@ export const WorkoutModal: React.FC<WorkoutModalProps> = ({
   onClose,
   currentUser,
   selectedDate,
+  missedReasons = [],
   onSaveWorkouts,
 }) => {
   const [activeCategory, setActiveCategory] = useState<'strength' | 'cardio' | 'hiit' | 'mobility'>('strength');
@@ -51,6 +53,11 @@ export const WorkoutModal: React.FC<WorkoutModalProps> = ({
   ]);
 
   if (!isOpen) return null;
+
+  // Check if Gym routine is marked as Failed for this user on this date
+  const isGymFailed = missedReasons.some(
+    r => r.goal_type === 'gym' && r.user_id === currentUser.id && r.date === selectedDate
+  );
 
   const handleAddRow = () => {
     setExercises(prev => [
@@ -81,6 +88,12 @@ export const WorkoutModal: React.FC<WorkoutModalProps> = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (isGymFailed) {
+      alert(`Cannot log workout: The gym routine for ${selectedDate} is marked as Failed. Please remove the Failed status in the Daily Checklist first.`);
+      return;
+    }
+
     const valid = exercises.filter(e => e.exercise_name.trim().length > 0);
     if (valid.length === 0) {
       alert('Please enter at least one exercise name.');
@@ -124,40 +137,53 @@ export const WorkoutModal: React.FC<WorkoutModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/85 backdrop-blur-md animate-fadeIn font-sans overflow-y-auto">
-      <div className="relative w-full max-w-2xl bg-[#26201b] border border-[#3d322a] rounded-2xl p-4 sm:p-7 shadow-2xl my-4 sm:my-8 text-[#f5efe6]">
+      <div className="relative w-full max-w-2xl bg-[#131316] border border-[#26262C] rounded-xl p-4 sm:p-6 shadow-2xl my-4 sm:my-8 text-[#F4F4F5]">
         
         {/* Close Button */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 text-[#c5b4a5] hover:text-[#f5efe6] p-2 rounded-xl hover:bg-[#322a24] transition cursor-pointer"
+          className="absolute top-4 right-4 text-[#A1A1AA] hover:text-[#F4F4F5] p-2 rounded-lg hover:bg-[#1B1B20] transition cursor-pointer"
           title="Close"
         >
           <X className="w-5 h-5" />
         </button>
 
         {/* Header */}
-        <div className="flex items-center gap-3.5 mb-5 pb-4 border-b border-[#3d322a]">
-          <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-tr from-[#c68b59] to-[#b87b4b] flex items-center justify-center shadow-lg shadow-[#c68b59]/20 shrink-0">
-            <Dumbbell className="w-6 h-6 text-[#1c1815] stroke-[2.5]" />
+        <div className="flex items-center gap-3.5 mb-5 pb-4 border-b border-[#26262C]">
+          <div className="w-10 h-10 rounded-lg bg-[#D98B4A] text-[#0B0B0D] flex items-center justify-center shadow-md shadow-[#D98B4A]/20 shrink-0">
+            <Dumbbell className="w-5 h-5 stroke-[2.5]" />
           </div>
           <div>
-            <h3 className="text-lg sm:text-xl font-black text-[#f5efe6] flex items-center gap-2">
+            <h3 className="text-base sm:text-lg font-bold text-[#F4F4F5] flex items-center gap-2">
               Log Workout Session
-              <span className="text-[11px] px-2.5 py-0.5 rounded-full bg-[#1c1815] text-[#d4a373] border border-[#3d322a] font-mono">
+              <span className="text-[11px] px-2.5 py-0.5 rounded-md bg-[#1B1B20] text-[#D98B4A] border border-[#26262C] font-mono tabular-nums">
                 {selectedDate}
               </span>
             </h3>
-            <p className="text-xs text-[#c5b4a5] mt-0.5">
-              Record sets, reps, weight, and cardio time for today
+            <p className="text-xs text-[#A1A1AA] mt-0.5">
+              Record sets, reps, weight, and cardio time for this day
             </p>
           </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-5">
+        {/* Locked / Failed Warning Banner */}
+        {isGymFailed && (
+          <div className="mb-5 p-3 rounded-lg bg-rose-500/10 border border-rose-500/25 text-[#F87171] text-xs flex items-start gap-2.5">
+            <AlertCircle className="w-4 h-4 shrink-0 text-[#F87171] mt-0.5" />
+            <div>
+              <p className="font-semibold">Gym routine for {selectedDate} is marked as Failed</p>
+              <p className="text-rose-400/80 mt-0.5">
+                Workouts cannot be added while the gym routine is failed. You can remove the "Failed" status from your Daily Checklist first if you clicked it by mistake.
+              </p>
+            </div>
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} className="space-y-4">
 
           {/* Category Tabs */}
           <div>
-            <label className="block text-xs font-semibold text-[#c5b4a5] mb-2">Select Category</label>
+            <label className="block text-xs font-semibold text-[#A1A1AA] mb-2">Category</label>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
               {[
                 { id: 'strength', label: 'Strength', icon: Dumbbell },
@@ -172,10 +198,10 @@ export const WorkoutModal: React.FC<WorkoutModalProps> = ({
                     key={cat.id}
                     type="button"
                     onClick={() => setActiveCategory(cat.id as any)}
-                    className={`p-2.5 rounded-xl border text-xs font-bold flex items-center justify-center gap-1.5 transition cursor-pointer active:scale-95 ${
+                    className={`p-2.5 rounded-lg border text-xs font-semibold flex items-center justify-center gap-1.5 transition cursor-pointer active:scale-95 ${
                       isActive
-                        ? 'bg-gradient-to-r from-[#c68b59] to-[#b87b4b] text-[#1c1815] border-[#c68b59] shadow-md shadow-[#c68b59]/20'
-                        : 'bg-[#1c1815] text-[#c5b4a5] border-[#3d322a] hover:text-[#f5efe6] hover:bg-[#322a24]'
+                        ? 'bg-[#D98B4A] text-[#0B0B0D] border-[#D98B4A] shadow-sm'
+                        : 'bg-[#1B1B20] text-[#A1A1AA] border-[#26262C] hover:text-[#F4F4F5] hover:bg-[#26262C]'
                     }`}
                   >
                     <Icon className="w-3.5 h-3.5" />
@@ -188,7 +214,7 @@ export const WorkoutModal: React.FC<WorkoutModalProps> = ({
 
           {/* Quick-Pick Popular Exercises */}
           <div>
-            <label className="block text-[11px] font-semibold text-[#c5b4a5] mb-1.5">
+            <label className="block text-[11px] font-semibold text-[#71717A] mb-1.5">
               Popular Presets for {activeCategory.toUpperCase()}:
             </label>
             <div className="flex flex-wrap gap-1.5">
@@ -197,13 +223,12 @@ export const WorkoutModal: React.FC<WorkoutModalProps> = ({
                   key={ex}
                   type="button"
                   onClick={() => {
-                    // Update current empty row or latest row
                     const emptyIdx = exercises.findIndex(e => !e.exercise_name);
                     const targetId = emptyIdx >= 0 ? exercises[emptyIdx].id : exercises[exercises.length - 1].id;
                     handleUpdateRow(targetId, 'exercise_name', ex);
                     handleUpdateRow(targetId, 'exercise_type', activeCategory === 'cardio' ? 'cardio' : 'strength');
                   }}
-                  className="px-2.5 py-1 rounded-lg bg-[#1c1815] hover:bg-[#322a24] text-xs text-[#d4a373] border border-[#3d322a] hover:border-[#c68b59]/50 transition cursor-pointer"
+                  className="px-2.5 py-1 rounded-md bg-[#1B1B20] hover:bg-[#26262C] text-xs text-[#A1A1AA] hover:text-[#F4F4F5] border border-[#26262C] hover:border-[#D98B4A]/40 transition cursor-pointer"
                 >
                   + {ex}
                 </button>
@@ -212,15 +237,15 @@ export const WorkoutModal: React.FC<WorkoutModalProps> = ({
           </div>
 
           {/* Exercises List */}
-          <div className="space-y-3.5 max-h-[48vh] overflow-y-auto pr-1">
+          <div className="space-y-3 max-h-[46vh] overflow-y-auto pr-1">
             {exercises.map((item, index) => (
               <div
                 key={item.id}
-                className="bg-[#1c1815] border border-[#3d322a] rounded-xl p-3.5 sm:p-4 space-y-3 relative hover:border-[#c68b59]/40 transition shadow-md"
+                className="bg-[#1B1B20] border border-[#26262C] rounded-xl p-3 sm:p-4 space-y-3 relative hover:border-[#D98B4A]/30 transition"
               >
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-black text-[#d4a373] flex items-center gap-1.5">
-                    <span className="w-5 h-5 rounded-full bg-[#26201b] border border-[#3d322a] flex items-center justify-center text-[10px] text-[#f5efe6]">
+                  <span className="text-xs font-bold text-[#F4F4F5] flex items-center gap-1.5">
+                    <span className="w-5 h-5 rounded-md bg-[#131316] border border-[#26262C] flex items-center justify-center text-[10px] text-[#A1A1AA] tabular-nums">
                       {index + 1}
                     </span>
                     Exercise Item
@@ -229,73 +254,59 @@ export const WorkoutModal: React.FC<WorkoutModalProps> = ({
                     <button
                       type="button"
                       onClick={() => handleRemoveRow(item.id)}
-                      className="text-xs text-rose-400 hover:text-rose-300 flex items-center gap-1 cursor-pointer p-1 rounded hover:bg-rose-950/40 transition"
+                      className="text-[#71717A] hover:text-rose-400 p-1 rounded-md transition cursor-pointer"
                       title="Remove exercise"
                     >
-                      <Trash2 className="w-3.5 h-3.5" /> Remove
+                      <Trash2 className="w-3.5 h-3.5" />
                     </button>
                   )}
                 </div>
 
-                <div>
-                  <label className="block text-[11px] font-semibold text-[#c5b4a5] mb-1">
-                    Exercise Name <span className="text-rose-400">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={item.exercise_name}
-                    onChange={(e) => handleUpdateRow(item.id, 'exercise_name', e.target.value)}
-                    placeholder="e.g. Barbell Squat, Dumbbell Shoulder Press, Running..."
-                    className="w-full px-3 py-2 bg-[#26201b] border border-[#3d322a] rounded-xl text-[#f5efe6] text-sm focus:outline-none focus:border-[#c68b59]"
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                   <div>
-                    <label className="block text-[10px] font-semibold text-[#c5b4a5] mb-1">Sets</label>
+                    <label className="block text-[10px] font-semibold text-[#71717A] mb-1">Exercise Name</label>
                     <input
-                      type="number"
-                      min="1"
-                      value={item.sets}
-                      onChange={(e) => handleUpdateRow(item.id, 'sets', e.target.value)}
-                      className="w-full px-2.5 py-1.5 bg-[#26201b] border border-[#3d322a] rounded-lg text-[#f5efe6] text-xs focus:outline-none focus:border-[#c68b59]"
+                      type="text"
+                      value={item.exercise_name}
+                      onChange={(e) => handleUpdateRow(item.id, 'exercise_name', e.target.value)}
+                      placeholder="e.g. Bench Press, Treadmill..."
+                      className="w-full px-3 py-2 bg-[#131316] border border-[#26262C] rounded-lg text-[#F4F4F5] text-xs focus:outline-none focus:border-[#D98B4A]"
                     />
                   </div>
 
-                  <div>
-                    <label className="block text-[10px] font-semibold text-[#c5b4a5] mb-1">Reps</label>
-                    <input
-                      type="number"
-                      min="1"
-                      value={item.reps}
-                      onChange={(e) => handleUpdateRow(item.id, 'reps', e.target.value)}
-                      className="w-full px-2.5 py-1.5 bg-[#26201b] border border-[#3d322a] rounded-lg text-[#f5efe6] text-xs focus:outline-none focus:border-[#c68b59]"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-[10px] font-semibold text-[#c5b4a5] mb-1">Weight (kg)</label>
-                    <input
-                      type="number"
-                      step="0.5"
-                      min="0"
-                      value={item.weight}
-                      onChange={(e) => handleUpdateRow(item.id, 'weight', e.target.value)}
-                      placeholder="BW if 0"
-                      className="w-full px-2.5 py-1.5 bg-[#26201b] border border-[#3d322a] rounded-lg text-[#f5efe6] text-xs focus:outline-none focus:border-[#c68b59]"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-[10px] font-semibold text-[#c5b4a5] mb-1">Duration (min)</label>
-                    <input
-                      type="number"
-                      min="1"
-                      value={item.duration}
-                      onChange={(e) => handleUpdateRow(item.id, 'duration', e.target.value)}
-                      className="w-full px-2.5 py-1.5 bg-[#26201b] border border-[#3d322a] rounded-lg text-[#f5efe6] text-xs focus:outline-none focus:border-[#c68b59]"
-                    />
+                  <div className="grid grid-cols-3 gap-2">
+                    <div>
+                      <label className="block text-[10px] font-semibold text-[#71717A] mb-1">Sets</label>
+                      <input
+                        type="number"
+                        min="1"
+                        max="99"
+                        value={item.sets}
+                        onChange={(e) => handleUpdateRow(item.id, 'sets', Number(e.target.value))}
+                        className="w-full px-2.5 py-2 bg-[#131316] border border-[#26262C] rounded-lg text-[#F4F4F5] text-xs text-center tabular-nums focus:outline-none focus:border-[#D98B4A]"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-semibold text-[#71717A] mb-1">Reps</label>
+                      <input
+                        type="number"
+                        min="1"
+                        max="999"
+                        value={item.reps}
+                        onChange={(e) => handleUpdateRow(item.id, 'reps', Number(e.target.value))}
+                        className="w-full px-2.5 py-2 bg-[#131316] border border-[#26262C] rounded-lg text-[#F4F4F5] text-xs text-center tabular-nums focus:outline-none focus:border-[#D98B4A]"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-semibold text-[#71717A] mb-1">Kg / Lbs</label>
+                      <input
+                        type="text"
+                        value={item.weight}
+                        onChange={(e) => handleUpdateRow(item.id, 'weight', e.target.value)}
+                        placeholder="Optional"
+                        className="w-full px-2 py-2 bg-[#131316] border border-[#26262C] rounded-lg text-[#F4F4F5] text-xs text-center tabular-nums focus:outline-none focus:border-[#D98B4A]"
+                      />
+                    </div>
                   </div>
                 </div>
 
@@ -305,7 +316,7 @@ export const WorkoutModal: React.FC<WorkoutModalProps> = ({
                     value={item.notes}
                     onChange={(e) => handleUpdateRow(item.id, 'notes', e.target.value)}
                     placeholder="Optional notes e.g. Felt strong on 3rd set, good form..."
-                    className="w-full px-3 py-1.5 bg-[#26201b] border border-[#3d322a] rounded-lg text-[#f5efe6] text-xs focus:outline-none focus:border-[#c68b59]"
+                    className="w-full px-3 py-1.5 bg-[#131316] border border-[#26262C] rounded-lg text-[#F4F4F5] text-xs focus:outline-none focus:border-[#D98B4A]"
                   />
                 </div>
               </div>
@@ -316,27 +327,27 @@ export const WorkoutModal: React.FC<WorkoutModalProps> = ({
           <button
             type="button"
             onClick={handleAddRow}
-            className="w-full py-2.5 min-h-[42px] border border-dashed border-[#3d322a] hover:border-[#c68b59]/60 rounded-xl text-xs font-bold text-[#d4a373] hover:bg-[#1c1815] transition flex items-center justify-center gap-1.5 cursor-pointer active:scale-95"
+            className="w-full py-2.5 min-h-[38px] border border-dashed border-[#26262C] hover:border-[#D98B4A]/50 rounded-lg text-xs font-semibold text-[#A1A1AA] hover:text-[#F4F4F5] bg-[#1B1B20] transition flex items-center justify-center gap-1.5 cursor-pointer active:scale-95"
           >
-            <Plus className="w-4 h-4" />
+            <Plus className="w-3.5 h-3.5" />
             <span>+ Add Another Exercise to this Session</span>
           </button>
 
           {/* Privacy & Submission Footer */}
-          <div className="pt-3 border-t border-[#3d322a] flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="pt-3 border-t border-[#26262C] flex flex-col sm:flex-row items-center justify-between gap-3">
             <button
               type="button"
               onClick={() => setIsPrivate(!isPrivate)}
-              className="flex items-center gap-2 text-xs text-[#c5b4a5] hover:text-[#f5efe6] cursor-pointer"
+              className="flex items-center gap-2 text-xs text-[#A1A1AA] hover:text-[#F4F4F5] cursor-pointer"
             >
               {isPrivate ? (
                 <>
-                  <Lock className="w-4 h-4 text-amber-400" />
+                  <Lock className="w-4 h-4 text-[#FBBF24]" />
                   <span>Private (Only you can see this workout)</span>
                 </>
               ) : (
                 <>
-                  <Globe className="w-4 h-4 text-[#d4a373]" />
+                  <Globe className="w-4 h-4 text-[#D98B4A]" />
                   <span>Public (Shared with your fitness challenge group)</span>
                 </>
               )}
@@ -346,15 +357,20 @@ export const WorkoutModal: React.FC<WorkoutModalProps> = ({
               <button
                 type="button"
                 onClick={onClose}
-                className="flex-1 sm:flex-initial px-4 py-2.5 rounded-xl border border-[#3d322a] bg-[#1c1815] hover:bg-[#322a24] text-[#c5b4a5] text-xs font-bold transition cursor-pointer"
+                className="flex-1 sm:flex-initial px-4 py-2 rounded-lg border border-[#26262C] bg-[#1B1B20] hover:bg-[#26262C] text-[#A1A1AA] hover:text-[#F4F4F5] text-xs font-medium transition cursor-pointer"
               >
                 Cancel
               </button>
               <button
                 type="submit"
-                className="flex-1 sm:flex-initial px-6 py-2.5 min-h-[40px] rounded-xl bg-gradient-to-r from-[#c68b59] to-[#b87b4b] hover:from-[#b87b4b] hover:to-[#a06738] text-[#1c1815] text-xs font-black shadow-lg shadow-[#c68b59]/25 transition cursor-pointer active:scale-95"
+                disabled={isGymFailed}
+                className={`flex-1 sm:flex-initial px-6 py-2 min-h-[38px] rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 ${
+                  isGymFailed
+                    ? 'bg-[#1B1B20] text-[#71717A] border border-[#26262C] cursor-not-allowed opacity-60'
+                    : 'bg-[#D98B4A] hover:bg-[#E69A5C] text-[#0B0B0D] cursor-pointer shadow-md shadow-[#D98B4A]/20 active:scale-95'
+                }`}
               >
-                Save Workout Session
+                <span>{isGymFailed ? 'Gym Goal Marked as Failed' : 'Save Workout Session'}</span>
               </button>
             </div>
           </div>

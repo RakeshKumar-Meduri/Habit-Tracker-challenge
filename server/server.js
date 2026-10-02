@@ -720,6 +720,41 @@ app.post('/api/missed-reasons', async (req, res) => {
   res.json({ success: true, reason });
 });
 
+// Delete / Remove Missed Reason (Allows undoing "Failed" status)
+app.post('/api/missed-reasons/delete', async (req, res) => {
+  const { id } = req.body || {};
+  const targetId = String(id || '').trim();
+  if (!targetId) return res.status(400).json({ error: 'Missing missed reason id' });
+
+  await mutate(d => {
+    d.missedReasons = (d.missedReasons || []).filter(r => String(r.id || '').trim() !== targetId);
+  });
+
+  broadcast({
+    type: 'MISSED_REASON_DELETED',
+    payload: { id: targetId },
+  });
+
+  res.json({ success: true, id: targetId });
+});
+
+app.delete('/api/missed-reasons/:id', async (req, res) => {
+  const { id } = req.params;
+  const targetId = String(id || '').trim();
+  if (!targetId) return res.status(400).json({ error: 'Missing missed reason id' });
+
+  await mutate(d => {
+    d.missedReasons = (d.missedReasons || []).filter(r => String(r.id || '').trim() !== targetId);
+  });
+
+  broadcast({
+    type: 'MISSED_REASON_DELETED',
+    payload: { id: targetId },
+  });
+
+  res.json({ success: true, id: targetId });
+});
+
 // Add Reaction
 app.post('/api/reactions', async (req, res) => {
   const reaction = req.body;
