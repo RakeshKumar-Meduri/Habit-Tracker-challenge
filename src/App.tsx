@@ -683,11 +683,11 @@ export function App() {
   // Delete Logged Workout
   const handleDeleteWorkout = (workoutId: string) => {
     const idStr = String(workoutId).trim();
-    const targetWorkout = workouts.find(w => String(w.id).trim() === idStr);
+    const targetWorkout = workouts.find(w => String(w.id || (w as any)._id || '').trim() === idStr);
 
     let updatedWorkouts: Workout[] = [];
     setWorkouts(prev => {
-      updatedWorkouts = prev.filter(w => String(w.id).trim() !== idStr);
+      updatedWorkouts = prev.filter(w => String(w.id || (w as any)._id || '').trim() !== idStr);
       saveWorkoutsDirectly(updatedWorkouts);
       return updatedWorkouts;
     });
@@ -697,7 +697,7 @@ export function App() {
     // If no workouts remain for this date and user, auto-reset gym_done: false
     if (targetWorkout && targetWorkout.date && targetWorkout.user_id) {
       const remainingOnDate = workouts.filter(
-        w => String(w.id).trim() !== idStr && w.user_id === targetWorkout.user_id && w.date === targetWorkout.date
+        w => String(w.id || (w as any)._id || '').trim() !== idStr && w.user_id === targetWorkout.user_id && w.date === targetWorkout.date
       );
       if (remainingOnDate.length === 0) {
         const existingLog = dailyLogs.find(

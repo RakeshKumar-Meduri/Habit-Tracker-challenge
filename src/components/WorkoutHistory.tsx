@@ -21,16 +21,28 @@ export const WorkoutHistory: React.FC<WorkoutHistoryProps> = ({
 }) => {
   const [selectedUserId, setSelectedUserId] = useState<string>('all');
   const [searchExercise, setSearchExercise] = useState('');
-  const [deletedId, setDeletedId] = useState<string | null>(null);
+  const [deletedIds, setDeletedIds] = useState<Set<string>>(new Set());
+  const [clearedAll, setClearedAll] = useState<boolean>(false);
+  const [successBanner, setSuccessBanner] = useState<string | null>(null);
 
   // Compute metrics for header
   const userMap = useMemo(() => new Map(users.map(u => [u.id, u])), [users]);
 
+  // Reset clearedAll if new workouts arrive from modal logging
+  React.useEffect(() => {
+    if (workouts.length > 0 && clearedAll) {
+      setClearedAll(false);
+    }
+  }, [workouts.length]);
+
   const visibleWorkouts = useMemo(() => {
+    if (clearedAll) return [];
     return workouts
       .filter(w => {
-        // Hide if deleted in current tick
-        if (deletedId === w.id) return false;
+        if (!w) return false;
+        const wid = String(w.id || (w as any)._id || '').trim();
+        // Hide if deleted
+        if (deletedIds.has(wid)) return false;
         // Private check
         if (w.is_private && w.user_id !== currentUser.id) return false;
         // Member filter
@@ -45,7 +57,7 @@ export const WorkoutHistory: React.FC<WorkoutHistoryProps> = ({
         return true;
       })
       .sort((a, b) => b.date.localeCompare(a.date) || (b.created_at || '').localeCompare(a.created_at || ''));
-  }, [workouts, currentUser.id, selectedUserId, searchExercise, deletedId]);
+  }, [workouts, currentUser.id, selectedUserId, searchExercise, deletedIds, clearedAll]);
 
   const totalMinutes = useMemo(() => {
     return visibleWorkouts.reduce((acc, w) => acc + (Number(w.duration) || 0), 0);
@@ -58,18 +70,52 @@ export const WorkoutHistory: React.FC<WorkoutHistoryProps> = ({
   const handleDeleteClick = (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
     e.preventDefault();
-    setDeletedId(id);
+    const idStr = String(id).trim();
+
+    // 1. Optimistically hide immediately
+    setDeletedIds(prev => new Set([...prev, idStr]));
+
+    // 2. Synchronously remove from storage
+    try {
+      const raw = localStorage.getItem('pulse_fitness_workouts');
+      if (raw) {
+        const arr = JSON.parse(raw);
+        if (Array.isArray(arr)) {
+          const remaining = arr.filter((x: any) => String(x.id || x._id || '').trim() !== idStr);
+          localStorage.setItem('pulse_fitness_workouts', JSON.stringify(remaining));
+        }
+      }
+    } catch {}
+
+    // 3. Trigger parent delete handler
     if (onDeleteWorkout) {
-      onDeleteWorkout(id);
+      onDeleteWorkout(idStr);
     }
   };
 
-  const handleClearAllClick = () => {
-    if (workouts.length === 0) return;
-    if (window.confirm('Are you sure you want to delete all workout sessions? This will permanently remove them.')) {
-      if (onClearAllWorkouts) {
-        onClearAllWorkouts();
-      }
+  const handleClearAllClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
+
+    // 1. Instantly wipe from screen
+    setClearedAll(true);
+    setDeletedIds(new Set());
+    setSuccessBanner('All workout sessions cleared permanently!');
+    setTimeout(() => setSuccessBanner(null), 3500);
+
+    // 2. Direct synchronous localStorage and sessionStorage wipe
+    try {
+      localStorage.removeItem('pulse_fitness_workouts');
+      localStorage.setItem('pulse_fitness_workouts', '[]');
+      sessionStorage.removeItem('pulse_fitness_workouts');
+      sessionStorage.setItem('pulse_fitness_workouts', '[]');
+    } catch (err) {
+      console.warn('Storage clear error', err);
+    }
+
+    // 3. Parent clear handler
+    if (onClearAllWorkouts) {
+      onClearAllWorkouts();
     }
   };
 
@@ -91,12 +137,12 @@ export const WorkoutHistory: React.FC<WorkoutHistoryProps> = ({
         </div>
 
         <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
-          {workouts.length > 0 && onClearAllWorkouts && (
+          {workouts.length > 0 && !clearedAll && onClearAllWorkouts && (
             <button
               type="button"
               onClick={handleClearAllClick}
               className="flex-1 sm:flex-none justify-center py-2.5 px-3.5 min-h-[40px] bg-rose-950/40 hover:bg-rose-900/60 border border-rose-800/60 text-rose-300 font-bold rounded-xl text-xs transition flex items-center gap-1.5 cursor-pointer active:scale-95 shadow-sm"
-              title="Delete all logged workout sessions"
+              title="Delete all logged workout sessions permanently"
             >
               <Trash2 className="w-4 h-4 text-rose-400" />
               <span>Clear All Sessions</span>
@@ -112,6 +158,14 @@ export const WorkoutHistory: React.FC<WorkoutHistoryProps> = ({
           </button>
         </div>
       </div>
+
+      {/* Success Notification Banner */}
+      {successBanner && (
+        <div className="bg-emerald-950/50 border border-emerald-500/50 text-emerald-300 px-4 py-3 rounded-xl text-xs font-bold flex items-center justify-between shadow-lg animate-fadeIn">
+          <span className="flex items-center gap-2">✓ {successBanner}</span>
+          <button type="button" onClick={() => setSuccessBanner(null)} className="text-emerald-400 hover:text-white font-bold ml-2">✕</button>
+        </div>
+      )}
 
       {/* Quick Stats Banner */}
       <div className="grid grid-cols-3 gap-3">
@@ -267,7 +321,7 @@ export const WorkoutHistory: React.FC<WorkoutHistoryProps> = ({
                   {onDeleteWorkout && (
                     <button
                       type="button"
-                      onClick={(e) => handleDeleteClick(w.id, e)}
+                      onClick={(e) => handleDeleteClick(w.id || (w as any)._id, e)}
                       className="px-3 py-1.5 min-h-[36px] bg-rose-950/40 hover:bg-rose-900/60 border border-rose-800/60 text-rose-300 font-bold rounded-xl text-xs transition flex items-center gap-1.5 cursor-pointer active:scale-95 shadow-sm"
                       title="Permanently delete this workout session"
                     >

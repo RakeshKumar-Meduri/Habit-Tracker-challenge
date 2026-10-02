@@ -138,9 +138,15 @@ export const DailyChecklist: React.FC<DailyChecklistProps> = ({
       })
     : (allDailyLogs?.find(l => l.user_id === currentUser.id && l.date === selectedDate) || dailyLog);
 
-  const targetWorkouts = allWorkouts
-    ? allWorkouts.filter(w => w.user_id === targetUser.id && w.date === selectedDate)
-    : [];
+  const [deletedWorkoutIds, setDeletedWorkoutIds] = useState<Set<string>>(new Set());
+
+  const targetWorkouts = (allWorkouts || [])
+    .filter(w => {
+      if (!w) return false;
+      const wid = String(w.id || (w as any)._id || '').trim();
+      if (deletedWorkoutIds.has(wid)) return false;
+      return w.user_id === targetUser.id && w.date === selectedDate;
+    });
   const targetWorkoutsCount = targetWorkouts.length;
 
   const todayStr = new Date().toISOString().split('T')[0];
@@ -742,7 +748,9 @@ export const DailyChecklist: React.FC<DailyChecklistProps> = ({
                         onClick={(e) => {
                           e.stopPropagation();
                           e.preventDefault();
-                          onDeleteWorkout(w.id);
+                          const wid = String(w.id || (w as any)._id || '').trim();
+                          setDeletedWorkoutIds(prev => new Set([...prev, wid]));
+                          onDeleteWorkout(wid);
                         }}
                         className="px-2.5 py-1.5 min-h-[34px] bg-rose-950/40 hover:bg-rose-900/60 border border-rose-800/60 text-rose-300 font-bold rounded-lg text-xs transition flex items-center gap-1 cursor-pointer active:scale-95 shrink-0"
                         title="Delete this logged workout session"

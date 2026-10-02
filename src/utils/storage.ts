@@ -323,20 +323,51 @@ export function saveStateToStorage(key: string, data: any) {
 }
 
 export function saveWorkoutsDirectly(newWorkouts: Workout[]): Workout[] {
-  saveStateToStorage(STORAGE_KEYS.WORKOUTS, newWorkouts);
+  const serialized = JSON.stringify(newWorkouts);
+  try {
+    localStorage.removeItem(STORAGE_KEYS.WORKOUTS);
+    localStorage.setItem(STORAGE_KEYS.WORKOUTS, serialized);
+  } catch {}
+  try {
+    sessionStorage.removeItem(STORAGE_KEYS.WORKOUTS);
+    sessionStorage.setItem(STORAGE_KEYS.WORKOUTS, serialized);
+  } catch {}
+  memoryFallback.set(STORAGE_KEYS.WORKOUTS, serialized);
   return newWorkouts;
 }
 
 export function deleteWorkoutDirectly(workoutId: string): Workout[] {
-  const currentWorkouts: Workout[] = getStoredItemSafely<Workout[]>(STORAGE_KEYS.WORKOUTS, []);
   const targetId = String(workoutId).trim();
-  const filtered = currentWorkouts.filter(w => String(w.id).trim() !== targetId);
-  saveStateToStorage(STORAGE_KEYS.WORKOUTS, filtered);
+  const currentWorkouts: Workout[] = getStoredItemSafely<Workout[]>(STORAGE_KEYS.WORKOUTS, []);
+  const filtered = currentWorkouts.filter(w => {
+    if (!w) return false;
+    const wid = String(w.id || (w as any)._id || '').trim();
+    return wid !== targetId;
+  });
+  
+  const serialized = JSON.stringify(filtered);
+  try {
+    localStorage.removeItem(STORAGE_KEYS.WORKOUTS);
+    localStorage.setItem(STORAGE_KEYS.WORKOUTS, serialized);
+  } catch {}
+  try {
+    sessionStorage.removeItem(STORAGE_KEYS.WORKOUTS);
+    sessionStorage.setItem(STORAGE_KEYS.WORKOUTS, serialized);
+  } catch {}
+  memoryFallback.set(STORAGE_KEYS.WORKOUTS, serialized);
   return filtered;
 }
 
 export function clearAllWorkoutsDirectly(): Workout[] {
-  saveStateToStorage(STORAGE_KEYS.WORKOUTS, []);
+  try {
+    localStorage.removeItem(STORAGE_KEYS.WORKOUTS);
+    localStorage.setItem(STORAGE_KEYS.WORKOUTS, '[]');
+  } catch {}
+  try {
+    sessionStorage.removeItem(STORAGE_KEYS.WORKOUTS);
+    sessionStorage.setItem(STORAGE_KEYS.WORKOUTS, '[]');
+  } catch {}
+  memoryFallback.set(STORAGE_KEYS.WORKOUTS, '[]');
   return [];
 }
 

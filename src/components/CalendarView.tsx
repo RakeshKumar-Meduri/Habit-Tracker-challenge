@@ -79,6 +79,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
 }) => {
   // Member selection (defaults to current user)
   const [selectedMemberId, setSelectedMemberId] = useState<string>(currentUser.id);
+  const [deletedWorkoutIds, setDeletedWorkoutIds] = useState<Set<string>>(new Set());
   
   // Current calendar viewing month & year
   const initialDate = useMemo(() => {
@@ -195,7 +196,12 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
   // Daily statistics lookup helper
   const getDayStats = (dateStr: string, isSunday: boolean) => {
     const log = dailyLogs.find(l => l.user_id === targetUser.id && l.date === dateStr);
-    const dayWorkouts = workouts.filter(w => w.user_id === targetUser.id && w.date === dateStr);
+    const dayWorkouts = workouts.filter(w => {
+      if (!w) return false;
+      const wid = String(w.id || (w as any)._id || '').trim();
+      if (deletedWorkoutIds.has(wid)) return false;
+      return w.user_id === targetUser.id && w.date === dateStr;
+    });
 
     let coreTasksDone = 0;
     if (log?.gym_done || (isSunday && log?.gym_done !== false)) coreTasksDone += 1;
@@ -984,7 +990,9 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
                         onClick={(e) => {
                           e.stopPropagation();
                           e.preventDefault();
-                          onDeleteWorkout(w.id);
+                          const wid = String(w.id || (w as any)._id || '').trim();
+                          setDeletedWorkoutIds(prev => new Set([...prev, wid]));
+                          onDeleteWorkout(wid);
                         }}
                         className="px-2.5 py-1.5 min-h-[34px] bg-rose-950/40 hover:bg-rose-900/60 border border-rose-800/60 text-rose-300 font-bold rounded-lg text-xs transition flex items-center gap-1 cursor-pointer active:scale-95 shrink-0"
                         title="Delete workout session"
