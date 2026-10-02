@@ -54,33 +54,33 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({
   }).sort((a, b) => b.points - a.points);
 
   const getRankBadge = (rank: number) => {
-    if (rank === 0) return { title: '1st Place', icon: '🥇', bg: 'from-[#c68b59]/30 to-[#b87b4b]/20 border-[#c68b59]' };
-    if (rank === 1) return { title: '2nd Place', icon: '🥈', bg: 'from-[#26201b] to-[#26201b] border-[#3d322a]' };
-    if (rank === 2) return { title: '3rd Place', icon: '🥉', bg: 'from-[#26201b] to-[#26201b] border-[#3d322a]' };
-    return { title: `${rank + 1}th Place`, icon: `#${rank + 1}`, bg: 'from-[#26201b] to-[#26201b] border-[#3d322a]' };
+    if (rank === 0) return { title: '1st Place', icon: '🥇', bg: 'from-[#D98B4A]/30 to-[#D98B4A]/20 border-[#D98B4A]' };
+    if (rank === 1) return { title: '2nd Place', icon: '🥈', bg: 'from-[#131316] to-[#131316] border-[#26262C]' };
+    if (rank === 2) return { title: '3rd Place', icon: '🥉', bg: 'from-[#131316] to-[#131316] border-[#26262C]' };
+    return { title: `${rank + 1}th Place`, icon: `#${rank + 1}`, bg: 'from-[#131316] to-[#131316] border-[#26262C]' };
   };
 
   return (
     <div className="space-y-5 sm:space-y-6 max-w-4xl mx-auto font-sans">
       
       {/* Header */}
-      <div className="bg-[#26201b] border border-[#3d322a] rounded-2xl p-4 sm:p-6 shadow-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+      <div className="bg-[#131316] border border-[#26262C] rounded-xl p-4 sm:p-6 shadow-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-xl font-black text-[#f5efe6] flex items-center gap-2">
-            <Trophy className="w-6 h-6 text-[#c68b59]" />
+          <h2 className="text-xl font-black text-[#F4F4F5] flex items-center gap-2">
+            <Trophy className="w-6 h-6 text-[#D98B4A]" />
             Group Fitness Leaderboard
           </h2>
-          <p className="text-xs text-[#c5b4a5] mt-1">
+          <p className="text-xs text-[#A1A1AA] mt-1">
             Earn 10 points per completed goal (up to 50 points per day) + Sunday Healing recovery!
           </p>
         </div>
 
         {/* Timeframe selector */}
-        <div className="w-full sm:w-auto grid grid-cols-2 sm:flex items-center gap-1 bg-[#1c1815] p-1 rounded-xl border border-[#3d322a]">
+        <div className="w-full sm:w-auto grid grid-cols-2 sm:flex items-center gap-1 bg-[#1B1B20] p-1 rounded-xl border border-[#26262C]">
           <button
             onClick={() => setTimeframe('weekly')}
             className={`py-1.5 px-3 text-center rounded-lg text-xs font-bold transition cursor-pointer ${
-              timeframe === 'weekly' ? 'bg-[#c68b59] text-[#1c1815] shadow-md' : 'text-[#c5b4a5] hover:text-[#f5efe6]'
+              timeframe === 'weekly' ? 'bg-[#D98B4A] text-[#1B1B20] shadow-md' : 'text-[#A1A1AA] hover:text-[#F4F4F5]'
             }`}
           >
             Past 7 Days
@@ -88,7 +88,7 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({
           <button
             onClick={() => setTimeframe('all')}
             className={`py-1.5 px-3 text-center rounded-lg text-xs font-bold transition cursor-pointer ${
-              timeframe === 'all' ? 'bg-[#c68b59] text-[#1c1815] shadow-md' : 'text-[#c5b4a5] hover:text-[#f5efe6]'
+              timeframe === 'all' ? 'bg-[#D98B4A] text-[#1B1B20] shadow-md' : 'text-[#A1A1AA] hover:text-[#F4F4F5]'
             }`}
           >
             All-Time
@@ -105,35 +105,35 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({
           return (
             <div
               key={item.user.id}
-              className={`relative bg-gradient-to-r ${badge.bg} border rounded-2xl p-3.5 sm:p-5 transition-all shadow-lg flex items-center justify-between gap-3 sm:gap-4 ${
-                isCurrent ? 'ring-2 ring-[#c68b59] shadow-[#c68b59]/20' : ''
+              className={`relative bg-gradient-to-r ${badge.bg} border rounded-xl p-3.5 sm:p-5 transition-all shadow-lg flex items-center justify-between gap-3 sm:gap-4 ${
+                isCurrent ? 'ring-2 ring-[#D98B4A] shadow-[#D98B4A]/20' : ''
               }`}
             >
               {/* Rank Icon & Avatar & Info */}
               <div className="flex items-center gap-2.5 sm:gap-4 min-w-0">
-                <div className="text-base sm:text-2xl font-black min-w-[28px] sm:min-w-[36px] text-center text-[#d4a373] shrink-0">
+                <div className="text-base sm:text-2xl font-black min-w-[28px] sm:min-w-[36px] text-center text-[#E69A5C] shrink-0">
                   {badge.icon}
                 </div>
 
-                <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-gradient-to-tr ${item.user.avatar_color || 'from-[#c68b59] to-[#785338]'} text-sm sm:text-base font-black text-[#f5efe6] flex items-center justify-center shadow-md shrink-0`}>
+                <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-xl bg-gradient-to-tr ${item.user.avatar_color || 'from-[#D98B4A] to-[#B45F1E]'} text-sm sm:text-base font-black text-[#F4F4F5] flex items-center justify-center shadow-md shrink-0`}>
                   {item.user.name.charAt(0).toUpperCase()}
                 </div>
 
                 <div className="min-w-0">
-                  <h3 className="text-sm sm:text-base font-black text-[#f5efe6] flex items-center gap-1.5 sm:gap-2 truncate">
+                  <h3 className="text-sm sm:text-base font-black text-[#F4F4F5] flex items-center gap-1.5 sm:gap-2 truncate">
                     <span className="truncate">{item.user.name}</span>
                     {isCurrent && (
-                      <span className="text-[9px] sm:text-[10px] px-1.5 py-0.5 rounded-full bg-[#c68b59]/20 text-[#d4a373] font-bold border border-[#c68b59]/30 shrink-0">
+                      <span className="text-[9px] sm:text-[10px] px-1.5 py-0.5 rounded-full bg-[#D98B4A]/20 text-[#E69A5C] font-bold border border-[#D98B4A]/30 shrink-0">
                         YOU
                       </span>
                     )}
                   </h3>
-                  <div className="flex flex-wrap items-center gap-x-2.5 gap-y-0.5 text-[11px] sm:text-xs text-[#c5b4a5] mt-0.5">
+                  <div className="flex flex-wrap items-center gap-x-2.5 gap-y-0.5 text-[11px] sm:text-xs text-[#A1A1AA] mt-0.5">
                     <span className="flex items-center gap-1">
-                      <Zap className="w-3.5 h-3.5 text-[#d4a373]" /> {item.totalCompletedGoals} goals
+                      <Zap className="w-3.5 h-3.5 text-[#E69A5C]" /> {item.totalCompletedGoals} goals
                     </span>
                     <span className="flex items-center gap-1">
-                      <Flame className="w-3.5 h-3.5 text-[#c68b59]" /> {item.cleanSweeps} clean sweeps
+                      <Flame className="w-3.5 h-3.5 text-[#D98B4A]" /> {item.cleanSweeps} clean sweeps
                     </span>
                   </div>
                 </div>
@@ -141,9 +141,9 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({
 
               {/* Total Points Score */}
               <div className="text-right shrink-0 pl-2">
-                <span className="text-[10px] sm:text-[11px] uppercase tracking-wider text-[#c5b4a5] font-bold block">Score</span>
-                <strong className="text-xl sm:text-3xl font-black text-[#d4a373] font-mono leading-none">
-                  {item.points} <span className="text-[10px] sm:text-xs text-[#c5b4a5] font-sans font-normal">pts</span>
+                <span className="text-[10px] sm:text-[11px] uppercase tracking-wider text-[#A1A1AA] font-bold block">Score</span>
+                <strong className="text-xl sm:text-3xl font-black text-[#E69A5C] font-mono leading-none">
+                  {item.points} <span className="text-[10px] sm:text-xs text-[#A1A1AA] font-sans font-normal">pts</span>
                 </strong>
               </div>
             </div>

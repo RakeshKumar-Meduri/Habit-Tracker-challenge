@@ -334,20 +334,20 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
     <div className="space-y-4 sm:space-y-6 animate-fadeIn pb-12 font-sans">
       
       {/* Header & Controls Bar */}
-      <div className="bg-[#26201b] border border-[#3d322a] rounded-2xl p-4 sm:p-6 shadow-xl">
+      <div className="bg-[#131316] border border-[#26262C] rounded-xl p-4 sm:p-6 shadow-xl">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           
           {/* Title & Subtitle */}
           <div>
             <div className="flex items-center gap-2.5">
-              <div className="p-2.5 rounded-xl bg-gradient-to-tr from-[#c68b59] to-[#d4a373] text-[#1c1815] shadow-lg shadow-[#c68b59]/20">
+              <div className="p-2.5 rounded-xl bg-gradient-to-tr from-[#D98B4A] to-[#E69A5C] text-[#1B1B20] shadow-lg shadow-[#D98B4A]/20">
                 <CalendarIcon className="w-5 h-5 sm:w-6 sm:h-6" />
               </div>
               <div>
-                <h2 className="text-base sm:text-xl font-black text-[#f5efe6] tracking-tight">
+                <h2 className="text-base sm:text-xl font-black text-[#F4F4F5] tracking-tight">
                   Activity & Progress Calendar
                 </h2>
-                <p className="text-xs text-[#c5b4a5]">
+                <p className="text-xs text-[#A1A1AA]">
                   Track daily completed tasks, earned points, and overall consistency.
                 </p>
               </div>
@@ -357,15 +357,15 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
           {/* Member Switcher (if multiple users) & Quick Jump */}
           <div className="flex flex-wrap items-center gap-2 sm:gap-3">
             {allUsers.length > 1 && (
-              <div className="flex items-center gap-1.5 bg-[#1c1815] border border-[#3d322a] rounded-xl px-2.5 py-1.5">
-                <Users className="w-4 h-4 text-[#c68b59]" />
+              <div className="flex items-center gap-1.5 bg-[#1B1B20] border border-[#26262C] rounded-xl px-2.5 py-1.5">
+                <Users className="w-4 h-4 text-[#D98B4A]" />
                 <select
                   value={selectedMemberId}
                   onChange={(e) => setSelectedMemberId(e.target.value)}
-                  className="bg-transparent text-xs font-bold text-[#f5efe6] focus:outline-none cursor-pointer pr-1"
+                  className="bg-transparent text-xs font-bold text-[#F4F4F5] focus:outline-none cursor-pointer pr-1"
                 >
                   {allUsers.map((u) => (
-                    <option key={u.id} value={u.id} className="bg-[#26201b] text-[#f5efe6]">
+                    <option key={u.id} value={u.id} className="bg-[#131316] text-[#F4F4F5]">
                       {u.name} {u.id === currentUser.id ? '(You)' : ''}
                     </option>
                   ))}
@@ -375,93 +375,93 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
 
             <button
               onClick={handleJumpToToday}
-              className="px-3 py-1.5 bg-[#1c1815] hover:bg-[#322a24] text-[#d4a373] hover:text-[#f5efe6] border border-[#3d322a] rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer"
+              className="px-3 py-1.5 bg-[#1B1B20] hover:bg-[#1B1B20] text-[#E69A5C] hover:text-[#F4F4F5] border border-[#26262C] rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer"
               title="Jump to Today"
             >
-              <Sparkles className="w-3.5 h-3.5 text-[#c68b59]" />
+              <Sparkles className="w-3.5 h-3.5 text-[#D98B4A]" />
               <span>Today</span>
             </button>
           </div>
         </div>
 
         {/* Monthly Summary Statistics Grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-4 mt-5 pt-5 border-t border-[#3d322a]/80">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-4 mt-5 pt-5 border-t border-[#26262C]/80">
           
-          <div className="bg-[#1c1815] border border-[#3d322a] rounded-xl p-3 sm:p-4 transition hover:border-[#c68b59]/40">
-            <div className="flex items-center justify-between text-xs text-[#c5b4a5] mb-1">
+          <div className="bg-[#1B1B20] border border-[#26262C] rounded-xl p-3 sm:p-4 transition hover:border-[#D98B4A]/40">
+            <div className="flex items-center justify-between text-xs text-[#A1A1AA] mb-1">
               <span>Points ({MONTH_NAMES[viewMonth].substring(0, 3)})</span>
-              <Trophy className="w-4 h-4 text-[#c68b59]" />
+              <Trophy className="w-4 h-4 text-[#D98B4A]" />
             </div>
-            <div className="text-lg sm:text-2xl font-black text-[#d4a373] tracking-tight">
-              {monthlyMetrics.totalPoints} <span className="text-xs text-[#c5b4a5] font-normal">pts</span>
+            <div className="text-lg sm:text-2xl font-black text-[#E69A5C] tracking-tight">
+              {monthlyMetrics.totalPoints} <span className="text-xs text-[#A1A1AA] font-normal">pts</span>
             </div>
-            <p className="text-[10px] text-[#c5b4a5] mt-0.5">Earned this month</p>
+            <p className="text-[10px] text-[#A1A1AA] mt-0.5">Earned this month</p>
           </div>
 
-          <div className="bg-[#1c1815] border border-[#3d322a] rounded-xl p-3 sm:p-4 transition hover:border-emerald-500/40">
-            <div className="flex items-center justify-between text-xs text-[#c5b4a5] mb-1">
+          <div className="bg-[#1B1B20] border border-[#26262C] rounded-xl p-3 sm:p-4 transition hover:border-emerald-500/40">
+            <div className="flex items-center justify-between text-xs text-[#A1A1AA] mb-1">
               <span>Perfect Days</span>
               <Star className="w-4 h-4 text-emerald-400" />
             </div>
             <div className="text-lg sm:text-2xl font-black text-emerald-400 tracking-tight">
-              {monthlyMetrics.perfectDays} <span className="text-xs text-[#c5b4a5] font-normal">days</span>
+              {monthlyMetrics.perfectDays} <span className="text-xs text-[#A1A1AA] font-normal">days</span>
             </div>
-            <p className="text-[10px] text-[#c5b4a5] mt-0.5">All 5 goals done</p>
+            <p className="text-[10px] text-[#A1A1AA] mt-0.5">All 5 goals done</p>
           </div>
 
-          <div className="bg-[#1c1815] border border-[#3d322a] rounded-xl p-3 sm:p-4 transition hover:border-[#c68b59]/40">
-            <div className="flex items-center justify-between text-xs text-[#c5b4a5] mb-1">
+          <div className="bg-[#1B1B20] border border-[#26262C] rounded-xl p-3 sm:p-4 transition hover:border-[#D98B4A]/40">
+            <div className="flex items-center justify-between text-xs text-[#A1A1AA] mb-1">
               <span>Avg Goals / Day</span>
-              <Activity className="w-4 h-4 text-[#c68b59]" />
+              <Activity className="w-4 h-4 text-[#D98B4A]" />
             </div>
-            <div className="text-lg sm:text-2xl font-black text-[#f5efe6] tracking-tight">
-              {monthlyMetrics.avgTasks} <span className="text-xs text-[#c5b4a5] font-normal">/ 5</span>
+            <div className="text-lg sm:text-2xl font-black text-[#F4F4F5] tracking-tight">
+              {monthlyMetrics.avgTasks} <span className="text-xs text-[#A1A1AA] font-normal">/ 5</span>
             </div>
-            <p className="text-[10px] text-[#c5b4a5] mt-0.5">On active days</p>
+            <p className="text-[10px] text-[#A1A1AA] mt-0.5">On active days</p>
           </div>
 
-          <div className="bg-[#1c1815] border border-[#3d322a] rounded-xl p-3 sm:p-4 transition hover:border-[#c68b59]/40">
-            <div className="flex items-center justify-between text-xs text-[#c5b4a5] mb-1">
+          <div className="bg-[#1B1B20] border border-[#26262C] rounded-xl p-3 sm:p-4 transition hover:border-[#D98B4A]/40">
+            <div className="flex items-center justify-between text-xs text-[#A1A1AA] mb-1">
               <span>Workouts</span>
-              <Dumbbell className="w-4 h-4 text-[#c68b59]" />
+              <Dumbbell className="w-4 h-4 text-[#D98B4A]" />
             </div>
-            <div className="text-lg sm:text-2xl font-black text-[#f5efe6] tracking-tight">
-              {monthlyMetrics.totalWorkouts} <span className="text-xs text-[#c5b4a5] font-normal">sessions</span>
+            <div className="text-lg sm:text-2xl font-black text-[#F4F4F5] tracking-tight">
+              {monthlyMetrics.totalWorkouts} <span className="text-xs text-[#A1A1AA] font-normal">sessions</span>
             </div>
-            <p className="text-[10px] text-[#c5b4a5] mt-0.5">Logged this month</p>
+            <p className="text-[10px] text-[#A1A1AA] mt-0.5">Logged this month</p>
           </div>
 
         </div>
       </div>
 
       {/* Main Calendar Month View Container */}
-      <div className="bg-[#26201b] border border-[#3d322a] rounded-2xl p-3 sm:p-6 shadow-xl">
+      <div className="bg-[#131316] border border-[#26262C] rounded-xl p-3 sm:p-6 shadow-xl">
         
         {/* Month Navigation Bar */}
         <div className="flex items-center justify-between mb-4 sm:mb-6 px-1">
           <button
             onClick={handlePrevMonth}
-            className="p-2 sm:px-3 sm:py-2 bg-[#1c1815] hover:bg-[#322a24] text-[#c5b4a5] hover:text-[#f5efe6] border border-[#3d322a] rounded-xl text-xs font-bold transition flex items-center gap-1 cursor-pointer active:scale-95"
+            className="p-2 sm:px-3 sm:py-2 bg-[#1B1B20] hover:bg-[#1B1B20] text-[#A1A1AA] hover:text-[#F4F4F5] border border-[#26262C] rounded-xl text-xs font-bold transition flex items-center gap-1 cursor-pointer active:scale-95"
             title="Previous Month"
           >
-            <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5 text-[#c68b59]" />
+            <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5 text-[#D98B4A]" />
             <span className="hidden sm:inline">Prev Month</span>
           </button>
 
           <div className="flex items-center gap-2">
-            <CalendarIcon className="w-4 h-4 sm:w-5 sm:h-5 text-[#c68b59]" />
-            <h3 className="text-base sm:text-xl font-black text-[#f5efe6] tracking-tight">
+            <CalendarIcon className="w-4 h-4 sm:w-5 sm:h-5 text-[#D98B4A]" />
+            <h3 className="text-base sm:text-xl font-black text-[#F4F4F5] tracking-tight">
               {MONTH_NAMES[viewMonth]} {viewYear}
             </h3>
           </div>
 
           <button
             onClick={handleNextMonth}
-            className="p-2 sm:px-3 sm:py-2 bg-[#1c1815] hover:bg-[#322a24] text-[#c5b4a5] hover:text-[#f5efe6] border border-[#3d322a] rounded-xl text-xs font-bold transition flex items-center gap-1 cursor-pointer active:scale-95"
+            className="p-2 sm:px-3 sm:py-2 bg-[#1B1B20] hover:bg-[#1B1B20] text-[#A1A1AA] hover:text-[#F4F4F5] border border-[#26262C] rounded-xl text-xs font-bold transition flex items-center gap-1 cursor-pointer active:scale-95"
             title="Next Month"
           >
             <span className="hidden sm:inline">Next Month</span>
-            <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 text-[#c68b59]" />
+            <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 text-[#D98B4A]" />
           </button>
         </div>
 
@@ -471,7 +471,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
             <div
               key={w}
               className={`text-center py-1 sm:py-1.5 text-[10px] sm:text-xs font-bold tracking-wider uppercase ${
-                idx === 0 ? 'text-emerald-400' : 'text-[#c5b4a5]'
+                idx === 0 ? 'text-emerald-400' : 'text-[#A1A1AA]'
               }`}
             >
               <span>{w}</span>
@@ -494,16 +494,16 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
                 }}
                 className={`min-h-[72px] sm:min-h-[96px] p-1.5 sm:p-2.5 rounded-xl border flex flex-col justify-between transition-all cursor-pointer select-none active:scale-[0.98] relative overflow-hidden ${
                   isSelected
-                    ? 'border-[#c68b59] ring-2 ring-[#c68b59]/60 bg-gradient-to-b from-[#322a24] to-[#26201b] shadow-lg shadow-[#c68b59]/15 z-10'
+                    ? 'border-[#D98B4A] ring-2 ring-[#D98B4A]/60 bg-gradient-to-b from-[#1B1B20] to-[#131316] shadow-lg shadow-[#D98B4A]/15 z-10'
                     : stats.isPerfect && day.isCurrentMonth
-                    ? 'border-amber-500/40 bg-gradient-to-b from-amber-950/20 to-[#1c1815] hover:border-amber-400/60'
+                    ? 'border-amber-500/40 bg-gradient-to-b from-amber-950/20 to-[#1B1B20] hover:border-amber-400/60'
                     : stats.coreTasksDone >= 3 && day.isCurrentMonth
-                    ? 'border-emerald-500/30 bg-gradient-to-b from-emerald-950/20 to-[#1c1815] hover:border-emerald-400/50'
+                    ? 'border-emerald-500/30 bg-gradient-to-b from-emerald-950/20 to-[#1B1B20] hover:border-emerald-400/50'
                     : day.isSunday && day.isCurrentMonth
-                    ? 'border-teal-800/40 bg-[#1c1815] hover:border-teal-700/60'
+                    ? 'border-teal-800/40 bg-[#1B1B20] hover:border-teal-700/60'
                     : day.isCurrentMonth
-                    ? 'border-[#3d322a] bg-[#1c1815] hover:border-[#c68b59]/50 hover:bg-[#2b241e]'
-                    : 'border-[#3d322a]/40 bg-[#171412]/50 opacity-40 hover:opacity-70'
+                    ? 'border-[#26262C] bg-[#1B1B20] hover:border-[#D98B4A]/50 hover:bg-[#1B1B20]'
+                    : 'border-[#26262C]/40 bg-[#0B0B0D]/50 opacity-40 hover:opacity-70'
                 }`}
               >
                 {/* Top Row: Day Number & Today/Healing Badges */}
@@ -511,12 +511,12 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
                   <span
                     className={`text-xs sm:text-sm font-black leading-none ${
                       day.isToday
-                        ? 'text-[#d4a373] bg-[#c68b59]/20 px-1.5 py-0.5 rounded-md border border-[#c68b59]/40'
+                        ? 'text-[#E69A5C] bg-[#D98B4A]/20 px-1.5 py-0.5 rounded-md border border-[#D98B4A]/40'
                         : day.isSunday && day.isCurrentMonth
                         ? 'text-emerald-400'
                         : day.isCurrentMonth
-                        ? 'text-[#f5efe6]'
-                        : 'text-[#c5b4a5]/60'
+                        ? 'text-[#F4F4F5]'
+                        : 'text-[#A1A1AA]/60'
                     }`}
                   >
                     {day.dayNumber}
@@ -533,7 +533,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
                       <Star className="w-3 h-3 text-amber-400 fill-amber-400 shrink-0" />
                     )}
                     {day.isToday && !stats.isPerfect && (
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#c68b59] animate-pulse" />
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#D98B4A] animate-pulse" />
                     )}
                   </div>
                 </div>
@@ -543,7 +543,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
                   
                   {/* Tasks count indicator */}
                   {day.isFuture ? (
-                    <span className="text-[9px] text-[#c5b4a5]/40 italic block leading-none truncate">
+                    <span className="text-[9px] text-[#A1A1AA]/40 italic block leading-none truncate">
                       Upcoming
                     </span>
                   ) : day.isSunday && stats.coreTasksDone === 0 ? (
@@ -558,7 +558,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
                             ? 'bg-amber-950/60 text-amber-300 border-amber-800/60'
                             : stats.coreTasksDone >= 3
                             ? 'bg-emerald-950/50 text-emerald-300 border-emerald-800/50'
-                            : 'bg-[#26201b] text-[#c5b4a5] border-[#3d322a]'
+                            : 'bg-[#131316] text-[#A1A1AA] border-[#26262C]'
                         }`}
                         title={`${stats.coreTasksDone} of 5 core goals completed`}
                       >
@@ -567,13 +567,13 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
 
                       {/* Workouts indicator icon if any */}
                       {stats.workouts.length > 0 && (
-                        <span className="hidden sm:inline-flex items-center text-[9px] text-[#c68b59]" title={`${stats.workouts.length} workout(s) logged`}>
+                        <span className="hidden sm:inline-flex items-center text-[9px] text-[#D98B4A]" title={`${stats.workouts.length} workout(s) logged`}>
                           <Dumbbell className="w-2.5 h-2.5" />
                         </span>
                       )}
                     </div>
                   ) : (
-                    <span className="text-[9px] text-[#c5b4a5]/40 block leading-none truncate">
+                    <span className="text-[9px] text-[#A1A1AA]/40 block leading-none truncate">
                       - / 5
                     </span>
                   )}
@@ -584,10 +584,10 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
                       <span
                         className={`text-[9px] sm:text-[10px] font-mono font-bold leading-none ${
                           stats.points >= 50
-                            ? 'text-[#d4a373]'
+                            ? 'text-[#E69A5C]'
                             : stats.points >= 30
                             ? 'text-emerald-400'
-                            : 'text-[#c5b4a5]'
+                            : 'text-[#A1A1AA]'
                         }`}
                       >
                         +{stats.points} pts
@@ -598,15 +598,15 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
                 </div>
 
                 {/* Bottom: Mini completion progress bar */}
-                <div className="w-full bg-[#26201b] h-1 rounded-full overflow-hidden border border-[#3d322a]/40">
+                <div className="w-full bg-[#131316] h-1 rounded-full overflow-hidden border border-[#26262C]/40">
                   <div
                     className={`h-full transition-all duration-300 rounded-full ${
                       stats.isPerfect
-                        ? 'bg-gradient-to-r from-[#c68b59] to-amber-400'
+                        ? 'bg-gradient-to-r from-[#D98B4A] to-amber-400'
                         : stats.coreTasksDone >= 3
                         ? 'bg-emerald-500'
                         : stats.coreTasksDone > 0
-                        ? 'bg-[#c68b59]'
+                        ? 'bg-[#D98B4A]'
                         : 'bg-transparent'
                     }`}
                     style={{ width: `${(stats.coreTasksDone / 5) * 100}%` }}
@@ -619,7 +619,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
         </div>
 
         {/* Legend / Key Footer */}
-        <div className="flex flex-wrap items-center justify-between gap-3 mt-4 pt-3 border-t border-[#3d322a]/60 text-[10px] sm:text-xs text-[#c5b4a5]">
+        <div className="flex flex-wrap items-center justify-between gap-3 mt-4 pt-3 border-t border-[#26262C]/60 text-[10px] sm:text-xs text-[#A1A1AA]">
           <div className="flex flex-wrap items-center gap-3">
             <div className="flex items-center gap-1.5">
               <span className="w-2.5 h-2.5 rounded-full bg-amber-400 shadow-sm shadow-amber-400/40" />
@@ -634,12 +634,12 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
               <span>Sunday Healing</span>
             </div>
             <div className="flex items-center gap-1.5">
-              <span className="w-2.5 h-2.5 rounded-full border border-[#c68b59] bg-[#c68b59]/20" />
+              <span className="w-2.5 h-2.5 rounded-full border border-[#D98B4A] bg-[#D98B4A]/20" />
               <span>Selected Date</span>
             </div>
           </div>
 
-          <div className="text-[11px] text-[#d4a373] font-semibold">
+          <div className="text-[11px] text-[#E69A5C] font-semibold">
             Click any date below for full details
           </div>
         </div>
@@ -647,17 +647,17 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
       </div>
 
       {/* Selected Date Information Breakdown Panel */}
-      <div className="bg-[#26201b] border border-[#3d322a] rounded-2xl p-4 sm:p-6 shadow-xl space-y-4">
+      <div className="bg-[#131316] border border-[#26262C] rounded-xl p-4 sm:p-6 shadow-xl space-y-4">
         
         {/* Panel Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-[#3d322a]">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-[#26262C]">
           <div>
             <div className="flex items-center gap-2">
-              <h3 className="text-base sm:text-lg font-black text-[#f5efe6] flex items-center gap-2">
+              <h3 className="text-base sm:text-lg font-black text-[#F4F4F5] flex items-center gap-2">
                 {formattedSelectedDate}
               </h3>
               {relativeDateLabel && (
-                <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#c68b59]/20 text-[#d4a373] border border-[#c68b59]/30 font-bold">
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#D98B4A]/20 text-[#E69A5C] border border-[#D98B4A]/30 font-bold">
                   {relativeDateLabel}
                 </span>
               )}
@@ -667,7 +667,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
                 </span>
               )}
             </div>
-            <p className="text-xs text-[#c5b4a5] mt-0.5">
+            <p className="text-xs text-[#A1A1AA] mt-0.5">
               {isViewingSelf
                 ? `Your logged activity and completion report for this date.`
                 : `Viewing ${targetUser.name}'s activity and goal breakdown.`}
@@ -678,7 +678,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
           <div className="flex items-center gap-2">
             <button
               onClick={() => onNavigateToChecklist(selectedDate)}
-              className="px-3.5 py-2 bg-gradient-to-r from-[#c68b59] to-[#b87b4b] hover:from-[#b87b4b] hover:to-[#a06738] text-[#1c1815] text-xs font-bold rounded-xl transition flex items-center gap-1.5 shadow-md shadow-[#c68b59]/20 cursor-pointer active:scale-95"
+              className="px-3.5 py-2 bg-gradient-to-r from-[#D98B4A] to-[#D98B4A] hover:from-[#D98B4A] hover:to-[#B45F1E] text-[#1B1B20] text-xs font-bold rounded-xl transition flex items-center gap-1.5 shadow-md shadow-[#D98B4A]/20 cursor-pointer active:scale-95"
             >
               <span>Open in Checklist</span>
               <ExternalLink className="w-3.5 h-3.5" />
@@ -686,7 +686,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
             {onOpenWorkoutModal && isViewingSelf && (
               <button
                 onClick={onOpenWorkoutModal}
-                className="px-3 py-2 bg-[#1c1815] hover:bg-[#322a24] text-[#d4a373] border border-[#3d322a] text-xs font-bold rounded-xl transition flex items-center gap-1.5 cursor-pointer active:scale-95"
+                className="px-3 py-2 bg-[#1B1B20] hover:bg-[#1B1B20] text-[#E69A5C] border border-[#26262C] text-xs font-bold rounded-xl transition flex items-center gap-1.5 cursor-pointer active:scale-95"
               >
                 <Plus className="w-3.5 h-3.5" />
                 <span className="hidden sm:inline">Log Workout</span>
@@ -696,28 +696,28 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
         </div>
 
         {/* Day Score Overview Banner */}
-        <div className="bg-[#1c1815] border border-[#3d322a] rounded-xl p-3 sm:p-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div className="bg-[#1B1B20] border border-[#26262C] rounded-xl p-3 sm:p-4 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-3 w-full sm:w-auto">
             <div className={`p-3 rounded-xl border shrink-0 ${
               selectedStats.isPerfect
                 ? 'bg-amber-950/40 border-amber-500/40 text-amber-400'
                 : selectedStats.coreTasksDone >= 3
                 ? 'bg-emerald-950/40 border-emerald-500/40 text-emerald-400'
-                : 'bg-[#26201b] border-[#3d322a] text-[#c5b4a5]'
+                : 'bg-[#131316] border-[#26262C] text-[#A1A1AA]'
             }`}>
               {selectedStats.isPerfect ? (
                 <Trophy className="w-6 h-6 text-amber-400" />
               ) : selectedStats.coreTasksDone >= 3 ? (
                 <CheckCircle2 className="w-6 h-6 text-emerald-400" />
               ) : (
-                <Activity className="w-6 h-6 text-[#c68b59]" />
+                <Activity className="w-6 h-6 text-[#D98B4A]" />
               )}
             </div>
 
             <div>
               <div className="flex items-center gap-2">
-                <span className="text-xl sm:text-2xl font-black text-[#f5efe6] font-mono">
-                  {selectedStats.points} <span className="text-xs text-[#c5b4a5] font-sans font-normal">/ 50 pts</span>
+                <span className="text-xl sm:text-2xl font-black text-[#F4F4F5] font-mono">
+                  {selectedStats.points} <span className="text-xs text-[#A1A1AA] font-sans font-normal">/ 50 pts</span>
                 </span>
                 <span
                   className={`text-[10px] px-2 py-0.5 rounded-full font-bold border ${
@@ -725,7 +725,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
                       ? 'bg-amber-950/60 text-amber-300 border-amber-800/60'
                       : selectedStats.coreTasksDone >= 3
                       ? 'bg-emerald-950/60 text-emerald-300 border-emerald-800/60'
-                      : 'bg-[#26201b] text-[#c5b4a5] border-[#3d322a]'
+                      : 'bg-[#131316] text-[#A1A1AA] border-[#26262C]'
                   }`}
                 >
                   {selectedStats.isPerfect
@@ -735,7 +735,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
                     : '🌱 Active Day'}
                 </span>
               </div>
-              <p className="text-xs text-[#c5b4a5]">
+              <p className="text-xs text-[#A1A1AA]">
                 {selectedStats.coreTasksDone} of 5 core goals accomplished
                 {selectedStats.suppsTaken > 0 ? ` • ${selectedStats.suppsTaken} supplement(s)` : ''}
                 {selectedStats.habitsDone > 0 ? ` • ${selectedStats.habitsDone} habit(s)` : ''}
@@ -745,12 +745,12 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
 
           <div className="w-full sm:w-48 space-y-1">
             <div className="flex items-center justify-between text-xs">
-              <span className="text-[#c5b4a5]">Completion:</span>
-              <span className="font-bold text-[#d4a373]">{Math.round((selectedStats.coreTasksDone / 5) * 100)}%</span>
+              <span className="text-[#A1A1AA]">Completion:</span>
+              <span className="font-bold text-[#E69A5C]">{Math.round((selectedStats.coreTasksDone / 5) * 100)}%</span>
             </div>
-            <div className="w-full bg-[#26201b] h-2 rounded-full overflow-hidden border border-[#3d322a]">
+            <div className="w-full bg-[#131316] h-2 rounded-full overflow-hidden border border-[#26262C]">
               <div
-                className="h-full bg-gradient-to-r from-[#c68b59] to-emerald-400 rounded-full transition-all duration-300"
+                className="h-full bg-gradient-to-r from-[#D98B4A] to-emerald-400 rounded-full transition-all duration-300"
                 style={{ width: `${(selectedStats.coreTasksDone / 5) * 100}%` }}
               />
             </div>
@@ -759,7 +759,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
 
         {/* Core Daily Goals Breakdown Grid */}
         <div>
-          <h4 className="text-xs font-bold text-[#c5b4a5] uppercase tracking-wider mb-2.5">
+          <h4 className="text-xs font-bold text-[#A1A1AA] uppercase tracking-wider mb-2.5">
             Core Daily Goals Status
           </h4>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
@@ -770,20 +770,20 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
                 ? 'bg-emerald-950/15 border-emerald-500/30'
                 : selectedStats.log?.gym_done
                 ? 'bg-emerald-950/20 border-emerald-500/40'
-                : 'bg-[#1c1815] border-[#3d322a]'
+                : 'bg-[#1B1B20] border-[#26262C]'
             }`}>
               <div className={`p-2 rounded-lg shrink-0 ${
                 isSelectedDateSunday
                   ? 'bg-emerald-500/20 text-emerald-400'
                   : selectedStats.log?.gym_done
                   ? 'bg-emerald-500/20 text-emerald-400'
-                  : 'bg-[#26201b] text-[#c5b4a5]'
+                  : 'bg-[#131316] text-[#A1A1AA]'
               }`}>
                 {isSelectedDateSunday ? <Leaf className="w-4 h-4" /> : <Dumbbell className="w-4 h-4" />}
               </div>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center justify-between gap-1">
-                  <h5 className="text-xs font-bold text-[#f5efe6] truncate">Gym & Workouts</h5>
+                  <h5 className="text-xs font-bold text-[#F4F4F5] truncate">Gym & Workouts</h5>
                   <span className={`text-[10px] font-bold px-1.5 py-0.2 rounded border ${
                     isSelectedDateSunday
                       ? 'bg-emerald-950/60 text-emerald-400 border-emerald-800/60'
@@ -794,7 +794,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
                     {isSelectedDateSunday ? 'Healing Mode' : selectedStats.log?.gym_done ? '+10 pts Done' : 'Missed'}
                   </span>
                 </div>
-                <p className="text-[11px] text-[#c5b4a5] mt-0.5">
+                <p className="text-[11px] text-[#A1A1AA] mt-0.5">
                   {isSelectedDateSunday
                     ? 'Sunday rest & recovery day'
                     : selectedStats.workouts.length > 0
@@ -810,18 +810,18 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
             <div className={`p-3 rounded-xl border flex items-start gap-3 transition ${
               selectedStats.log?.steps_done
                 ? 'bg-emerald-950/20 border-emerald-500/40'
-                : 'bg-[#1c1815] border-[#3d322a]'
+                : 'bg-[#1B1B20] border-[#26262C]'
             }`}>
               <div className={`p-2 rounded-lg shrink-0 ${
                 selectedStats.log?.steps_done
                   ? 'bg-emerald-500/20 text-emerald-400'
-                  : 'bg-[#26201b] text-[#c5b4a5]'
+                  : 'bg-[#131316] text-[#A1A1AA]'
               }`}>
                 <Footprints className="w-4 h-4" />
               </div>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center justify-between gap-1">
-                  <h5 className="text-xs font-bold text-[#f5efe6] truncate">Daily Steps</h5>
+                  <h5 className="text-xs font-bold text-[#F4F4F5] truncate">Daily Steps</h5>
                   <span className={`text-[10px] font-bold px-1.5 py-0.2 rounded border ${
                     selectedStats.log?.steps_done
                       ? 'bg-emerald-950/60 text-emerald-400 border-emerald-800/60'
@@ -830,7 +830,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
                     {selectedStats.log?.steps_done ? '+10 pts Done' : 'Missed'}
                   </span>
                 </div>
-                <p className="text-[11px] text-[#c5b4a5] mt-0.5">
+                <p className="text-[11px] text-[#A1A1AA] mt-0.5">
                   {selectedStats.log?.steps_value
                     ? `${selectedStats.log.steps_value.toLocaleString()} / ${selectedStats.log.steps_target?.toLocaleString() || '10,000'} steps`
                     : selectedStats.log?.steps_done
@@ -844,18 +844,18 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
             <div className={`p-3 rounded-xl border flex items-start gap-3 transition ${
               selectedStats.log?.water_done
                 ? 'bg-emerald-950/20 border-emerald-500/40'
-                : 'bg-[#1c1815] border-[#3d322a]'
+                : 'bg-[#1B1B20] border-[#26262C]'
             }`}>
               <div className={`p-2 rounded-lg shrink-0 ${
                 selectedStats.log?.water_done
                   ? 'bg-emerald-500/20 text-emerald-400'
-                  : 'bg-[#26201b] text-[#c5b4a5]'
+                  : 'bg-[#131316] text-[#A1A1AA]'
               }`}>
                 <Droplets className="w-4 h-4" />
               </div>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center justify-between gap-1">
-                  <h5 className="text-xs font-bold text-[#f5efe6] truncate">Water Hydration</h5>
+                  <h5 className="text-xs font-bold text-[#F4F4F5] truncate">Water Hydration</h5>
                   <span className={`text-[10px] font-bold px-1.5 py-0.2 rounded border ${
                     selectedStats.log?.water_done
                       ? 'bg-emerald-950/60 text-emerald-400 border-emerald-800/60'
@@ -864,7 +864,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
                     {selectedStats.log?.water_done ? '+10 pts Done' : 'Missed'}
                   </span>
                 </div>
-                <p className="text-[11px] text-[#c5b4a5] mt-0.5">
+                <p className="text-[11px] text-[#A1A1AA] mt-0.5">
                   {selectedStats.log?.water_intake_ml
                     ? `${selectedStats.log.water_intake_ml.toLocaleString()} / ${selectedStats.log.water_target_ml || 2500} ml`
                     : selectedStats.log?.water_done
@@ -878,18 +878,18 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
             <div className={`p-3 rounded-xl border flex items-start gap-3 transition ${
               selectedStats.log?.sleep_done
                 ? 'bg-emerald-950/20 border-emerald-500/40'
-                : 'bg-[#1c1815] border-[#3d322a]'
+                : 'bg-[#1B1B20] border-[#26262C]'
             }`}>
               <div className={`p-2 rounded-lg shrink-0 ${
                 selectedStats.log?.sleep_done
                   ? 'bg-emerald-500/20 text-emerald-400'
-                  : 'bg-[#26201b] text-[#c5b4a5]'
+                  : 'bg-[#131316] text-[#A1A1AA]'
               }`}>
                 <Moon className="w-4 h-4" />
               </div>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center justify-between gap-1">
-                  <h5 className="text-xs font-bold text-[#f5efe6] truncate">Sleep Schedule</h5>
+                  <h5 className="text-xs font-bold text-[#F4F4F5] truncate">Sleep Schedule</h5>
                   <span className={`text-[10px] font-bold px-1.5 py-0.2 rounded border ${
                     selectedStats.log?.sleep_done
                       ? 'bg-emerald-950/60 text-emerald-400 border-emerald-800/60'
@@ -898,7 +898,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
                     {selectedStats.log?.sleep_done ? '+10 pts Done' : 'Missed'}
                   </span>
                 </div>
-                <p className="text-[11px] text-[#c5b4a5] mt-0.5">
+                <p className="text-[11px] text-[#A1A1AA] mt-0.5">
                   {selectedStats.log?.sleep_duration
                     ? `${selectedStats.log.sleep_duration} hrs (${selectedStats.log.sleep_start || '23:00'} - ${selectedStats.log.sleep_end || '07:00'})`
                     : selectedStats.log?.sleep_done
@@ -912,18 +912,18 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
             <div className={`p-3 rounded-xl border flex items-start gap-3 transition ${
               selectedStats.log?.junk_food_avoided
                 ? 'bg-emerald-950/20 border-emerald-500/40'
-                : 'bg-[#1c1815] border-[#3d322a]'
+                : 'bg-[#1B1B20] border-[#26262C]'
             }`}>
               <div className={`p-2 rounded-lg shrink-0 ${
                 selectedStats.log?.junk_food_avoided
                   ? 'bg-emerald-500/20 text-emerald-400'
-                  : 'bg-[#26201b] text-[#c5b4a5]'
+                  : 'bg-[#131316] text-[#A1A1AA]'
               }`}>
                 <Apple className="w-4 h-4" />
               </div>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center justify-between gap-1">
-                  <h5 className="text-xs font-bold text-[#f5efe6] truncate">Clean Nutrition</h5>
+                  <h5 className="text-xs font-bold text-[#F4F4F5] truncate">Clean Nutrition</h5>
                   <span className={`text-[10px] font-bold px-1.5 py-0.2 rounded border ${
                     selectedStats.log?.junk_food_avoided
                       ? 'bg-emerald-950/60 text-emerald-400 border-emerald-800/60'
@@ -932,25 +932,25 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
                     {selectedStats.log?.junk_food_avoided ? '+10 pts Done' : 'Cheat / Missed'}
                   </span>
                 </div>
-                <p className="text-[11px] text-[#c5b4a5] mt-0.5">
+                <p className="text-[11px] text-[#A1A1AA] mt-0.5">
                   {selectedStats.log?.junk_food_avoided ? 'Avoided junk food successfully' : 'Had cheat snack or cravings'}
                 </p>
               </div>
             </div>
 
             {/* Body Weight Log (if logged on this day) */}
-            <div className="p-3 rounded-xl border border-[#3d322a] bg-[#1c1815] flex items-start gap-3">
-              <div className="p-2 rounded-lg shrink-0 bg-[#26201b] text-[#d4a373]">
+            <div className="p-3 rounded-xl border border-[#26262C] bg-[#1B1B20] flex items-start gap-3">
+              <div className="p-2 rounded-lg shrink-0 bg-[#131316] text-[#E69A5C]">
                 <Flame className="w-4 h-4" />
               </div>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center justify-between gap-1">
-                  <h5 className="text-xs font-bold text-[#f5efe6] truncate">Body Weight</h5>
-                  <span className="text-[10px] font-bold px-1.5 py-0.2 rounded border bg-[#26201b] text-[#c5b4a5] border-[#3d322a]">
+                  <h5 className="text-xs font-bold text-[#F4F4F5] truncate">Body Weight</h5>
+                  <span className="text-[10px] font-bold px-1.5 py-0.2 rounded border bg-[#131316] text-[#A1A1AA] border-[#26262C]">
                     {dayWeightLog ? 'Logged' : 'No Entry'}
                   </span>
                 </div>
-                <p className="text-[11px] text-[#c5b4a5] mt-0.5">
+                <p className="text-[11px] text-[#A1A1AA] mt-0.5">
                   {dayWeightLog ? `${dayWeightLog.weight} kg recorded` : 'Weigh-in not recorded'}
                 </p>
               </div>
@@ -962,26 +962,26 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
         {/* Workouts Logged for this Date */}
         {selectedStats.workouts.length > 0 && (
           <div className="pt-2">
-            <h4 className="text-xs font-bold text-[#c5b4a5] uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
-              <Dumbbell className="w-3.5 h-3.5 text-[#c68b59]" />
+            <h4 className="text-xs font-bold text-[#A1A1AA] uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
+              <Dumbbell className="w-3.5 h-3.5 text-[#D98B4A]" />
               Workouts Logged on this Date ({selectedStats.workouts.length})
             </h4>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
               {selectedStats.workouts.map((w) => (
-                <div key={w.id} className="p-3 rounded-xl bg-[#1c1815] border border-[#3d322a] flex items-center justify-between">
+                <div key={w.id} className="p-3 rounded-xl bg-[#1B1B20] border border-[#26262C] flex items-center justify-between">
                   <div className="min-w-0 flex-1">
-                    <h5 className="text-xs font-bold text-[#f5efe6] truncate">{w.exercise_name}</h5>
-                    <p className="text-[11px] text-[#c5b4a5] mt-0.5">
+                    <h5 className="text-xs font-bold text-[#F4F4F5] truncate">{w.exercise_name}</h5>
+                    <p className="text-[11px] text-[#A1A1AA] mt-0.5">
                       {w.sets} sets × {w.reps} reps
                       {w.weight ? ` • ${w.weight} ${w.weight_unit || 'kg'}` : ''}
                       {w.duration ? ` • ${w.duration} mins` : ''}
                     </p>
                     {w.notes && (
-                      <p className="text-[10px] text-[#d4a373] italic truncate mt-0.5">{w.notes}</p>
+                      <p className="text-[10px] text-[#E69A5C] italic truncate mt-0.5">{w.notes}</p>
                     )}
                   </div>
                   <div className="flex items-center gap-2 shrink-0 ml-2">
-                    <span className="text-[9px] px-1.5 py-0.5 rounded bg-[#26201b] text-[#c68b59] font-bold border border-[#3d322a]">
+                    <span className="text-[9px] px-1.5 py-0.5 rounded bg-[#131316] text-[#D98B4A] font-bold border border-[#26262C]">
                       {w.exercise_type || 'Strength'}
                     </span>
                     {onDeleteWorkout && (
@@ -1011,7 +1011,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
         {/* Missed Reasons / Excuse Tags (if any recorded) */}
         {dayMissedReasons.length > 0 && (
           <div className="pt-2">
-            <h4 className="text-xs font-bold text-[#c5b4a5] uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
+            <h4 className="text-xs font-bold text-[#A1A1AA] uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
               <XCircle className="w-3.5 h-3.5 text-rose-400" />
               Recorded Missed Reasons ({dayMissedReasons.length})
             </h4>
@@ -1035,13 +1035,13 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
             
             {/* Supplements Checklist */}
             {selectedStats.userSuppsCount > 0 && (
-              <div className="bg-[#1c1815] border border-[#3d322a] rounded-xl p-3 space-y-2">
+              <div className="bg-[#1B1B20] border border-[#26262C] rounded-xl p-3 space-y-2">
                 <div className="flex items-center justify-between text-xs">
-                  <span className="font-bold text-[#f5efe6] flex items-center gap-1.5">
-                    <Pill className="w-3.5 h-3.5 text-[#c68b59]" />
+                  <span className="font-bold text-[#F4F4F5] flex items-center gap-1.5">
+                    <Pill className="w-3.5 h-3.5 text-[#D98B4A]" />
                     Supplements
                   </span>
-                  <span className="text-[10px] font-mono text-[#d4a373]">
+                  <span className="text-[10px] font-mono text-[#E69A5C]">
                     {selectedStats.suppsTaken} / {selectedStats.userSuppsCount} Taken
                   </span>
                 </div>
@@ -1049,12 +1049,12 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
                   {supplements.filter(s => s.user_id === targetUser.id).map(s => {
                     const isTaken = !!supplementLogs.find(l => l.supplement_id === s.id && l.date === selectedDate)?.taken;
                     return (
-                      <div key={s.id} className="flex items-center justify-between text-xs py-1 px-2 rounded-lg bg-[#26201b]">
-                        <span className={`truncate text-xs ${isTaken ? 'text-emerald-300 line-through' : 'text-[#f5efe6]'}`}>
+                      <div key={s.id} className="flex items-center justify-between text-xs py-1 px-2 rounded-lg bg-[#131316]">
+                        <span className={`truncate text-xs ${isTaken ? 'text-emerald-300 line-through' : 'text-[#F4F4F5]'}`}>
                           {s.name}
                         </span>
                         <span className={`text-[9px] px-1.5 py-0.2 rounded font-bold ${
-                          isTaken ? 'bg-emerald-950/60 text-emerald-400' : 'bg-[#1c1815] text-[#c5b4a5]'
+                          isTaken ? 'bg-emerald-950/60 text-emerald-400' : 'bg-[#1B1B20] text-[#A1A1AA]'
                         }`}>
                           {isTaken ? 'Taken' : 'Pending'}
                         </span>
@@ -1067,18 +1067,18 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
 
             {/* Custom Habits Checklist */}
             {selectedStats.userHabitsCount > 0 && (
-              <div className="bg-[#1c1815] border border-[#3d322a] rounded-xl p-3 space-y-2">
+              <div className="bg-[#1B1B20] border border-[#26262C] rounded-xl p-3 space-y-2">
                 <div className="flex items-center justify-between text-xs">
-                  <span className="font-bold text-[#f5efe6] flex items-center gap-1.5">
-                    <Sparkles className="w-3.5 h-3.5 text-[#c68b59]" />
+                  <span className="font-bold text-[#F4F4F5] flex items-center gap-1.5">
+                    <Sparkles className="w-3.5 h-3.5 text-[#D98B4A]" />
                     Custom Habits
                   </span>
                   {isViewingSelf ? (
-                    <span className="text-[10px] font-mono text-[#d4a373]">
+                    <span className="text-[10px] font-mono text-[#E69A5C]">
                       {selectedStats.habitsDone} / {selectedStats.userHabitsCount} Done
                     </span>
                   ) : (
-                    <span className="text-[10px] text-[#c5b4a5] flex items-center gap-1">
+                    <span className="text-[10px] text-[#A1A1AA] flex items-center gap-1">
                       <Lock className="w-2.5 h-2.5" /> Private
                     </span>
                   )}
@@ -1088,12 +1088,12 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
                     {customHabits.filter(h => h.user_id === targetUser.id).map(h => {
                       const isDone = !!customHabitLogs.find(l => l.habit_id === h.id && l.date === selectedDate)?.completed;
                       return (
-                        <div key={h.id} className="flex items-center justify-between text-xs py-1 px-2 rounded-lg bg-[#26201b]">
-                          <span className={`truncate text-xs ${isDone ? 'text-emerald-300 line-through' : 'text-[#f5efe6]'}`}>
+                        <div key={h.id} className="flex items-center justify-between text-xs py-1 px-2 rounded-lg bg-[#131316]">
+                          <span className={`truncate text-xs ${isDone ? 'text-emerald-300 line-through' : 'text-[#F4F4F5]'}`}>
                             {h.title}
                           </span>
                           <span className={`text-[9px] px-1.5 py-0.2 rounded font-bold ${
-                            isDone ? 'bg-emerald-950/60 text-emerald-400' : 'bg-[#1c1815] text-[#c5b4a5]'
+                            isDone ? 'bg-emerald-950/60 text-emerald-400' : 'bg-[#1B1B20] text-[#A1A1AA]'
                           }`}>
                             {isDone ? 'Done' : 'Pending'}
                           </span>
@@ -1102,7 +1102,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
                     })}
                   </div>
                 ) : (
-                  <p className="text-[11px] text-[#c5b4a5] italic">
+                  <p className="text-[11px] text-[#A1A1AA] italic">
                     Personal habits are private to {targetUser.name}.
                   </p>
                 )}

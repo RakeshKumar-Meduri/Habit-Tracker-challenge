@@ -159,13 +159,13 @@ export const ProfileSection: React.FC<ProfileSectionProps> = ({
       
       {/* Member Selector Bar */}
       {allUsers && allUsers.length > 1 && (
-        <div className="bg-[#26201b] border border-[#3d322a] rounded-2xl p-4 shadow-xl flex flex-col sm:flex-row items-center justify-between gap-3">
+        <div className="bg-[#131316] border border-[#26262C] rounded-xl p-4 shadow-xl flex flex-col sm:flex-row items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-xl bg-[#c68b59]/20 text-[#d4a373] border border-[#c68b59]/30">
+            <div className="p-2.5 rounded-xl bg-[#D98B4A]/20 text-[#E69A5C] border border-[#D98B4A]/30">
               <Users className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="text-sm font-bold text-[#f5efe6] flex items-center gap-2">
+              <h3 className="text-sm font-bold text-[#F4F4F5] flex items-center gap-2">
                 Member Profile Viewer
                 {isViewingOther && (
                   <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-950/40 text-amber-400 border border-amber-800/60 font-semibold flex items-center gap-1">
@@ -173,16 +173,16 @@ export const ProfileSection: React.FC<ProfileSectionProps> = ({
                   </span>
                 )}
               </h3>
-              <p className="text-xs text-[#c5b4a5]">Inspect your own profile or view teammate profiles and transformation stats</p>
+              <p className="text-xs text-[#A1A1AA]">Inspect your own profile or view teammate profiles and transformation stats</p>
             </div>
           </div>
 
           <div className="flex items-center gap-2 w-full sm:w-auto">
-            <span className="text-xs font-semibold text-[#c5b4a5] shrink-0">Member:</span>
+            <span className="text-xs font-semibold text-[#A1A1AA] shrink-0">Member:</span>
             <select
               value={selectedUserId}
               onChange={(e) => setSelectedUserId(e.target.value)}
-              className="w-full sm:w-auto bg-[#1c1815] text-[#f5efe6] font-bold text-xs border border-[#3d322a] rounded-xl px-3 py-2 focus:outline-none focus:border-[#c68b59] cursor-pointer"
+              className="w-full sm:w-auto bg-[#1B1B20] text-[#F4F4F5] font-bold text-xs border border-[#26262C] rounded-xl px-3 py-2 focus:outline-none focus:border-[#D98B4A] cursor-pointer"
             >
               {allUsers.map((u) => (
                 <option key={u.id} value={u.id}>
@@ -194,7 +194,7 @@ export const ProfileSection: React.FC<ProfileSectionProps> = ({
               <button
                 type="button"
                 onClick={() => setSelectedUserId(currentUser.id)}
-                className="px-2.5 py-2 bg-[#c68b59]/20 hover:bg-[#c68b59]/30 text-[#d4a373] text-xs font-bold rounded-xl border border-[#c68b59]/30 transition shrink-0 cursor-pointer"
+                className="px-2.5 py-2 bg-[#D98B4A]/20 hover:bg-[#D98B4A]/30 text-[#E69A5C] text-xs font-bold rounded-xl border border-[#D98B4A]/30 transition shrink-0 cursor-pointer"
               >
                 Reset to Me
               </button>
@@ -204,16 +204,16 @@ export const ProfileSection: React.FC<ProfileSectionProps> = ({
       )}
 
       {/* Profile Header */}
-      <div className="bg-[#26201b] border border-[#3d322a] rounded-2xl p-4 sm:p-6 shadow-xl flex flex-col md:flex-row items-center gap-5 sm:gap-6">
-        <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-gradient-to-tr from-[#c68b59] to-[#785338] flex items-center justify-center text-2xl sm:text-3xl font-black text-[#f5efe6] shadow-lg shadow-[#c68b59]/20 shrink-0">
+      <div className="bg-[#131316] border border-[#26262C] rounded-xl p-4 sm:p-6 shadow-xl flex flex-col md:flex-row items-center gap-5 sm:gap-6">
+        <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl bg-gradient-to-tr from-[#D98B4A] to-[#B45F1E] flex items-center justify-center text-2xl sm:text-3xl font-black text-[#F4F4F5] shadow-lg shadow-[#D98B4A]/20 shrink-0">
           {targetUser.name.charAt(0)}
         </div>
 
         <div className="text-center md:text-left flex-1 min-w-0">
-          <h2 className="text-xl sm:text-2xl font-black text-[#f5efe6] flex flex-wrap items-center justify-center md:justify-start gap-2">
+          <h2 className="text-xl sm:text-2xl font-black text-[#F4F4F5] flex flex-wrap items-center justify-center md:justify-start gap-2">
             <span>{targetUser.name}</span>
             {targetUser.is_private && (
-              <span className="text-[10px] sm:text-xs px-2.5 py-0.5 rounded-full bg-[#c68b59]/20 text-[#d4a373] font-bold border border-[#c68b59]/30 flex items-center gap-1">
+              <span className="text-[10px] sm:text-xs px-2.5 py-0.5 rounded-full bg-[#D98B4A]/20 text-[#E69A5C] font-bold border border-[#D98B4A]/30 flex items-center gap-1">
                 <Lock className="w-3 h-3" /> Private Profile
               </span>
             )}
@@ -223,27 +223,27 @@ export const ProfileSection: React.FC<ProfileSectionProps> = ({
               </span>
             )}
           </h2>
-          <p className="text-xs text-[#c5b4a5] mt-1">
+          <p className="text-xs text-[#A1A1AA] mt-1">
             @{targetUser.username} • Member since {targetUser.created_at || '2026'}
           </p>
 
           <div className="flex flex-wrap items-center justify-center md:justify-start gap-2 sm:gap-3 mt-3 text-xs">
-            <span className="bg-[#1c1815] px-2.5 py-1 rounded-xl border border-[#3d322a] text-[#c5b4a5]">
-              Height: <strong className="text-[#f5efe6]">{displayHeight} cm</strong>
+            <span className="bg-[#1B1B20] px-2.5 py-1 rounded-xl border border-[#26262C] text-[#A1A1AA]">
+              Height: <strong className="text-[#F4F4F5]">{displayHeight} cm</strong>
             </span>
-            <span className="bg-[#1c1815] px-2.5 py-1 rounded-xl border border-[#3d322a] text-[#c5b4a5]">
-              Current Weight: <strong className="text-[#d4a373]">{displayWeight} kg</strong>
+            <span className="bg-[#1B1B20] px-2.5 py-1 rounded-xl border border-[#26262C] text-[#A1A1AA]">
+              Current Weight: <strong className="text-[#E69A5C]">{displayWeight} kg</strong>
             </span>
-            <span className="bg-[#1c1815] px-2.5 py-1 rounded-xl border border-[#3d322a] text-[#c5b4a5]">
-              Age: <strong className="text-[#f5efe6]">{displayAge} yrs</strong>
+            <span className="bg-[#1B1B20] px-2.5 py-1 rounded-xl border border-[#26262C] text-[#A1A1AA]">
+              Age: <strong className="text-[#F4F4F5]">{displayAge} yrs</strong>
             </span>
           </div>
         </div>
 
         {/* Live Updating BMI Gauge Card */}
-        <div className="w-full md:w-auto bg-[#1c1815] border border-[#3d322a] rounded-2xl p-4 sm:p-5 text-center min-w-[170px] shadow-inner">
-          <span className="text-[10px] sm:text-[11px] font-semibold text-[#c5b4a5] uppercase tracking-wider block">Live BMI Gauge</span>
-          <div className="text-2xl sm:text-3xl font-black text-[#f5efe6] mt-0.5">{bmi}</div>
+        <div className="w-full md:w-auto bg-[#1B1B20] border border-[#26262C] rounded-xl p-4 sm:p-5 text-center min-w-[170px] shadow-inner">
+          <span className="text-[10px] sm:text-[11px] font-semibold text-[#A1A1AA] uppercase tracking-wider block">Live BMI Gauge</span>
+          <div className="text-2xl sm:text-3xl font-black text-[#F4F4F5] mt-0.5">{bmi}</div>
           <span className={`text-xs mt-1 inline-block ${color}`}>
             {category}
           </span>
@@ -253,65 +253,65 @@ export const ProfileSection: React.FC<ProfileSectionProps> = ({
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
         
         {/* Main Content Area */}
-        <div className="md:col-span-2 bg-[#26201b] border border-[#3d322a] rounded-2xl p-4 sm:p-6 shadow-xl space-y-6">
+        <div className="md:col-span-2 bg-[#131316] border border-[#26262C] rounded-xl p-4 sm:p-6 shadow-xl space-y-6">
           {isViewingOther ? (
             /* Teammate Profile Overview (Read-Only) */
             <div className="space-y-6">
               <div>
-                <h3 className="text-lg font-black text-[#f5efe6] mb-3 flex items-center gap-2">
-                  <UserIcon className="w-5 h-5 text-[#c68b59]" />
+                <h3 className="text-lg font-black text-[#F4F4F5] mb-3 flex items-center gap-2">
+                  <UserIcon className="w-5 h-5 text-[#D98B4A]" />
                   {targetUser.name}'s Fitness Profile
                 </h3>
-                <p className="text-xs text-[#c5b4a5] mb-4">
+                <p className="text-xs text-[#A1A1AA] mb-4">
                   Account details and metrics shared across the challenge group.
                 </p>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="p-4 bg-[#1c1815] rounded-xl border border-[#3d322a]">
-                    <span className="text-xs text-[#c5b4a5] block mb-1">Gender</span>
-                    <strong className="text-sm text-[#f5efe6] capitalize">{targetUser.gender || 'Not specified'}</strong>
+                  <div className="p-4 bg-[#1B1B20] rounded-xl border border-[#26262C]">
+                    <span className="text-xs text-[#A1A1AA] block mb-1">Gender</span>
+                    <strong className="text-sm text-[#F4F4F5] capitalize">{targetUser.gender || 'Not specified'}</strong>
                   </div>
 
-                  <div className="p-4 bg-[#1c1815] rounded-xl border border-[#3d322a]">
-                    <span className="text-xs text-[#c5b4a5] block mb-1">Account Status</span>
+                  <div className="p-4 bg-[#1B1B20] rounded-xl border border-[#26262C]">
+                    <span className="text-xs text-[#A1A1AA] block mb-1">Account Status</span>
                     <div className="flex items-center gap-1.5 text-xs text-emerald-400 font-bold">
                       <CheckCircle2 className="w-4 h-4" /> Active Challenge Member
                     </div>
                   </div>
 
-                  <div className="p-4 bg-[#1c1815] rounded-xl border border-[#3d322a]">
-                    <span className="text-xs text-[#c5b4a5] block mb-1">Target Category</span>
-                    <strong className="text-sm text-[#d4a373]">{category} (BMI: {bmi})</strong>
+                  <div className="p-4 bg-[#1B1B20] rounded-xl border border-[#26262C]">
+                    <span className="text-xs text-[#A1A1AA] block mb-1">Target Category</span>
+                    <strong className="text-sm text-[#E69A5C]">{category} (BMI: {bmi})</strong>
                   </div>
 
-                  <div className="p-4 bg-[#1c1815] rounded-xl border border-[#3d322a]">
-                    <span className="text-xs text-[#c5b4a5] block mb-1">Privacy Level</span>
-                    <strong className="text-sm text-[#f5efe6]">{targetUser.is_private ? 'Private Account' : 'Public Profile'}</strong>
+                  <div className="p-4 bg-[#1B1B20] rounded-xl border border-[#26262C]">
+                    <span className="text-xs text-[#A1A1AA] block mb-1">Privacy Level</span>
+                    <strong className="text-sm text-[#F4F4F5]">{targetUser.is_private ? 'Private Account' : 'Public Profile'}</strong>
                   </div>
                 </div>
               </div>
 
               {/* Teammate Body Shape Progress Photo */}
-              <div className="pt-4 border-t border-[#3d322a]">
-                <h4 className="text-base font-bold text-[#f5efe6] mb-3 flex items-center gap-2">
-                  <Camera className="w-4 h-4 text-[#c68b59]" />
+              <div className="pt-4 border-t border-[#26262C]">
+                <h4 className="text-base font-bold text-[#F4F4F5] mb-3 flex items-center gap-2">
+                  <Camera className="w-4 h-4 text-[#D98B4A]" />
                   Transformation Photo
                 </h4>
-                <div className="bg-[#1c1815] p-4 rounded-xl border border-[#3d322a] flex items-center gap-4">
+                <div className="bg-[#1B1B20] p-4 rounded-xl border border-[#26262C] flex items-center gap-4">
                   {targetUser.body_shape_photo ? (
                     <img
                       src={targetUser.body_shape_photo}
                       alt={`${targetUser.name}'s progress`}
-                      className="w-24 h-32 object-cover rounded-xl border border-[#3d322a] shadow"
+                      className="w-24 h-32 object-cover rounded-xl border border-[#26262C] shadow"
                     />
                   ) : (
-                    <div className="w-24 h-32 rounded-xl bg-[#26201b] border border-dashed border-[#3d322a] flex flex-col items-center justify-center text-[#c5b4a5] gap-1 shrink-0">
-                      <ImageIcon className="w-6 h-6 text-[#c68b59]" />
+                    <div className="w-24 h-32 rounded-xl bg-[#131316] border border-dashed border-[#26262C] flex flex-col items-center justify-center text-[#A1A1AA] gap-1 shrink-0">
+                      <ImageIcon className="w-6 h-6 text-[#D98B4A]" />
                       <span className="text-[10px]">No Photo</span>
                     </div>
                   )}
-                  <div className="text-xs text-[#c5b4a5]">
-                    <p className="font-semibold text-[#f5efe6] mb-1">
+                  <div className="text-xs text-[#A1A1AA]">
+                    <p className="font-semibold text-[#F4F4F5] mb-1">
                       {targetUser.body_shape_photo ? `${targetUser.name} has shared a transformation photo.` : `${targetUser.name} hasn't uploaded a progress photo yet.`}
                     </p>
                     <p>Encourage teammates to update their transformation pictures regularly!</p>
@@ -322,27 +322,27 @@ export const ProfileSection: React.FC<ProfileSectionProps> = ({
           ) : (
             /* Current User Edit Form */
             <div>
-              <h3 className="text-lg font-black text-[#f5efe6] mb-4 flex items-center gap-2">
-                <UserIcon className="w-5 h-5 text-[#c68b59]" />
+              <h3 className="text-lg font-black text-[#F4F4F5] mb-4 flex items-center gap-2">
+                <UserIcon className="w-5 h-5 text-[#D98B4A]" />
                 Personal & Health Profile
               </h3>
 
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                  <label className="block text-xs font-semibold text-[#c5b4a5] mb-1">Display Name</label>
+                  <label className="block text-xs font-semibold text-[#A1A1AA] mb-1">Display Name</label>
                   <input
                     type="text"
                     required
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    className="w-full px-3.5 py-2.5 bg-[#1c1815] border border-[#3d322a] rounded-xl text-[#f5efe6] text-sm focus:outline-none focus:border-[#c68b59] transition"
+                    className="w-full px-3.5 py-2.5 bg-[#1B1B20] border border-[#26262C] rounded-xl text-[#F4F4F5] text-sm focus:outline-none focus:border-[#D98B4A] transition"
                   />
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-semibold text-[#c5b4a5] mb-1 flex items-center gap-1.5">
-                      <Cake className="w-3.5 h-3.5 text-[#c68b59]" /> Age (Years)
+                    <label className="block text-xs font-semibold text-[#A1A1AA] mb-1 flex items-center gap-1.5">
+                      <Cake className="w-3.5 h-3.5 text-[#D98B4A]" /> Age (Years)
                     </label>
                     <input
                       type="number"
@@ -352,67 +352,67 @@ export const ProfileSection: React.FC<ProfileSectionProps> = ({
                       value={age}
                       onChange={(e) => handleAgeChange(e.target.value)}
                       placeholder="e.g. 19"
-                      className="w-full px-3.5 py-2 bg-[#1c1815] border border-[#3d322a] rounded-xl text-[#f5efe6] font-bold text-sm focus:outline-none focus:border-[#c68b59] transition"
+                      className="w-full px-3.5 py-2 bg-[#1B1B20] border border-[#26262C] rounded-xl text-[#F4F4F5] font-bold text-sm focus:outline-none focus:border-[#D98B4A] transition"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-[#c5b4a5] mb-1 flex items-center gap-1.5">
-                      <Calendar className="w-3.5 h-3.5 text-[#c68b59]" /> Birthday (Optional)
+                    <label className="block text-xs font-semibold text-[#A1A1AA] mb-1 flex items-center gap-1.5">
+                      <Calendar className="w-3.5 h-3.5 text-[#D98B4A]" /> Birthday (Optional)
                     </label>
                     <input
                       type="date"
                       value={birthday}
                       onChange={(e) => handleBirthdayChange(e.target.value)}
-                      className="w-full px-3.5 py-2 bg-[#1c1815] border border-[#3d322a] rounded-xl text-[#f5efe6] text-sm focus:outline-none focus:border-[#c68b59] transition cursor-pointer"
+                      className="w-full px-3.5 py-2 bg-[#1B1B20] border border-[#26262C] rounded-xl text-[#F4F4F5] text-sm focus:outline-none focus:border-[#D98B4A] transition cursor-pointer"
                     />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-semibold text-[#c5b4a5] mb-1">Height (cm)</label>
+                    <label className="block text-xs font-semibold text-[#A1A1AA] mb-1">Height (cm)</label>
                     <input
                       type="number"
                       value={height}
                       onChange={(e) => setHeight(e.target.value)}
                       placeholder="e.g. 175"
-                      className="w-full px-3.5 py-2 bg-[#1c1815] border border-[#3d322a] rounded-xl text-[#f5efe6] text-sm focus:outline-none focus:border-[#c68b59] transition"
+                      className="w-full px-3.5 py-2 bg-[#1B1B20] border border-[#26262C] rounded-xl text-[#F4F4F5] text-sm focus:outline-none focus:border-[#D98B4A] transition"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-[#c5b4a5] mb-1">Weight (kg)</label>
+                    <label className="block text-xs font-semibold text-[#A1A1AA] mb-1">Weight (kg)</label>
                     <input
                       type="number"
                       step="0.1"
                       value={weight}
                       onChange={(e) => setWeight(e.target.value)}
                       placeholder="e.g. 75"
-                      className="w-full px-3.5 py-2 bg-[#1c1815] border border-[#3d322a] rounded-xl text-[#f5efe6] text-sm focus:outline-none focus:border-[#c68b59] transition"
+                      className="w-full px-3.5 py-2 bg-[#1B1B20] border border-[#26262C] rounded-xl text-[#F4F4F5] text-sm focus:outline-none focus:border-[#D98B4A] transition"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-[#c5b4a5] mb-1">Gender</label>
+                  <label className="block text-xs font-semibold text-[#A1A1AA] mb-1">Gender</label>
                   <select
                     value={gender}
                     onChange={(e) => setGender(e.target.value as Gender)}
-                    className="w-full px-3.5 py-2 bg-[#1c1815] border border-[#3d322a] rounded-xl text-[#f5efe6] text-sm focus:outline-none focus:border-[#c68b59] transition"
+                    className="w-full px-3.5 py-2 bg-[#1B1B20] border border-[#26262C] rounded-xl text-[#F4F4F5] text-sm focus:outline-none focus:border-[#D98B4A] transition"
                   >
-                    <option value="male" className="bg-[#1c1815] text-[#f5efe6]">Male</option>
-                    <option value="female" className="bg-[#1c1815] text-[#f5efe6]">Female</option>
-                    <option value="other" className="bg-[#1c1815] text-[#f5efe6]">Other / Unspecified</option>
+                    <option value="male" className="bg-[#1B1B20] text-[#F4F4F5]">Male</option>
+                    <option value="female" className="bg-[#1B1B20] text-[#F4F4F5]">Female</option>
+                    <option value="other" className="bg-[#1B1B20] text-[#F4F4F5]">Other / Unspecified</option>
                   </select>
                 </div>
 
-                <div className="flex items-center justify-between p-3.5 bg-[#1c1815]/80 rounded-xl border border-[#3d322a]">
+                <div className="flex items-center justify-between p-3.5 bg-[#1B1B20]/80 rounded-xl border border-[#26262C]">
                   <div className="flex items-center gap-2.5">
-                    <Shield className="w-4 h-4 text-[#c68b59]" />
+                    <Shield className="w-4 h-4 text-[#D98B4A]" />
                     <div>
-                      <span className="text-xs font-bold text-[#f5efe6] block">Profile Privacy</span>
-                      <span className="text-[11px] text-[#c5b4a5]">Keep personal weight & log updates private</span>
+                      <span className="text-xs font-bold text-[#F4F4F5] block">Profile Privacy</span>
+                      <span className="text-[11px] text-[#A1A1AA]">Keep personal weight & log updates private</span>
                     </div>
                   </div>
                   <button
@@ -420,8 +420,8 @@ export const ProfileSection: React.FC<ProfileSectionProps> = ({
                     onClick={() => setIsPrivate(!isPrivate)}
                     className={`px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer ${
                       isPrivate
-                        ? 'bg-[#c68b59]/20 text-[#d4a373] border border-[#c68b59]/40'
-                        : 'bg-[#322a24] text-[#c5b4a5] border border-[#3d322a]'
+                        ? 'bg-[#D98B4A]/20 text-[#E69A5C] border border-[#D98B4A]/40'
+                        : 'bg-[#1B1B20] text-[#A1A1AA] border border-[#26262C]'
                     }`}
                   >
                     {isPrivate ? 'Private' : 'Public'}
@@ -437,39 +437,39 @@ export const ProfileSection: React.FC<ProfileSectionProps> = ({
 
                 <button
                   type="submit"
-                  className="w-full py-3 bg-gradient-to-r from-[#c68b59] to-[#b87b4b] hover:from-[#b87b4b] hover:to-[#a06738] text-[#1c1815] font-black rounded-xl text-sm transition shadow-lg shadow-[#c68b59]/20 flex items-center justify-center gap-2 cursor-pointer"
+                  className="w-full py-3 bg-gradient-to-r from-[#D98B4A] to-[#D98B4A] hover:from-[#D98B4A] hover:to-[#B45F1E] text-[#1B1B20] font-black rounded-xl text-sm transition shadow-lg shadow-[#D98B4A]/20 flex items-center justify-center gap-2 cursor-pointer"
                 >
                   <Save className="w-4 h-4" /> Save Profile & Update Body Metrics
                 </button>
               </form>
 
               {/* Body Shape Progress Photo Section */}
-              <div className="pt-4 border-t border-[#3d322a] mt-6">
-                <h4 className="text-base font-bold text-[#f5efe6] mb-3 flex items-center gap-2">
-                  <Camera className="w-4 h-4 text-[#c68b59]" />
+              <div className="pt-4 border-t border-[#26262C] mt-6">
+                <h4 className="text-base font-bold text-[#F4F4F5] mb-3 flex items-center gap-2">
+                  <Camera className="w-4 h-4 text-[#D98B4A]" />
                   Body Shape Progress Photo
                 </h4>
-                <p className="text-xs text-[#c5b4a5] mb-3">
+                <p className="text-xs text-[#A1A1AA] mb-3">
                   Upload a progress photo to track your physical transformation over time.
                 </p>
 
-                <div className="flex flex-col sm:flex-row items-center gap-4 bg-[#1c1815] p-4 rounded-xl border border-[#3d322a]">
+                <div className="flex flex-col sm:flex-row items-center gap-4 bg-[#1B1B20] p-4 rounded-xl border border-[#26262C]">
                   {bodyShapePhoto ? (
                     <img
                       src={bodyShapePhoto}
                       alt="Body Shape Progress"
-                      className="w-24 h-32 object-cover rounded-xl border border-[#3d322a] shadow"
+                      className="w-24 h-32 object-cover rounded-xl border border-[#26262C] shadow"
                     />
                   ) : (
-                    <div className="w-24 h-32 rounded-xl bg-[#26201b] border border-dashed border-[#3d322a] flex flex-col items-center justify-center text-[#c5b4a5] gap-1 shrink-0">
-                      <ImageIcon className="w-6 h-6 text-[#c68b59]" />
+                    <div className="w-24 h-32 rounded-xl bg-[#131316] border border-dashed border-[#26262C] flex flex-col items-center justify-center text-[#A1A1AA] gap-1 shrink-0">
+                      <ImageIcon className="w-6 h-6 text-[#D98B4A]" />
                       <span className="text-[10px]">No Photo</span>
                     </div>
                   )}
 
                   <div className="space-y-2 flex-1 w-full text-center sm:text-left">
-                    <label className="inline-flex items-center gap-2 px-4 py-2 bg-[#322a24] hover:bg-[#3d322a] text-[#f5efe6] border border-[#3d322a] rounded-xl text-xs font-bold transition cursor-pointer">
-                      <Camera className="w-4 h-4 text-[#c68b59]" />
+                    <label className="inline-flex items-center gap-2 px-4 py-2 bg-[#1B1B20] hover:bg-[#26262C] text-[#F4F4F5] border border-[#26262C] rounded-xl text-xs font-bold transition cursor-pointer">
+                      <Camera className="w-4 h-4 text-[#D98B4A]" />
                       <span>Upload New Progress Image</span>
                       <input
                         type="file"
@@ -496,26 +496,26 @@ export const ProfileSection: React.FC<ProfileSectionProps> = ({
 
         {/* Timestamped Weight History Log & Delete Account Card */}
         <div className="space-y-4 sm:space-y-6 flex flex-col">
-          <div className="bg-[#26201b] border border-[#3d322a] rounded-2xl p-4 sm:p-6 shadow-xl flex flex-col">
-            <h3 className="text-sm sm:text-base font-bold text-[#f5efe6] mb-3 flex items-center gap-2">
-              <Scale className="w-4 h-4 text-[#c68b59]" />
+          <div className="bg-[#131316] border border-[#26262C] rounded-xl p-4 sm:p-6 shadow-xl flex flex-col">
+            <h3 className="text-sm sm:text-base font-bold text-[#F4F4F5] mb-3 flex items-center gap-2">
+              <Scale className="w-4 h-4 text-[#D98B4A]" />
               {isViewingOther ? `${targetUser.name}'s Weight Log` : 'Weight History Log'}
             </h3>
 
             <div className="flex-1 overflow-y-auto max-h-[260px] space-y-2 pr-1">
               {userWeightLogs.length === 0 ? (
-                <p className="text-xs text-[#c5b4a5] italic py-2">No weight entries logged yet.</p>
+                <p className="text-xs text-[#A1A1AA] italic py-2">No weight entries logged yet.</p>
               ) : (
                 userWeightLogs.map((log) => (
                   <div
                     key={log.id}
-                    className="flex items-center justify-between p-2.5 bg-[#1c1815] rounded-xl border border-[#3d322a] text-xs"
+                    className="flex items-center justify-between p-2.5 bg-[#1B1B20] rounded-xl border border-[#26262C] text-xs"
                   >
-                    <div className="flex items-center gap-2 text-[#c5b4a5]">
-                      <Calendar className="w-3.5 h-3.5 text-[#a06738]" />
+                    <div className="flex items-center gap-2 text-[#A1A1AA]">
+                      <Calendar className="w-3.5 h-3.5 text-[#B45F1E]" />
                       <span>{log.date}</span>
                     </div>
-                    <strong className="text-[#f5efe6] font-mono text-sm">{log.weight} kg</strong>
+                    <strong className="text-[#F4F4F5] font-mono text-sm">{log.weight} kg</strong>
                   </div>
                 ))
               )}
@@ -524,12 +524,12 @@ export const ProfileSection: React.FC<ProfileSectionProps> = ({
 
           {/* Delete My Account Section (Only shown when viewing own profile) */}
           {!isViewingOther && (
-            <div className="bg-[#26201b] border border-rose-900/40 rounded-2xl p-4 sm:p-6 shadow-xl space-y-3">
+            <div className="bg-[#131316] border border-rose-900/40 rounded-xl p-4 sm:p-6 shadow-xl space-y-3">
               <h3 className="text-sm sm:text-base font-bold text-rose-400 flex items-center gap-2">
                 <Trash2 className="w-4 h-4 sm:w-5 sm:h-5 text-rose-400" />
                 Delete Account
               </h3>
-              <p className="text-xs text-[#c5b4a5]">
+              <p className="text-xs text-[#A1A1AA]">
                 Permanently delete your account (@{currentUser.username}). You can only delete your own account.
               </p>
 
@@ -557,7 +557,7 @@ export const ProfileSection: React.FC<ProfileSectionProps> = ({
                     <button
                       type="button"
                       onClick={() => setShowDeleteConfirm(false)}
-                      className="px-4 py-2 bg-[#1c1815] hover:bg-[#322a24] text-[#c5b4a5] rounded-xl text-xs font-bold transition cursor-pointer"
+                      className="px-4 py-2 bg-[#1B1B20] hover:bg-[#1B1B20] text-[#A1A1AA] rounded-xl text-xs font-bold transition cursor-pointer"
                     >
                       Cancel
                     </button>

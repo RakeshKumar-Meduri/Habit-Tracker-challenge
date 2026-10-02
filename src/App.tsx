@@ -1154,7 +1154,7 @@ export function App() {
       )}
 
       {/* Footer */}
-      <footer className="border-t border-[#3d322a] bg-[#1c1815] py-6 pb-24 md:pb-6 text-center text-xs text-[#c5b4a5]">
+      <footer className="border-t border-[#26262C] bg-[#131316] py-6 pb-24 md:pb-6 text-center text-xs text-[#A1A1AA]">
         <p>PULSE Fitness & Daily Goal Tracker — Real-Time Multi-User Edition</p>
       </footer>
     </div>

@@ -275,7 +275,7 @@ export async function registerNewUser(
   const hashed = await hashPassword(cleanPassword);
 
   const gradients = [
-    'from-[#c68b59] to-[#785338]',
+    'from-[#D98B4A] to-[#B45F1E]',
     'from-emerald-500 to-teal-700',
     'from-violet-500 to-purple-700',
     'from-amber-500 to-orange-700',
