@@ -122,7 +122,31 @@ export function App() {
   });
 
   const [activeTab, setActiveTab] = useState<string>('checklist');
-  const [isDarkMode, setIsDarkMode] = useState<boolean>(true);
+  const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
+    try {
+      const saved = localStorage.getItem('pulse_fitness_theme');
+      if (saved) return saved === 'dark';
+    } catch {}
+    return true;
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('pulse_fitness_theme', isDarkMode ? 'dark' : 'light');
+    } catch {}
+    if (isDarkMode) {
+      document.documentElement.classList.remove('light-theme');
+      document.documentElement.setAttribute('data-theme', 'dark');
+      document.body.classList.remove('light-theme');
+      document.body.setAttribute('data-theme', 'dark');
+    } else {
+      document.documentElement.classList.add('light-theme');
+      document.documentElement.setAttribute('data-theme', 'light');
+      document.body.classList.add('light-theme');
+      document.body.setAttribute('data-theme', 'light');
+    }
+  }, [isDarkMode]);
+
   const [realtimeStatus, setRealtimeStatus] = useState<{ isConnected: boolean; clientCount: number }>({
     isConnected: false,
     clientCount: 1,
@@ -601,15 +625,7 @@ export function App() {
 
   // Toggle Dark/Light Theme
   const handleToggleTheme = () => {
-    const nextDark = !isDarkMode;
-    setIsDarkMode(nextDark);
-    if (nextDark) {
-      document.documentElement.classList.remove('light-theme');
-      document.documentElement.setAttribute('data-theme', 'dark');
-    } else {
-      document.documentElement.classList.add('light-theme');
-      document.documentElement.setAttribute('data-theme', 'light');
-    }
+    setIsDarkMode(prev => !prev);
   };
 
   // Find or create daily log for selected date
