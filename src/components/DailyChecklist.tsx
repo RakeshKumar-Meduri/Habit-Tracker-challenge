@@ -667,10 +667,10 @@ export const DailyChecklist: React.FC<DailyChecklistProps> = ({
                     <span>Completed</span>
                   </button>
                 ) : (
-                  <div className="flex flex-wrap items-center gap-2 w-full xl:w-auto shrink-0">
+                  <div className="flex items-center gap-2 shrink-0">
                     <button
                       onClick={() => handleToggleGoal('gym', false)}
-                      className="flex-1 xl:flex-initial px-3.5 py-2 rounded-lg bg-[#D98B4A] hover:bg-[#E69A5C] text-[#0B0B0D] font-bold text-xs flex items-center justify-center gap-1.5 transition cursor-pointer min-h-[38px] whitespace-nowrap shrink-0 shadow-sm"
+                      className="px-3.5 py-2 rounded-lg bg-[#D98B4A] hover:bg-[#E69A5C] text-[#0B0B0D] font-bold text-xs flex items-center justify-center gap-1.5 transition cursor-pointer min-h-[38px] whitespace-nowrap shadow-sm"
                     >
                       <CheckCircle2 className="w-4 h-4" />
                       <span>Mark Done</span>
@@ -678,7 +678,7 @@ export const DailyChecklist: React.FC<DailyChecklistProps> = ({
                     <button
                       type="button"
                       onClick={() => handleToggleFailed('gym')}
-                      className={`flex-1 xl:flex-initial px-3 py-2 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition cursor-pointer border min-h-[38px] whitespace-nowrap shrink-0 ${
+                      className={`px-3 py-2 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition cursor-pointer border min-h-[38px] whitespace-nowrap ${
                         getGoalMissedReason('gym')
                           ? 'bg-rose-500/15 text-[#F87171] border-rose-500/30 hover:bg-rose-500/25'
                           : 'bg-rose-500/10 text-[#F87171] border-rose-500/25 hover:bg-rose-500/20'
@@ -688,17 +688,6 @@ export const DailyChecklist: React.FC<DailyChecklistProps> = ({
                       {getGoalMissedReason('gym') ? <XCircle className="w-3.5 h-3.5" /> : <AlertCircle className="w-3.5 h-3.5" />}
                       <span>Failed</span>
                     </button>
-                    {getGoalMissedReason('gym') && (
-                      <button
-                        type="button"
-                        onClick={() => setActiveMissedGoal('gym')}
-                        className="px-2.5 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1.5 transition cursor-pointer shrink-0 bg-amber-500/10 border border-amber-500/25 text-[#FBBF24] hover:bg-amber-500/15"
-                        title="View or edit logged reason"
-                      >
-                        <AlertCircle className="w-3.5 h-3.5 shrink-0" />
-                        <span>Reason: {getGoalMissedReason('gym')?.reason_tag}</span>
-                      </button>
-                    )}
                   </div>
                 )}
               </div>
@@ -718,6 +707,28 @@ export const DailyChecklist: React.FC<DailyChecklistProps> = ({
               </button>
             )}
           </div>
+
+          {/* Logged Failure Reason Banner */}
+          {!displayedDailyLog.gym_done && getGoalMissedReason('gym') && (
+            <div className="mt-3 p-3 bg-amber-500/10 rounded-lg text-xs text-[#FBBF24] flex items-center justify-between border border-amber-500/25">
+              <div className="flex items-center gap-2 min-w-0 flex-1">
+                <AlertCircle className="w-4 h-4 text-[#FBBF24] shrink-0" />
+                <span className="break-words">
+                  <strong>Reason:</strong> [{getGoalMissedReason('gym')?.reason_tag}]{' '}
+                  {getGoalMissedReason('gym')?.reason_text}
+                </span>
+              </div>
+              {!isViewingOther && (
+                <button
+                  type="button"
+                  onClick={() => setActiveMissedGoal('gym')}
+                  className="text-xs px-2.5 py-1 rounded bg-[#1B1B20] hover:bg-[#26262C] text-[#FBBF24] border border-amber-500/30 font-semibold cursor-pointer shrink-0 ml-3 transition"
+                >
+                  Edit Reason
+                </button>
+              )}
+            </div>
+          )}
 
           {/* List of Logged Workouts on this date with Prominent Delete Button */}
           {targetWorkouts.length > 0 && (
@@ -814,14 +825,14 @@ export const DailyChecklist: React.FC<DailyChecklistProps> = ({
                     <span>Completed</span>
                   </button>
                 ) : (
-                  <div className="flex flex-wrap items-center gap-2 w-full xl:w-auto shrink-0">
+                  <div className="flex items-center gap-2 shrink-0">
                     <button
                       onClick={() => {
                         clearFailedIfAny('steps');
                         const val = Math.max(stepTarget, dailyLog.steps_value || 0);
                         onUpdateDailyLog({ ...dailyLog, steps_done: true, steps_value: val, steps_target: stepTarget });
                       }}
-                      className="flex-1 xl:flex-initial px-3.5 py-2 rounded-lg bg-[#D98B4A] hover:bg-[#E69A5C] text-[#0B0B0D] font-bold text-xs flex items-center justify-center gap-1.5 transition cursor-pointer min-h-[38px] whitespace-nowrap shrink-0 shadow-sm"
+                      className="px-3.5 py-2 rounded-lg bg-[#D98B4A] hover:bg-[#E69A5C] text-[#0B0B0D] font-bold text-xs flex items-center justify-center gap-1.5 transition cursor-pointer min-h-[38px] whitespace-nowrap shadow-sm"
                     >
                       <CheckCircle2 className="w-4 h-4" />
                       <span>Mark Done</span>
@@ -829,7 +840,7 @@ export const DailyChecklist: React.FC<DailyChecklistProps> = ({
                     <button
                       type="button"
                       onClick={() => handleToggleFailed('steps')}
-                      className={`flex-1 xl:flex-initial px-3 py-2 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition cursor-pointer border min-h-[38px] whitespace-nowrap shrink-0 ${
+                      className={`px-3 py-2 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition cursor-pointer border min-h-[38px] whitespace-nowrap ${
                         getGoalMissedReason('steps')
                           ? 'bg-rose-500/15 text-[#F87171] border-rose-500/30 hover:bg-rose-500/25'
                           : 'bg-rose-500/10 text-[#F87171] border-rose-500/25 hover:bg-rose-500/20'
@@ -839,17 +850,6 @@ export const DailyChecklist: React.FC<DailyChecklistProps> = ({
                       {getGoalMissedReason('steps') ? <XCircle className="w-3.5 h-3.5" /> : <AlertCircle className="w-3.5 h-3.5" />}
                       <span>Failed</span>
                     </button>
-                    {getGoalMissedReason('steps') && (
-                      <button
-                        type="button"
-                        onClick={() => setActiveMissedGoal('steps')}
-                        className="px-2.5 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1.5 transition cursor-pointer shrink-0 bg-amber-500/10 border border-amber-500/25 text-[#FBBF24] hover:bg-amber-500/15"
-                        title="View or edit logged reason"
-                      >
-                        <AlertCircle className="w-3.5 h-3.5 shrink-0" />
-                        <span>Reason: {getGoalMissedReason('steps')?.reason_tag}</span>
-                      </button>
-                    )}
                   </div>
                 )}
               </div>
@@ -911,9 +911,9 @@ export const DailyChecklist: React.FC<DailyChecklistProps> = ({
 
           {/* Logged Failure Reason Banner */}
           {!displayedDailyLog.steps_done && getGoalMissedReason('steps') && (
-            <div className="mt-3 p-2.5 bg-rose-500/10 rounded-lg text-xs text-[#F87171] flex items-center justify-between border border-rose-500/25">
-              <div className="flex items-center gap-2">
-                <AlertCircle className="w-4 h-4 text-[#F87171] shrink-0" />
+            <div className="mt-3 p-3 bg-amber-500/10 rounded-lg text-xs text-[#FBBF24] flex items-center justify-between border border-amber-500/25">
+              <div className="flex items-center gap-2 min-w-0 flex-1">
+                <AlertCircle className="w-4 h-4 text-[#FBBF24] shrink-0" />
                 <span className="break-words">
                   <strong>Reason:</strong> [{getGoalMissedReason('steps')?.reason_tag}]{' '}
                   {getGoalMissedReason('steps')?.reason_text}
@@ -921,10 +921,11 @@ export const DailyChecklist: React.FC<DailyChecklistProps> = ({
               </div>
               {!isViewingOther && (
                 <button
+                  type="button"
                   onClick={() => setActiveMissedGoal('steps')}
-                  className="text-[11px] underline text-[#F87171] hover:text-[#F4F4F5] font-semibold cursor-pointer shrink-0 ml-2"
+                  className="text-xs px-2.5 py-1 rounded bg-[#1B1B20] hover:bg-[#26262C] text-[#FBBF24] border border-amber-500/30 font-semibold cursor-pointer shrink-0 ml-3 transition"
                 >
-                  Edit
+                  Edit Reason
                 </button>
               )}
             </div>
@@ -966,10 +967,10 @@ export const DailyChecklist: React.FC<DailyChecklistProps> = ({
                     <span>Target Hit</span>
                   </button>
                 ) : (
-                  <div className="flex flex-wrap items-center gap-2 w-full xl:w-auto shrink-0">
+                  <div className="flex items-center gap-2 shrink-0">
                     <button
                       onClick={() => handleToggleGoal('sleep', false)}
-                      className="flex-1 xl:flex-initial px-3.5 py-2 rounded-lg bg-[#D98B4A] hover:bg-[#E69A5C] text-[#0B0B0D] font-bold text-xs flex items-center justify-center gap-1.5 transition cursor-pointer min-h-[38px] whitespace-nowrap shrink-0 shadow-sm"
+                      className="px-3.5 py-2 rounded-lg bg-[#D98B4A] hover:bg-[#E69A5C] text-[#0B0B0D] font-bold text-xs flex items-center justify-center gap-1.5 transition cursor-pointer min-h-[38px] whitespace-nowrap shadow-sm"
                     >
                       <CheckCircle2 className="w-4 h-4" />
                       <span>Mark Done</span>
@@ -977,7 +978,7 @@ export const DailyChecklist: React.FC<DailyChecklistProps> = ({
                     <button
                       type="button"
                       onClick={() => handleToggleFailed('sleep')}
-                      className={`flex-1 xl:flex-initial px-3 py-2 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition cursor-pointer border min-h-[38px] whitespace-nowrap shrink-0 ${
+                      className={`px-3 py-2 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition cursor-pointer border min-h-[38px] whitespace-nowrap ${
                         getGoalMissedReason('sleep')
                           ? 'bg-rose-500/15 text-[#F87171] border-rose-500/30 hover:bg-rose-500/25'
                           : 'bg-rose-500/10 text-[#F87171] border-rose-500/25 hover:bg-rose-500/20'
@@ -987,17 +988,6 @@ export const DailyChecklist: React.FC<DailyChecklistProps> = ({
                       {getGoalMissedReason('sleep') ? <XCircle className="w-3.5 h-3.5" /> : <AlertCircle className="w-3.5 h-3.5" />}
                       <span>Failed</span>
                     </button>
-                    {getGoalMissedReason('sleep') && (
-                      <button
-                        type="button"
-                        onClick={() => setActiveMissedGoal('sleep')}
-                        className="px-2.5 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1.5 transition cursor-pointer shrink-0 bg-amber-500/10 border border-amber-500/25 text-[#FBBF24] hover:bg-amber-500/15"
-                        title="View or edit logged reason"
-                      >
-                        <AlertCircle className="w-3.5 h-3.5 shrink-0" />
-                        <span>Reason: {getGoalMissedReason('sleep')?.reason_tag}</span>
-                      </button>
-                    )}
                   </div>
                 )}
               </div>
@@ -1045,9 +1035,9 @@ export const DailyChecklist: React.FC<DailyChecklistProps> = ({
 
           {/* Logged Failure Reason Banner */}
           {!displayedDailyLog.sleep_done && getGoalMissedReason('sleep') && (
-            <div className="mt-3 p-2.5 bg-rose-500/10 rounded-lg text-xs text-[#F87171] flex items-center justify-between border border-rose-500/25">
-              <div className="flex items-center gap-2">
-                <AlertCircle className="w-4 h-4 text-[#F87171] shrink-0" />
+            <div className="mt-3 p-3 bg-amber-500/10 rounded-lg text-xs text-[#FBBF24] flex items-center justify-between border border-amber-500/25">
+              <div className="flex items-center gap-2 min-w-0 flex-1">
+                <AlertCircle className="w-4 h-4 text-[#FBBF24] shrink-0" />
                 <span className="break-words">
                   <strong>Reason:</strong> [{getGoalMissedReason('sleep')?.reason_tag}]{' '}
                   {getGoalMissedReason('sleep')?.reason_text}
@@ -1055,10 +1045,11 @@ export const DailyChecklist: React.FC<DailyChecklistProps> = ({
               </div>
               {!isViewingOther && (
                 <button
+                  type="button"
                   onClick={() => setActiveMissedGoal('sleep')}
-                  className="text-[11px] underline text-[#F87171] hover:text-[#F4F4F5] font-semibold cursor-pointer shrink-0 ml-2"
+                  className="text-xs px-2.5 py-1 rounded bg-[#1B1B20] hover:bg-[#26262C] text-[#FBBF24] border border-amber-500/30 font-semibold cursor-pointer shrink-0 ml-3 transition"
                 >
-                  Edit
+                  Edit Reason
                 </button>
               )}
             </div>
@@ -1100,10 +1091,10 @@ export const DailyChecklist: React.FC<DailyChecklistProps> = ({
                     <span>Avoided</span>
                   </button>
                 ) : (
-                  <div className="flex flex-wrap items-center gap-2 w-full xl:w-auto shrink-0">
+                  <div className="flex items-center gap-2 shrink-0">
                     <button
                       onClick={() => handleToggleGoal('junk_food', false)}
-                      className="flex-1 xl:flex-initial px-3.5 py-2 rounded-lg bg-[#D98B4A] hover:bg-[#E69A5C] text-[#0B0B0D] font-bold text-xs flex items-center justify-center gap-1.5 transition cursor-pointer min-h-[38px] whitespace-nowrap shrink-0 shadow-sm"
+                      className="px-3.5 py-2 rounded-lg bg-[#D98B4A] hover:bg-[#E69A5C] text-[#0B0B0D] font-bold text-xs flex items-center justify-center gap-1.5 transition cursor-pointer min-h-[38px] whitespace-nowrap shadow-sm"
                     >
                       <CheckCircle2 className="w-4 h-4" />
                       <span>Mark Done</span>
@@ -1111,7 +1102,7 @@ export const DailyChecklist: React.FC<DailyChecklistProps> = ({
                     <button
                       type="button"
                       onClick={() => handleToggleFailed('junk_food')}
-                      className={`flex-1 xl:flex-initial px-3 py-2 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition cursor-pointer border min-h-[38px] whitespace-nowrap shrink-0 ${
+                      className={`px-3 py-2 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition cursor-pointer border min-h-[38px] whitespace-nowrap ${
                         getGoalMissedReason('junk_food')
                           ? 'bg-rose-500/15 text-[#F87171] border-rose-500/30 hover:bg-rose-500/25'
                           : 'bg-rose-500/10 text-[#F87171] border-rose-500/25 hover:bg-rose-500/20'
@@ -1121,17 +1112,6 @@ export const DailyChecklist: React.FC<DailyChecklistProps> = ({
                       {getGoalMissedReason('junk_food') ? <XCircle className="w-3.5 h-3.5" /> : <AlertCircle className="w-3.5 h-3.5" />}
                       <span>Failed</span>
                     </button>
-                    {getGoalMissedReason('junk_food') && (
-                      <button
-                        type="button"
-                        onClick={() => setActiveMissedGoal('junk_food')}
-                        className="px-2.5 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1.5 transition cursor-pointer shrink-0 bg-amber-500/10 border border-amber-500/25 text-[#FBBF24] hover:bg-amber-500/15"
-                        title="View or edit logged reason"
-                      >
-                        <AlertCircle className="w-3.5 h-3.5 shrink-0" />
-                        <span>Reason: {getGoalMissedReason('junk_food')?.reason_tag}</span>
-                      </button>
-                    )}
                   </div>
                 )}
               </div>
@@ -1146,9 +1126,9 @@ export const DailyChecklist: React.FC<DailyChecklistProps> = ({
 
           {/* Logged Failure Reason Banner */}
           {!displayedDailyLog.junk_food_avoided && getGoalMissedReason('junk_food') && (
-            <div className="mt-3 p-2.5 bg-rose-500/10 rounded-lg text-xs text-[#F87171] flex items-center justify-between border border-rose-500/25">
-              <div className="flex items-center gap-2">
-                <AlertCircle className="w-4 h-4 text-[#F87171] shrink-0" />
+            <div className="mt-3 p-3 bg-amber-500/10 rounded-lg text-xs text-[#FBBF24] flex items-center justify-between border border-amber-500/25">
+              <div className="flex items-center gap-2 min-w-0 flex-1">
+                <AlertCircle className="w-4 h-4 text-[#FBBF24] shrink-0" />
                 <span className="break-words">
                   <strong>Reason:</strong> [{getGoalMissedReason('junk_food')?.reason_tag}]{' '}
                   {getGoalMissedReason('junk_food')?.reason_text}
@@ -1156,10 +1136,11 @@ export const DailyChecklist: React.FC<DailyChecklistProps> = ({
               </div>
               {!isViewingOther && (
                 <button
+                  type="button"
                   onClick={() => setActiveMissedGoal('junk_food')}
-                  className="text-[11px] underline text-[#F87171] hover:text-[#F4F4F5] font-semibold cursor-pointer shrink-0 ml-2"
+                  className="text-xs px-2.5 py-1 rounded bg-[#1B1B20] hover:bg-[#26262C] text-[#FBBF24] border border-amber-500/30 font-semibold cursor-pointer shrink-0 ml-3 transition"
                 >
-                  Edit
+                  Edit Reason
                 </button>
               )}
             </div>
@@ -1201,10 +1182,10 @@ export const DailyChecklist: React.FC<DailyChecklistProps> = ({
                     <span>Target Hit</span>
                   </button>
                 ) : (
-                  <div className="flex flex-wrap items-center gap-2 w-full xl:w-auto shrink-0">
+                  <div className="flex items-center gap-2 shrink-0">
                     <button
                       onClick={() => handleToggleGoal('water', false)}
-                      className="flex-1 xl:flex-initial px-3.5 py-2 rounded-lg bg-[#D98B4A] hover:bg-[#E69A5C] text-[#0B0B0D] font-bold text-xs flex items-center justify-center gap-1.5 transition cursor-pointer min-h-[38px] whitespace-nowrap shrink-0 shadow-sm"
+                      className="px-3.5 py-2 rounded-lg bg-[#D98B4A] hover:bg-[#E69A5C] text-[#0B0B0D] font-bold text-xs flex items-center justify-center gap-1.5 transition cursor-pointer min-h-[38px] whitespace-nowrap shadow-sm"
                     >
                       <CheckCircle2 className="w-4 h-4" />
                       <span>Target Hit</span>
@@ -1212,7 +1193,7 @@ export const DailyChecklist: React.FC<DailyChecklistProps> = ({
                     <button
                       type="button"
                       onClick={() => handleToggleFailed('water')}
-                      className={`flex-1 xl:flex-initial px-3 py-2 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition cursor-pointer border min-h-[38px] whitespace-nowrap shrink-0 ${
+                      className={`px-3 py-2 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition cursor-pointer border min-h-[38px] whitespace-nowrap ${
                         getGoalMissedReason('water')
                           ? 'bg-rose-500/15 text-[#F87171] border-rose-500/30 hover:bg-rose-500/25'
                           : 'bg-rose-500/10 text-[#F87171] border-rose-500/25 hover:bg-rose-500/20'
@@ -1222,17 +1203,6 @@ export const DailyChecklist: React.FC<DailyChecklistProps> = ({
                       {getGoalMissedReason('water') ? <XCircle className="w-3.5 h-3.5" /> : <AlertCircle className="w-3.5 h-3.5" />}
                       <span>Failed</span>
                     </button>
-                    {getGoalMissedReason('water') && (
-                      <button
-                        type="button"
-                        onClick={() => setActiveMissedGoal('water')}
-                        className="px-2.5 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1.5 transition cursor-pointer shrink-0 bg-amber-500/10 border border-amber-500/25 text-[#FBBF24] hover:bg-amber-500/15"
-                        title="View logged reason"
-                      >
-                        <AlertCircle className="w-3.5 h-3.5 shrink-0" />
-                        <span>Reason: {getGoalMissedReason('water')?.reason_tag}</span>
-                      </button>
-                    )}
                   </div>
                 )}
               </div>
@@ -1304,20 +1274,21 @@ export const DailyChecklist: React.FC<DailyChecklistProps> = ({
 
           {/* Logged Failure Reason Banner */}
           {!displayedDailyLog.water_done && getGoalMissedReason('water') && (
-            <div className="mt-3 p-2.5 bg-rose-500/10 rounded-lg text-xs text-[#F87171] flex items-center justify-between border border-rose-500/25">
-              <div className="flex items-center gap-2">
-                <AlertCircle className="w-4 h-4 text-[#F87171] shrink-0" />
-                <span>
+            <div className="mt-3 p-3 bg-amber-500/10 rounded-lg text-xs text-[#FBBF24] flex items-center justify-between border border-amber-500/25">
+              <div className="flex items-center gap-2 min-w-0 flex-1">
+                <AlertCircle className="w-4 h-4 text-[#FBBF24] shrink-0" />
+                <span className="break-words">
                   <strong>Reason:</strong> [{getGoalMissedReason('water')?.reason_tag}]{' '}
                   {getGoalMissedReason('water')?.reason_text}
                 </span>
               </div>
               {!isViewingOther && (
                 <button
+                  type="button"
                   onClick={() => setActiveMissedGoal('water')}
-                  className="text-[11px] underline text-[#F87171] hover:text-[#F4F4F5] font-semibold cursor-pointer shrink-0 ml-2"
+                  className="text-xs px-2.5 py-1 rounded bg-[#1B1B20] hover:bg-[#26262C] text-[#FBBF24] border border-amber-500/30 font-semibold cursor-pointer shrink-0 ml-3 transition"
                 >
-                  Edit
+                  Edit Reason
                 </button>
               )}
             </div>
