@@ -1,13 +1,15 @@
 import React, { useState } from 'react';
 import type { User, DailyLog, Workout, WeightLog } from '../types';
 import { calculateUserPoints, calculateGoalStreak } from '../utils/gamification';
-import { Swords, Trophy, Flame, Dumbbell, TrendingDown, Zap, Sparkles } from 'lucide-react';
+import { Swords, Trophy, Flame, Dumbbell, TrendingDown, Zap, Sparkles, RefreshCw } from 'lucide-react';
 
 interface HeadToHeadProps {
   users: User[];
   dailyLogs: DailyLog[];
   workouts: Workout[];
   weightLogs: WeightLog[];
+  onRefreshMembers?: () => void;
+  isRefreshingMembers?: boolean;
 }
 
 export const HeadToHead: React.FC<HeadToHeadProps> = ({
@@ -15,6 +17,8 @@ export const HeadToHead: React.FC<HeadToHeadProps> = ({
   dailyLogs,
   workouts,
   weightLogs,
+  onRefreshMembers,
+  isRefreshingMembers = false,
 }) => {
   const [userAId, setUserAId] = useState<string>(users[0]?.id || '');
   const [userBId, setUserBId] = useState<string>(users[1]?.id || users[0]?.id || '');
@@ -27,8 +31,21 @@ export const HeadToHead: React.FC<HeadToHeadProps> = ({
         </div>
         <h3 className="text-lg sm:text-xl font-black text-[#F4F4F5]">Head-to-Head Face-Off</h3>
         <p className="text-xs text-[#A1A1AA] mt-2 leading-relaxed">
-          At least 2 registered members are required for a side-by-side comparison. Invite friends or family to register and compete with you!
+          At least 2 registered members are required for a side-by-side comparison. If your friend recently registered, tap below to sync.
         </p>
+        {onRefreshMembers && (
+          <div className="mt-5">
+            <button
+              type="button"
+              onClick={onRefreshMembers}
+              disabled={isRefreshingMembers}
+              className="px-4 py-2 bg-[#D98B4A] hover:bg-[#E69A5C] text-[#0B0B0D] font-bold text-xs rounded-xl shadow-md transition cursor-pointer flex items-center gap-2 mx-auto active:scale-95 disabled:opacity-60"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${isRefreshingMembers ? 'animate-spin' : ''}`} />
+              <span>{isRefreshingMembers ? 'Checking for Teammates...' : 'Sync Members Now'}</span>
+            </button>
+          </div>
+        )}
       </div>
     );
   }

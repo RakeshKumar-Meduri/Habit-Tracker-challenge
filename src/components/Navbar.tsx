@@ -15,7 +15,8 @@ import {
   Sparkles, 
   LogOut,
   MoreVertical,
-  X
+  X,
+  RefreshCw
 } from 'lucide-react';
 
 interface NavbarProps {
@@ -30,6 +31,8 @@ interface NavbarProps {
   onOpenAuth: () => void;
   onLogout: () => void;
   realtimeStatus?: { isConnected: boolean; clientCount: number };
+  onRefreshMembers?: () => void;
+  isRefreshingMembers?: boolean;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -44,6 +47,8 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenAuth,
   onLogout,
   realtimeStatus,
+  onRefreshMembers,
+  isRefreshingMembers = false,
 }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const mobileMenuRef = useRef<HTMLDivElement>(null);
@@ -107,15 +112,22 @@ export const Navbar: React.FC<NavbarProps> = ({
                       ? Math.max(1, Math.min(realtimeStatus.clientCount, totalUsers))
                       : (realtimeStatus.clientCount > 0 ? realtimeStatus.clientCount : 1);
                     return (
-                      <span className={`inline-flex items-center gap-1 px-1.5 sm:px-2 py-0.5 rounded-full text-[9px] sm:text-[10px] font-semibold border ${
-                        realtimeStatus.isConnected
-                          ? 'bg-[#34D399]/15 border-[#34D399]/30 text-[#34D399]'
-                          : 'bg-amber-500/10 border-amber-500/25 text-[#FBBF24]'
-                      }`}>
+                      <button
+                        type="button"
+                        onClick={onRefreshMembers}
+                        disabled={isRefreshingMembers}
+                        title="Live Sync Status • Tap to force refresh members and data"
+                        className={`inline-flex items-center gap-1 px-1.5 sm:px-2 py-0.5 rounded-full text-[9px] sm:text-[10px] font-semibold border transition cursor-pointer active:scale-95 ${
+                          realtimeStatus.isConnected
+                            ? 'bg-[#34D399]/15 border-[#34D399]/30 text-[#34D399] hover:bg-[#34D399]/25'
+                            : 'bg-amber-500/10 border-amber-500/25 text-[#FBBF24] hover:bg-amber-500/20'
+                        }`}
+                      >
                         <span className={`w-1.5 h-1.5 rounded-full ${realtimeStatus.isConnected ? 'bg-[#34D399] animate-pulse' : 'bg-[#FBBF24]'}`} />
                         <span className="hidden sm:inline tabular-nums">{realtimeStatus.isConnected ? `Live Sync (${effectiveCount} online)` : 'Syncing...'}</span>
                         <span className="sm:hidden tabular-nums">{realtimeStatus.isConnected ? `${effectiveCount} on` : 'sync'}</span>
-                      </span>
+                        {isRefreshingMembers && <RefreshCw className="w-2.5 h-2.5 animate-spin ml-0.5 text-[#D98B4A]" />}
+                      </button>
                     );
                   })()}
                 </div>
@@ -245,6 +257,20 @@ export const Navbar: React.FC<NavbarProps> = ({
                         <p className="text-xs font-bold text-[#F4F4F5] truncate">{currentUser.name}</p>
                         <p className="text-[10px] text-[#A1A1AA] font-mono">@{currentUser.username}</p>
                       </div>
+                    )}
+
+                    {onRefreshMembers && (
+                      <button
+                        onClick={() => {
+                          setIsMobileMenuOpen(false);
+                          onRefreshMembers();
+                        }}
+                        disabled={isRefreshingMembers}
+                        className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold text-[#D98B4A] hover:bg-[#1B1B20] transition cursor-pointer"
+                      >
+                        <RefreshCw className={`w-4 h-4 text-[#D98B4A] ${isRefreshingMembers ? 'animate-spin' : ''}`} />
+                        {isRefreshingMembers ? 'Syncing Members...' : 'Sync Members & Data'}
+                      </button>
                     )}
 
                     <button

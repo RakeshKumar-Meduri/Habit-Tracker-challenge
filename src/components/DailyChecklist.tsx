@@ -33,7 +33,8 @@ import {
   ListCheck,
   Users,
   Eye,
-  RotateCcw
+  RotateCcw,
+  RefreshCw
 } from 'lucide-react';
 
 interface DailyChecklistProps {
@@ -63,6 +64,8 @@ interface DailyChecklistProps {
   onDeleteCustomHabit: (habitId: string) => void;
   onToggleCustomHabitLog: (habitId: string, date: string, completed: boolean) => void;
   onOpenCalendar?: () => void;
+  onRefreshMembers?: () => void;
+  isRefreshingMembers?: boolean;
 }
 
 export const DailyChecklist: React.FC<DailyChecklistProps> = ({
@@ -92,6 +95,8 @@ export const DailyChecklist: React.FC<DailyChecklistProps> = ({
   onDeleteCustomHabit,
   onToggleCustomHabitLog,
   onOpenCalendar,
+  onRefreshMembers,
+  isRefreshingMembers = false,
 }) => {
   const [selectedMemberId, setSelectedMemberId] = useState<string>(currentUser.id);
   const isViewingOther = selectedMemberId !== currentUser.id;
@@ -392,51 +397,106 @@ export const DailyChecklist: React.FC<DailyChecklistProps> = ({
   return (
     <div className="space-y-6 max-w-4xl mx-auto font-sans">
       
-      {/* Member Accountability Selector */}
-      {allUsers && allUsers.length > 1 && (
-        <div className="bg-[#131316] border border-[#26262C] rounded-xl p-4 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-3">
+      {/* Member Accountability Selector - ALWAYS VISIBLE (Never hidden on mobile or single-user states) */}
+      <div className="bg-[#131316] border border-[#26262C] rounded-xl p-4 shadow-sm space-y-3">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-lg bg-[rgba(217,139,74,0.12)] text-[#D98B4A] border border-[rgba(217,139,74,0.25)]">
+            <div className="p-2.5 rounded-lg bg-[rgba(217,139,74,0.12)] text-[#D98B4A] border border-[rgba(217,139,74,0.25)] shrink-0">
               <Users className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="text-sm font-bold text-[#F4F4F5] flex items-center gap-2">
-                Member Checklist Viewer
-                {isViewingOther && (
+              <div className="flex flex-wrap items-center gap-2">
+                <h3 className="text-sm font-bold text-[#F4F4F5]">
+                  Member Checklist Viewer
+                </h3>
+                {isViewingOther ? (
                   <span className="text-[10px] px-2 py-0.5 rounded-md bg-amber-500/10 text-[#FBBF24] border border-amber-500/25 font-semibold flex items-center gap-1">
-                    <Eye className="w-3 h-3" /> Read-Only
+                    <Eye className="w-3 h-3" /> Viewing {targetUser.name}
+                  </span>
+                ) : (
+                  <span className="text-[10px] px-2 py-0.5 rounded-md bg-[rgba(217,139,74,0.12)] text-[#D98B4A] border border-[#D98B4A]/25 font-semibold">
+                    Viewing Yourself
                   </span>
                 )}
-              </h3>
-              <p className="text-xs text-[#A1A1AA]">Inspect your own or your teammates' daily habits & accountability</p>
+                <span className="text-[10px] px-2 py-0.5 rounded-md bg-[#1B1B20] text-[#A1A1AA] border border-[#26262C] font-mono tabular-nums">
+                  {allUsers && allUsers.length > 0 ? allUsers.length : 1} {(allUsers?.length || 1) === 1 ? 'member' : 'members'}
+                </span>
+              </div>
+              <p className="text-xs text-[#A1A1AA] mt-0.5">
+                Inspect your own or your teammates' daily habits & accountability
+              </p>
             </div>
           </div>
 
           <div className="flex items-center gap-2 w-full sm:w-auto">
-            <span className="text-xs font-semibold text-[#A1A1AA] shrink-0">Member:</span>
+            <label htmlFor="member-checklist-select" className="text-xs font-semibold text-[#A1A1AA] shrink-0">
+              Member:
+            </label>
             <select
+              id="member-checklist-select"
               value={selectedMemberId}
               onChange={(e) => setSelectedMemberId(e.target.value)}
-              className="w-full sm:w-auto bg-[#1B1B20] text-[#F4F4F5] font-bold text-xs border border-[#26262C] rounded-lg px-3 py-2 focus:outline-none focus:border-[#D98B4A] cursor-pointer"
+              className="flex-1 sm:flex-initial sm:w-auto min-h-[44px] sm:min-h-[38px] bg-[#1B1B20] text-[#F4F4F5] font-bold text-xs border border-[#26262C] rounded-lg px-3 py-2 focus:outline-none focus:border-[#D98B4A] cursor-pointer"
             >
-              {allUsers.map((u) => (
-                <option key={u.id} value={u.id}>
-                  {u.id === currentUser.id ? `👤 You (${u.name})` : `👥 ${u.name} (@${u.username})`}
-                </option>
-              ))}
+              {allUsers && allUsers.length > 0 ? (
+                allUsers.map((u) => (
+                  <option key={u.id} value={u.id}>
+                    {u.id === currentUser.id ? `👤 You (${u.name})` : `👥 ${u.name} (@${u.username})`}
+                  </option>
+                ))
+              ) : (
+                <option value={currentUser.id}>👤 You ({currentUser.name})</option>
+              )}
             </select>
+
+            {onRefreshMembers && (
+              <button
+                type="button"
+                onClick={onRefreshMembers}
+                disabled={isRefreshingMembers}
+                title="Refresh and sync member list from server"
+                aria-label="Refresh and sync member list"
+                className="min-h-[44px] sm:min-h-[38px] px-3 py-2 bg-[#1B1B20] hover:bg-[#26262C] text-[#D98B4A] hover:text-[#E69A5C] text-xs font-bold rounded-lg border border-[#26262C] hover:border-[#D98B4A]/40 transition shrink-0 cursor-pointer flex items-center gap-1.5 active:scale-95 disabled:opacity-60"
+              >
+                <RefreshCw className={`w-3.5 h-3.5 ${isRefreshingMembers ? 'animate-spin' : ''}`} />
+                <span className="hidden xs:inline">{isRefreshingMembers ? 'Syncing...' : 'Sync'}</span>
+              </button>
+            )}
+
             {isViewingOther && (
               <button
                 type="button"
                 onClick={() => setSelectedMemberId(currentUser.id)}
-                className="px-2.5 py-2 bg-[rgba(217,139,74,0.12)] hover:bg-[rgba(217,139,74,0.20)] text-[#D98B4A] text-xs font-bold rounded-lg border border-[#D98B4A]/30 transition shrink-0 cursor-pointer"
+                className="min-h-[44px] sm:min-h-[38px] px-2.5 py-2 bg-[rgba(217,139,74,0.12)] hover:bg-[rgba(217,139,74,0.20)] text-[#D98B4A] text-xs font-bold rounded-lg border border-[#D98B4A]/30 transition shrink-0 cursor-pointer flex items-center gap-1 active:scale-95"
               >
-                Reset to Me
+                <RotateCcw className="w-3.5 h-3.5" />
+                <span>Reset</span>
               </button>
             )}
           </div>
         </div>
-      )}
+
+        {/* Helpful alert if only 1 member is currently present in local state */}
+        {allUsers && allUsers.length <= 1 && (
+          <div className="bg-[#1B1B20]/60 border border-[#26262C] rounded-lg p-2.5 flex flex-col xs:flex-row items-start xs:items-center justify-between text-xs text-[#A1A1AA] gap-2">
+            <div className="flex items-center gap-2">
+              <span className="text-sm">💡</span>
+              <span>Only 1 member is loaded locally. If your teammate joined recently, tap <strong>Sync</strong> to refresh the members list.</span>
+            </div>
+            {onRefreshMembers && (
+              <button
+                type="button"
+                onClick={onRefreshMembers}
+                disabled={isRefreshingMembers}
+                className="px-2.5 py-1 bg-[rgba(217,139,74,0.12)] hover:bg-[rgba(217,139,74,0.20)] text-[#D98B4A] font-bold text-[11px] rounded border border-[#D98B4A]/30 shrink-0 cursor-pointer transition flex items-center gap-1"
+              >
+                <RefreshCw className={`w-3 h-3 ${isRefreshingMembers ? 'animate-spin' : ''}`} />
+                <span>{isRefreshingMembers ? 'Syncing...' : 'Sync Members'}</span>
+              </button>
+            )}
+          </div>
+        )}
+      </div>
 
       {/* Read-Only Notice when viewing another member */}
       {isViewingOther && (
@@ -450,81 +510,79 @@ export const DailyChecklist: React.FC<DailyChecklistProps> = ({
         </div>
       )}
 
-      {/* Collective Team Daily Goal Progress Bar */}
-      {allUsers && allUsers.length > 1 && (
-        <div className="bg-[#131316] border border-[#26262C] rounded-xl p-4 sm:p-5 shadow-sm space-y-3">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-            <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-lg bg-[#D98B4A] flex items-center justify-center text-[#0B0B0D] font-black shrink-0 shadow-sm">
-                <Users className="w-4 h-4 text-[#0B0B0D]" />
-              </div>
-              <div>
-                <h3 className="text-sm sm:text-base font-bold text-[#F4F4F5] flex items-center gap-2">
-                  Team Daily Goal Progress
-                  <span className="text-[10px] px-2 py-0.5 rounded-md bg-[rgba(217,139,74,0.12)] text-[#D98B4A] font-bold border border-[#D98B4A]/25 tabular-nums">
-                    {teamCompletionPercent}% Together
-                  </span>
-                </h3>
-                <p className="text-xs text-[#A1A1AA]">
-                  Collective accountability across all {activeMembersList.length} members for {selectedDate}
-                </p>
-              </div>
+      {/* Collective Team Daily Goal Progress Bar - ALWAYS VISIBLE */}
+      <div className="bg-[#131316] border border-[#26262C] rounded-xl p-4 sm:p-5 shadow-sm space-y-3">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-lg bg-[#D98B4A] flex items-center justify-center text-[#0B0B0D] font-black shrink-0 shadow-sm">
+              <Users className="w-4 h-4 text-[#0B0B0D]" />
             </div>
-
-            <div className="text-left sm:text-right">
-              <span className="text-xs text-[#D98B4A] font-mono font-bold tabular-nums">
-                {teamCompletedCount} / {teamTotalTarget} Goals Met
-              </span>
+            <div>
+              <h3 className="text-sm sm:text-base font-bold text-[#F4F4F5] flex items-center gap-2">
+                Team Daily Goal Progress
+                <span className="text-[10px] px-2 py-0.5 rounded-md bg-[rgba(217,139,74,0.12)] text-[#D98B4A] font-bold border border-[#D98B4A]/25 tabular-nums">
+                  {teamCompletionPercent}% Together
+                </span>
+              </h3>
+              <p className="text-xs text-[#A1A1AA]">
+                Collective accountability across all {activeMembersList.length} {activeMembersList.length === 1 ? 'member' : 'members'} for {selectedDate}
+              </p>
             </div>
           </div>
 
-          {/* Combined Team Progress Bar */}
-          <div className="w-full h-2.5 bg-[#1B1B20] rounded-full overflow-hidden border border-[#26262C] relative">
-            <div
-              className="h-full bg-[#D98B4A] transition-all duration-500 rounded-full"
-              style={{ width: `${teamCompletionPercent}%` }}
-            />
-          </div>
-
-          {/* Per-Member Breakdown Badges (Click to switch member) */}
-          <div className="flex flex-wrap items-center gap-2 pt-1">
-            {activeMembersList.map(user => {
-              const uLog = allDailyLogs?.find(l => l.user_id === user.id && l.date === selectedDate);
-              const uCompleted = [
-                isSunday || uLog?.gym_done,
-                uLog?.steps_done,
-                uLog?.sleep_done,
-                uLog?.junk_food_avoided,
-                uLog?.water_done
-              ].filter(Boolean).length;
-              const isCurrent = user.id === currentUser.id;
-              const isSelected = user.id === selectedMemberId;
-
-              return (
-                <button
-                  key={user.id}
-                  type="button"
-                  onClick={() => setSelectedMemberId(user.id)}
-                  className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold border transition cursor-pointer active:scale-95 ${
-                    isSelected
-                      ? 'bg-[rgba(217,139,74,0.12)] border-[#D98B4A] text-[#F4F4F5]'
-                      : 'bg-[#1B1B20] border-[#26262C] text-[#A1A1AA] hover:text-[#F4F4F5] hover:border-[#D98B4A]/40'
-                  }`}
-                  title={`View ${user.name}'s checklist for ${selectedDate}`}
-                >
-                  <div className="w-5 h-5 rounded-full bg-[#1B1B20] border border-[#26262C] text-[10px] font-bold text-[#F4F4F5] flex items-center justify-center shrink-0">
-                    {user.name.charAt(0).toUpperCase()}
-                  </div>
-                  <span>{isCurrent ? `${user.name} (You)` : user.name}:</span>
-                  <strong className={`tabular-nums ${uCompleted > 0 ? 'text-[#34D399] font-bold' : 'text-[#71717A]'}`}>
-                    {uCompleted}/5 goals
-                  </strong>
-                </button>
-              );
-            })}
+          <div className="text-left sm:text-right">
+            <span className="text-xs text-[#D98B4A] font-mono font-bold tabular-nums">
+              {teamCompletedCount} / {teamTotalTarget} Goals Met
+            </span>
           </div>
         </div>
-      )}
+
+        {/* Combined Team Progress Bar */}
+        <div className="w-full h-2.5 bg-[#1B1B20] rounded-full overflow-hidden border border-[#26262C] relative">
+          <div
+            className="h-full bg-[#D98B4A] transition-all duration-500 rounded-full"
+            style={{ width: `${teamCompletionPercent}%` }}
+          />
+        </div>
+
+        {/* Per-Member Breakdown Badges (Click to switch member) */}
+        <div className="flex flex-wrap items-center gap-2 pt-1">
+          {activeMembersList.map(user => {
+            const uLog = allDailyLogs?.find(l => l.user_id === user.id && l.date === selectedDate);
+            const uCompleted = [
+              isSunday || uLog?.gym_done,
+              uLog?.steps_done,
+              uLog?.sleep_done,
+              uLog?.junk_food_avoided,
+              uLog?.water_done
+            ].filter(Boolean).length;
+            const isCurrent = user.id === currentUser.id;
+            const isSelected = user.id === selectedMemberId;
+
+            return (
+              <button
+                key={user.id}
+                type="button"
+                onClick={() => setSelectedMemberId(user.id)}
+                className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold border transition cursor-pointer active:scale-95 ${
+                  isSelected
+                    ? 'bg-[rgba(217,139,74,0.12)] border-[#D98B4A] text-[#F4F4F5]'
+                    : 'bg-[#1B1B20] border-[#26262C] text-[#A1A1AA] hover:text-[#F4F4F5] hover:border-[#D98B4A]/40'
+                }`}
+                title={`View ${user.name}'s checklist for ${selectedDate}`}
+              >
+                <div className="w-5 h-5 rounded-full bg-[#1B1B20] border border-[#26262C] text-[10px] font-bold text-[#F4F4F5] flex items-center justify-center shrink-0">
+                  {user.name.charAt(0).toUpperCase()}
+                </div>
+                <span>{isCurrent ? `${user.name} (You)` : user.name}:</span>
+                <strong className={`tabular-nums ${uCompleted > 0 ? 'text-[#34D399] font-bold' : 'text-[#71717A]'}`}>
+                  {uCompleted}/5 goals
+                </strong>
+              </button>
+            );
+          })}
+        </div>
+      </div>
 
       {/* Date Navigation & Calendar Picker Bar */}
       <div className="bg-[#131316] border border-[#26262C] rounded-xl p-4 sm:p-5 shadow-sm flex flex-col md:flex-row items-center justify-between gap-4">

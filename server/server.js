@@ -253,7 +253,13 @@ if (redis) {
 }
 
 // Middleware: ensure DB is always fresh from Redis before handling any /api request
+// and prevent aggressive iOS Safari / proxy disk caching of API requests
 app.use('/api', async (req, res, next) => {
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
+  res.setHeader('Surrogate-Control', 'no-store');
+
   if (redis) {
     try {
       const fresh = await loadDatabaseRedis();
@@ -418,6 +424,41 @@ app.get('/api/sync', async (req, res) => {
       adminSettings: db.adminSettings,
     },
   });
+});
+
+// Dedicated Members List Endpoint
+app.get('/api/users', async (req, res) => {
+  if (redis) {
+    try {
+      const fresh = await loadDatabaseRedis();
+      if (fresh && fresh.users) db = fresh;
+    } catch {}
+  }
+  const cleanUsers = (db.users || []).filter(u => u && u.is_active !== false);
+  res.json({
+    success: true,
+    users: cleanUsers,
+    count: cleanUsers.length,
+  });
+});
+
+// Single Member by ID or Username
+app.get('/api/users/:id', async (req, res) => {
+  const { id } = req.params;
+  if (redis) {
+    try {
+      const fresh = await loadDatabaseRedis();
+      if (fresh && fresh.users) db = fresh;
+    } catch {}
+  }
+  const targetId = String(id || '').trim().toLowerCase();
+  const found = (db.users || []).find(u => 
+    u && (String(u.id).toLowerCase() === targetId || String(u.username || '').toLowerCase() === targetId.replace(/^@+/, ''))
+  );
+  if (!found || found.is_active === false) {
+    return res.status(404).json({ success: false, error: 'User not found' });
+  }
+  res.json({ success: true, user: found });
 });
 
 // Register User

@@ -29,6 +29,7 @@ import { exportUserDataToCSV } from './utils/csvExport';
 import { logoutSession } from './services/authService';
 import { 
   fetchServerSync, 
+  fetchServerUsers,
   pushDailyLogToServer, 
   pushWorkoutsToServer,
   deleteUserOnServer,
@@ -309,6 +310,40 @@ export function App() {
         return Array.from(map.values());
       });
     }
+
+    // Auto-discover unknown members who have logs/workouts but are not yet in local users list
+    const knownUserIds = new Set([
+      ...(Array.isArray(serverData.users) ? serverData.users.map((u: any) => u.id) : []),
+      ...users.map(u => u.id)
+    ]);
+    const unknownUserIds = new Set<string>();
+
+    if (Array.isArray(serverData.dailyLogs)) {
+      serverData.dailyLogs.forEach((l: any) => {
+        if (l && l.user_id && !knownUserIds.has(l.user_id)) {
+          unknownUserIds.add(l.user_id);
+        }
+      });
+    }
+    if (Array.isArray(serverData.workouts)) {
+      serverData.workouts.forEach((w: any) => {
+        if (w && w.user_id && !knownUserIds.has(w.user_id)) {
+          unknownUserIds.add(w.user_id);
+        }
+      });
+    }
+
+    if (unknownUserIds.size > 0) {
+      fetchServerUsers().then(freshUsers => {
+        if (freshUsers && freshUsers.length > 0) {
+          setUsers(prev => {
+            const map = new Map(prev.map(u => [u.id, u]));
+            freshUsers.forEach(u => map.set(u.id, u));
+            return Array.from(map.values());
+          });
+        }
+      }).catch(() => {});
+    }
   };
 
   // Real-Time WebSockets Engine Listener & Background HTTP Sync
@@ -370,6 +405,21 @@ export function App() {
               const map = new Map(prev.map(l => [`${l.user_id}_${l.date}`, l]));
               map.set(`${log.user_id}_${log.date}`, log);
               return Array.from(map.values());
+            });
+            // If the user who created this log is not yet in users, fetch fresh members immediately!
+            setUsers(prev => {
+              if (!prev.some(u => u.id === log.user_id)) {
+                fetchServerUsers().then(freshUsers => {
+                  if (freshUsers && freshUsers.length > 0) {
+                    setUsers(p => {
+                      const m = new Map(p.map(u => [u.id, u]));
+                      freshUsers.forEach(u => m.set(u.id, u));
+                      return Array.from(m.values());
+                    });
+                  }
+                }).catch(() => {});
+              }
+              return prev;
             });
           }
           break;
@@ -539,13 +589,13 @@ export function App() {
       }
     });
 
-    // 3. Fallback Periodic Reconciliation (every 45s)
+    // 3. Fallback Periodic Reconciliation (every 20s)
     const interval = setInterval(async () => {
       const data = await fetchServerSync();
       if (!isCancelled && data) {
         applyServerData(data);
       }
-    }, 45000);
+    }, 20000);
 
     return () => {
       isCancelled = true;
@@ -554,6 +604,60 @@ export function App() {
       clearInterval(interval);
     };
   }, []);
+
+  // Re-sync immediately on iOS mobile wake, tab focus, network reconnect
+  useEffect(() => {
+    const handleWakeSync = async () => {
+      if (typeof document !== 'undefined' && document.visibilityState === 'visible') {
+        const data = await fetchServerSync();
+        if (data) {
+          applyServerData(data);
+        }
+        const freshUsers = await fetchServerUsers();
+        if (freshUsers && freshUsers.length > 0) {
+          setUsers(prev => {
+            const map = new Map(freshUsers.map(u => [u.id, u]));
+            prev.forEach(pu => { if (!map.has(pu.id)) map.set(pu.id, pu); });
+            return Array.from(map.values());
+          });
+        }
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleWakeSync);
+    window.addEventListener('focus', handleWakeSync);
+    window.addEventListener('online', handleWakeSync);
+    window.addEventListener('pageshow', handleWakeSync);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleWakeSync);
+      window.removeEventListener('focus', handleWakeSync);
+      window.removeEventListener('online', handleWakeSync);
+      window.removeEventListener('pageshow', handleWakeSync);
+    };
+  }, []);
+
+  const [isRefreshingMembers, setIsRefreshingMembers] = useState(false);
+
+  const handleRefreshMembers = async () => {
+    setIsRefreshingMembers(true);
+    try {
+      const data = await fetchServerSync();
+      if (data) {
+        applyServerData(data);
+      }
+      const freshUsers = await fetchServerUsers();
+      if (freshUsers && freshUsers.length > 0) {
+        setUsers(prev => {
+          const map = new Map(freshUsers.map(u => [u.id, u]));
+          prev.forEach(pu => { if (!map.has(pu.id)) map.set(pu.id, pu); });
+          return Array.from(map.values());
+        });
+      }
+    } finally {
+      setIsRefreshingMembers(false);
+    }
+  };
 
   // Sync state changes to local storage safely
   useEffect(() => {
@@ -952,6 +1056,8 @@ export function App() {
         onOpenAuth={() => setIsAuthModalOpen(true)}
         onLogout={handleLogout}
         realtimeStatus={realtimeStatus}
+        onRefreshMembers={handleRefreshMembers}
+        isRefreshingMembers={isRefreshingMembers}
       />
 
       {/* Main Container */}
@@ -986,6 +1092,8 @@ export function App() {
             onDeleteCustomHabit={handleDeleteCustomHabit}
             onToggleCustomHabitLog={handleToggleCustomHabitLog}
             onOpenCalendar={() => setActiveTab('calendar')}
+            onRefreshMembers={handleRefreshMembers}
+            isRefreshingMembers={isRefreshingMembers}
           />
         )}
 
@@ -1010,6 +1118,8 @@ export function App() {
             }}
             onOpenWorkoutModal={() => setIsWorkoutModalOpen(true)}
             onDeleteWorkout={handleDeleteWorkout}
+            onRefreshMembers={handleRefreshMembers}
+            isRefreshingMembers={isRefreshingMembers}
           />
         )}
 
@@ -1034,6 +1144,8 @@ export function App() {
             allUsers={activeUsers}
             dailyLogs={dailyLogs}
             weightLogs={weightLogs}
+            onRefreshMembers={handleRefreshMembers}
+            isRefreshingMembers={isRefreshingMembers}
           />
         )}
 
@@ -1110,6 +1222,8 @@ export function App() {
             dailyLogs={dailyLogs}
             workouts={workouts}
             weightLogs={weightLogs}
+            onRefreshMembers={handleRefreshMembers}
+            isRefreshingMembers={isRefreshingMembers}
           />
         )}
 
@@ -1131,6 +1245,8 @@ export function App() {
             weightLogs={weightLogs}
             onUpdateProfile={handleUpdateProfile}
             onDeleteAccount={handleDeleteAccount}
+            onRefreshMembers={handleRefreshMembers}
+            isRefreshingMembers={isRefreshingMembers}
           />
         )}
       </main>

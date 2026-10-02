@@ -43,6 +43,40 @@ class RealtimeClient {
 
   constructor() {
     this.connect();
+    if (typeof window !== 'undefined') {
+      window.addEventListener('focus', () => this.ensureConnected());
+      window.addEventListener('online', () => this.ensureConnected());
+      window.addEventListener('pageshow', () => this.ensureConnected());
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') {
+          this.ensureConnected();
+        }
+      });
+    }
+  }
+
+  public ensureConnected() {
+    if (!this.ws || this.ws.readyState === WebSocket.CLOSED || this.ws.readyState === WebSocket.CLOSING) {
+      if (this.reconnectTimer) {
+        clearTimeout(this.reconnectTimer);
+        this.reconnectTimer = null;
+      }
+      this.connect();
+    } else if (this.ws.readyState === WebSocket.OPEN) {
+      try {
+        this.ws.send(JSON.stringify({ type: 'PING' }));
+      } catch {
+        this.handleDisconnect();
+      }
+    }
+  }
+
+  public forceReconnect() {
+    if (this.ws) {
+      try { this.ws.close(); } catch {}
+      this.ws = null;
+    }
+    this.connect();
   }
 
   public identify(userId: string | null | undefined) {

@@ -43,19 +43,79 @@ export async function checkServerHealth(): Promise<boolean> {
 }
 
 /**
- * Fetch synchronized data from shared backend
+ * Fetch synchronized data from shared backend (cache-busted to bypass iOS Safari disk cache)
  */
 export async function fetchServerSync(): Promise<ServerSyncResponse | null> {
   try {
-    const res = await fetch(`${API_BASE}/api/sync`, {
+    const timestamp = Date.now();
+    const res = await fetch(`${API_BASE}/api/sync?_t=${timestamp}`, {
       method: 'GET',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+      },
+      cache: 'no-store',
     });
     const contentType = res.headers.get('content-type') || '';
     if (!res.ok || !contentType.includes('application/json')) return null;
     const json = await res.json();
     if (json.success && json.data) {
       return json.data;
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Fetch fresh active members list directly from shared backend
+ */
+export async function fetchServerUsers(): Promise<User[] | null> {
+  try {
+    const timestamp = Date.now();
+    const res = await fetch(`${API_BASE}/api/users?_t=${timestamp}`, {
+      method: 'GET',
+      headers: { 
+        'Content-Type': 'application/json',
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+      },
+      cache: 'no-store',
+    });
+    const contentType = res.headers.get('content-type') || '';
+    if (!res.ok || !contentType.includes('application/json')) return null;
+    const json = await res.json();
+    if (json.success && Array.isArray(json.users)) {
+      return json.users;
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Fetch single member by ID or Username
+ */
+export async function fetchServerUserById(id: string): Promise<User | null> {
+  try {
+    const timestamp = Date.now();
+    const res = await fetch(`${API_BASE}/api/users/${encodeURIComponent(id)}?_t=${timestamp}`, {
+      method: 'GET',
+      headers: { 
+        'Content-Type': 'application/json',
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+      },
+      cache: 'no-store',
+    });
+    const contentType = res.headers.get('content-type') || '';
+    if (!res.ok || !contentType.includes('application/json')) return null;
+    const json = await res.json();
+    if (json.success && json.user) {
+      return json.user;
     }
     return null;
   } catch {

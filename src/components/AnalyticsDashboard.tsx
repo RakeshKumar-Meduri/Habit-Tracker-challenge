@@ -23,7 +23,8 @@ import {
   UtensilsCrossed, 
   Droplets,
   Users,
-  Eye
+  Eye,
+  RefreshCw
 } from 'lucide-react';
 
 interface AnalyticsDashboardProps {
@@ -31,6 +32,8 @@ interface AnalyticsDashboardProps {
   allUsers?: User[];
   dailyLogs: DailyLog[];
   weightLogs: WeightLog[];
+  onRefreshMembers?: () => void;
+  isRefreshingMembers?: boolean;
 }
 
 export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
@@ -38,6 +41,8 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
   allUsers,
   dailyLogs,
   weightLogs,
+  onRefreshMembers,
+  isRefreshingMembers = false,
 }) => {
   const [selectedUserId, setSelectedUserId] = useState<string>(currentUser.id);
   const targetUser = allUsers?.find(u => u.id === selectedUserId) || currentUser;
@@ -110,51 +115,64 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
   return (
     <div className="space-y-6 max-w-6xl mx-auto font-sans">
       
-      {/* Member Accountability Selector */}
-      {allUsers && allUsers.length > 1 && (
-        <div className="bg-[#131316] border border-[#26262C] rounded-xl p-4 shadow-xl flex flex-col sm:flex-row items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-xl bg-[#D98B4A]/20 text-[#E69A5C] border border-[#D98B4A]/30">
-              <Users className="w-5 h-5" />
-            </div>
-            <div>
-              <h3 className="text-sm font-bold text-[#F4F4F5] flex items-center gap-2">
-                Member Analytics Inspector
-                {isViewingOther && (
-                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-950/40 text-amber-400 border border-amber-800/60 font-semibold flex items-center gap-1">
-                    <Eye className="w-3 h-3" /> Inspecting {targetUser.name}
-                  </span>
-                )}
-              </h3>
-              <p className="text-xs text-[#A1A1AA]">Inspect your own or your teammates' habit streaks, sleep, and weight trends</p>
-            </div>
+      {/* Member Accountability Selector - ALWAYS VISIBLE */}
+      <div className="bg-[#131316] border border-[#26262C] rounded-xl p-4 shadow-xl flex flex-col sm:flex-row items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <div className="p-2.5 rounded-xl bg-[#D98B4A]/20 text-[#E69A5C] border border-[#D98B4A]/30 shrink-0">
+            <Users className="w-5 h-5" />
           </div>
+          <div>
+            <h3 className="text-sm font-bold text-[#F4F4F5] flex items-center gap-2">
+              Member Analytics Inspector
+              {isViewingOther && (
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-950/40 text-amber-400 border border-amber-800/60 font-semibold flex items-center gap-1">
+                  <Eye className="w-3 h-3" /> Inspecting {targetUser.name}
+                </span>
+              )}
+            </h3>
+            <p className="text-xs text-[#A1A1AA]">Inspect your own or your teammates' habit streaks, sleep, and weight trends</p>
+          </div>
+        </div>
 
-          <div className="flex items-center gap-2 w-full sm:w-auto">
-            <span className="text-xs font-semibold text-[#A1A1AA] shrink-0">Member:</span>
-            <select
-              value={selectedUserId}
-              onChange={(e) => setSelectedUserId(e.target.value)}
-              className="w-full sm:w-auto bg-[#1B1B20] text-[#F4F4F5] font-bold text-xs border border-[#26262C] rounded-xl px-3 py-2 focus:outline-none focus:border-[#D98B4A] cursor-pointer"
-            >
-              {allUsers.map((u) => (
+        <div className="flex items-center gap-2 w-full sm:w-auto">
+          <span className="text-xs font-semibold text-[#A1A1AA] shrink-0">Member:</span>
+          <select
+            value={selectedUserId}
+            onChange={(e) => setSelectedUserId(e.target.value)}
+            className="flex-1 sm:flex-initial sm:w-auto min-h-[44px] sm:min-h-[38px] bg-[#1B1B20] text-[#F4F4F5] font-bold text-xs border border-[#26262C] rounded-xl px-3 py-2 focus:outline-none focus:border-[#D98B4A] cursor-pointer"
+          >
+            {allUsers && allUsers.length > 0 ? (
+              allUsers.map((u) => (
                 <option key={u.id} value={u.id}>
                   {u.id === currentUser.id ? `👤 You (${u.name})` : `👥 ${u.name} (@${u.username})`}
                 </option>
-              ))}
-            </select>
-            {isViewingOther && (
-              <button
-                type="button"
-                onClick={() => setSelectedUserId(currentUser.id)}
-                className="px-2.5 py-2 bg-[#D98B4A]/20 hover:bg-[#D98B4A]/30 text-[#E69A5C] text-xs font-bold rounded-xl border border-[#D98B4A]/30 transition shrink-0 cursor-pointer"
-              >
-                Reset to Me
-              </button>
+              ))
+            ) : (
+              <option value={currentUser.id}>👤 You ({currentUser.name})</option>
             )}
-          </div>
+          </select>
+          {onRefreshMembers && (
+            <button
+              type="button"
+              onClick={onRefreshMembers}
+              disabled={isRefreshingMembers}
+              title="Sync members from server"
+              className="min-h-[44px] sm:min-h-[38px] px-3 py-2 bg-[#1B1B20] hover:bg-[#26262C] text-[#D98B4A] rounded-xl border border-[#26262C] transition cursor-pointer flex items-center gap-1"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${isRefreshingMembers ? 'animate-spin' : ''}`} />
+            </button>
+          )}
+          {isViewingOther && (
+            <button
+              type="button"
+              onClick={() => setSelectedUserId(currentUser.id)}
+              className="min-h-[44px] sm:min-h-[38px] px-2.5 py-2 bg-[#D98B4A]/20 hover:bg-[#D98B4A]/30 text-[#E69A5C] text-xs font-bold rounded-xl border border-[#D98B4A]/30 transition shrink-0 cursor-pointer"
+            >
+              Reset to Me
+            </button>
+          )}
         </div>
-      )}
+      </div>
 
       {/* Header */}
       <div className="bg-[#131316] border border-[#26262C] rounded-xl p-4 sm:p-6 shadow-xl">

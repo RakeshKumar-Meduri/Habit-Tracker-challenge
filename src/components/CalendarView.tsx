@@ -32,7 +32,8 @@ import {
   Users, 
   Activity,
   Plus,
-  Trash2
+  Trash2,
+  RefreshCw
 } from 'lucide-react';
 
 interface CalendarViewProps {
@@ -51,6 +52,8 @@ interface CalendarViewProps {
   onNavigateToChecklist: (date: string) => void;
   onOpenWorkoutModal?: () => void;
   onDeleteWorkout?: (id: string) => void;
+  onRefreshMembers?: () => void;
+  isRefreshingMembers?: boolean;
 }
 
 const MONTH_NAMES = [
@@ -76,6 +79,8 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
   onNavigateToChecklist,
   onOpenWorkoutModal,
   onDeleteWorkout,
+  onRefreshMembers,
+  isRefreshingMembers = false,
 }) => {
   // Member selection (defaults to current user)
   const [selectedMemberId, setSelectedMemberId] = useState<string>(currentUser.id);
@@ -354,24 +359,39 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
             </div>
           </div>
 
-          {/* Member Switcher (if multiple users) & Quick Jump */}
+          {/* Member Switcher & Quick Jump */}
           <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-            {allUsers.length > 1 && (
-              <div className="flex items-center gap-1.5 bg-[#1B1B20] border border-[#26262C] rounded-xl px-2.5 py-1.5">
-                <Users className="w-4 h-4 text-[#D98B4A]" />
-                <select
-                  value={selectedMemberId}
-                  onChange={(e) => setSelectedMemberId(e.target.value)}
-                  className="bg-transparent text-xs font-bold text-[#F4F4F5] focus:outline-none cursor-pointer pr-1"
-                >
-                  {allUsers.map((u) => (
+            <div className="flex items-center gap-1.5 bg-[#1B1B20] border border-[#26262C] rounded-xl px-2.5 py-1.5">
+              <Users className="w-4 h-4 text-[#D98B4A]" />
+              <select
+                value={selectedMemberId}
+                onChange={(e) => setSelectedMemberId(e.target.value)}
+                className="bg-transparent text-xs font-bold text-[#F4F4F5] focus:outline-none cursor-pointer pr-1"
+              >
+                {allUsers && allUsers.length > 0 ? (
+                  allUsers.map((u) => (
                     <option key={u.id} value={u.id} className="bg-[#131316] text-[#F4F4F5]">
                       {u.name} {u.id === currentUser.id ? '(You)' : ''}
                     </option>
-                  ))}
-                </select>
-              </div>
-            )}
+                  ))
+                ) : (
+                  <option value={currentUser.id} className="bg-[#131316] text-[#F4F4F5]">
+                    {currentUser.name} (You)
+                  </option>
+                )}
+              </select>
+              {onRefreshMembers && (
+                <button
+                  type="button"
+                  onClick={onRefreshMembers}
+                  disabled={isRefreshingMembers}
+                  title="Sync members from server"
+                  className="p-0.5 hover:bg-[#26262C] text-[#D98B4A] rounded transition cursor-pointer"
+                >
+                  <RefreshCw className={`w-3 h-3 ${isRefreshingMembers ? 'animate-spin' : ''}`} />
+                </button>
+              )}
+            </div>
 
             <button
               onClick={handleJumpToToday}
