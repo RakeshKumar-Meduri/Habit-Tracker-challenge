@@ -14,7 +14,16 @@ import type {
   CustomHabit,
   CustomHabitLog
 } from './types';
-import { initializeStorageIfEmpty, saveStateToStorage, STORAGE_KEYS, getTodayDateString, DEFAULT_ADMIN_SETTINGS } from './utils/storage';
+import { 
+  initializeStorageIfEmpty, 
+  saveStateToStorage, 
+  saveWorkoutsDirectly, 
+  deleteWorkoutDirectly, 
+  clearAllWorkoutsDirectly, 
+  STORAGE_KEYS, 
+  getTodayDateString, 
+  DEFAULT_ADMIN_SETTINGS 
+} from './utils/storage';
 import { evaluateBadges } from './utils/gamification';
 import { exportUserDataToCSV } from './utils/csvExport';
 import { logoutSession } from './services/authService';
@@ -635,29 +644,38 @@ export function App() {
 
   // Save Multiple Workouts / Routine
   const handleSaveWorkouts = (newWorkouts: Workout[]) => {
-    setWorkouts(prev => [...newWorkouts, ...prev.filter(w => !newWorkouts.some(nw => nw.id === w.id))]);
+    setWorkouts(prev => {
+      const merged = [...newWorkouts, ...prev.filter(w => !newWorkouts.some(nw => nw.id === w.id))];
+      saveWorkoutsDirectly(merged);
+      return merged;
+    });
     pushWorkoutsToServer(newWorkouts);
     
-    // Auto-mark gym goal as done for that date
+    // Auto-mark gym goal as done for that date ONLY if gym was not marked as failed
     if (currentUser && newWorkouts.length > 0) {
       const targetDate = newWorkouts[0].date;
-      const targetLog = dailyLogs.find(l => l.user_id === currentUser.id && l.date === targetDate) || {
-        id: `dl_${currentUser.id}_${targetDate}`,
-        user_id: currentUser.id,
-        date: targetDate,
-        gym_done: false,
-        steps_done: false,
-        sleep_done: false,
-        junk_food_avoided: false,
-        water_done: false,
-        water_intake_ml: 0,
-        sleep_start: '23:00',
-        sleep_end: '07:00',
-        sleep_duration: 8.0,
-        points_earned: 0,
-      };
-      if (!targetLog.gym_done) {
-        handleUpdateDailyLog({ ...targetLog, gym_done: true });
+      const isGymFailed = missedReasons.some(
+        r => r.goal_type === 'gym' && r.user_id === currentUser.id && r.date === targetDate
+      );
+      if (!isGymFailed) {
+        const targetLog = dailyLogs.find(l => l.user_id === currentUser.id && l.date === targetDate) || {
+          id: `dl_${currentUser.id}_${targetDate}`,
+          user_id: currentUser.id,
+          date: targetDate,
+          gym_done: false,
+          steps_done: false,
+          sleep_done: false,
+          junk_food_avoided: false,
+          water_done: false,
+          water_intake_ml: 0,
+          sleep_start: '23:00',
+          sleep_end: '07:00',
+          sleep_duration: 8.0,
+          points_earned: 0,
+        };
+        if (!targetLog.gym_done) {
+          handleUpdateDailyLog({ ...targetLog, gym_done: true });
+        }
       }
     }
   };
@@ -670,9 +688,11 @@ export function App() {
     let updatedWorkouts: Workout[] = [];
     setWorkouts(prev => {
       updatedWorkouts = prev.filter(w => String(w.id).trim() !== idStr);
-      saveStateToStorage(STORAGE_KEYS.WORKOUTS, updatedWorkouts);
+      saveWorkoutsDirectly(updatedWorkouts);
       return updatedWorkouts;
     });
+
+    deleteWorkoutDirectly(idStr);
 
     // If no workouts remain for this date and user, auto-reset gym_done: false
     if (targetWorkout && targetWorkout.date && targetWorkout.user_id) {
@@ -695,14 +715,23 @@ export function App() {
   // Clear All Workouts
   const handleClearAllWorkouts = () => {
     setWorkouts([]);
-    saveStateToStorage(STORAGE_KEYS.WORKOUTS, []);
+    clearAllWorkoutsDirectly();
     clearAllWorkoutsOnServer();
-    if (currentUser) {
-      const todayLog = dailyLogs.find(l => l.user_id === currentUser.id && l.date === selectedDate);
-      if (todayLog && todayLog.gym_done) {
-        handleUpdateDailyLog({ ...todayLog, gym_done: false });
+    setDailyLogs(prev => prev.map(l => {
+      if (l.gym_done) {
+        const isSunday = l.date ? new Date(l.date).getDay() === 0 : false;
+        let core = 0;
+        if (isSunday) core += 1;
+        if (l.steps_done) core += 1;
+        if (l.sleep_done) core += 1;
+        if (l.junk_food_avoided) core += 1;
+        if (l.water_done) core += 1;
+        const updated = { ...l, gym_done: false, points_earned: core * 10 };
+        pushDailyLogToServer(updated);
+        return updated;
       }
-    }
+      return l;
+    }));
   };
 
   // Update User Profile & Weight Log

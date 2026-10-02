@@ -322,11 +322,22 @@ export function saveStateToStorage(key: string, data: any) {
   }
 }
 
-export function saveUserDirectly(newUser: User): User[] {
-  const existingUsers: User[] = getStoredItemSafely<User[]>(STORAGE_KEYS.USERS, []);
-  const updatedUsers = [...existingUsers.filter(u => u.id !== newUser.id), newUser];
-  saveStateToStorage(STORAGE_KEYS.USERS, updatedUsers);
-  return updatedUsers;
+export function saveWorkoutsDirectly(newWorkouts: Workout[]): Workout[] {
+  saveStateToStorage(STORAGE_KEYS.WORKOUTS, newWorkouts);
+  return newWorkouts;
+}
+
+export function deleteWorkoutDirectly(workoutId: string): Workout[] {
+  const currentWorkouts: Workout[] = getStoredItemSafely<Workout[]>(STORAGE_KEYS.WORKOUTS, []);
+  const targetId = String(workoutId).trim();
+  const filtered = currentWorkouts.filter(w => String(w.id).trim() !== targetId);
+  saveStateToStorage(STORAGE_KEYS.WORKOUTS, filtered);
+  return filtered;
+}
+
+export function clearAllWorkoutsDirectly(): Workout[] {
+  saveStateToStorage(STORAGE_KEYS.WORKOUTS, []);
+  return [];
 }
 
 export { STORAGE_KEYS };

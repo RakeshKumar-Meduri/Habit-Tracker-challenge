@@ -983,12 +983,14 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
                         type="button"
                         onClick={(e) => {
                           e.stopPropagation();
+                          e.preventDefault();
                           onDeleteWorkout(w.id);
                         }}
-                        className="p-2 min-h-[36px] min-w-[36px] flex items-center justify-center text-[#c5b4a5] hover:text-rose-400 hover:bg-rose-950/40 rounded-lg border border-transparent hover:border-rose-900/50 transition cursor-pointer active:scale-95"
-                        title="Delete workout"
+                        className="px-2.5 py-1.5 min-h-[34px] bg-rose-950/40 hover:bg-rose-900/60 border border-rose-800/60 text-rose-300 font-bold rounded-lg text-xs transition flex items-center gap-1 cursor-pointer active:scale-95 shrink-0"
+                        title="Delete workout session"
                       >
-                        <Trash2 className="w-4 h-4" />
+                        <Trash2 className="w-3.5 h-3.5 text-rose-400" />
+                        <span>Delete</span>
                       </button>
                     )}
                   </div>
