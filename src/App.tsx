@@ -35,6 +35,7 @@ import {
   deleteCustomHabitOnServer,
   pushCustomHabitLogToServer,
   deleteWorkoutOnServer,
+  clearAllWorkoutsOnServer,
 } from './services/apiService';
 import { realtimeClient } from './services/realtimeService';
 
@@ -179,9 +180,10 @@ export function App() {
     }
     if (Array.isArray(serverData.workouts)) {
       const cleanServerWorkouts = serverData.workouts.filter(
-        (w: any) => w.user_id !== 'user_1790824958946_sy7b' && w.id !== 'w_rakesh_1' && w.id !== 'w_rakesh_2'
+        (w: any) => w && w.id && w.user_id !== 'user_1790824958946_sy7b' && w.id !== 'w_rakesh_1' && w.id !== 'w_rakesh_2' && w.exercise_name !== 'Barbell Bench Press' && w.exercise_name !== 'Treadmill Intervals & Core'
       );
       setWorkouts(cleanServerWorkouts);
+      saveStateToStorage(STORAGE_KEYS.WORKOUTS, cleanServerWorkouts);
     }
     if (Array.isArray(serverData.weightLogs)) {
       setWeightLogs(prev => {
@@ -326,8 +328,14 @@ export function App() {
         case 'WORKOUT_DELETED': {
           const { id } = msg.payload || {};
           if (id) {
-            setWorkouts(prev => prev.filter(w => w.id !== id));
+            setWorkouts(prev => prev.filter(w => String(w.id).trim() !== String(id).trim()));
           }
+          break;
+        }
+
+        case 'WORKOUTS_CLEARED': {
+          setWorkouts([]);
+          saveStateToStorage(STORAGE_KEYS.WORKOUTS, []);
           break;
         }
 
@@ -656,14 +664,45 @@ export function App() {
 
   // Delete Logged Workout
   const handleDeleteWorkout = (workoutId: string) => {
-    const idStr = String(workoutId);
+    const idStr = String(workoutId).trim();
+    const targetWorkout = workouts.find(w => String(w.id).trim() === idStr);
+
     let updatedWorkouts: Workout[] = [];
     setWorkouts(prev => {
-      updatedWorkouts = prev.filter(w => String(w.id) !== idStr);
+      updatedWorkouts = prev.filter(w => String(w.id).trim() !== idStr);
       saveStateToStorage(STORAGE_KEYS.WORKOUTS, updatedWorkouts);
       return updatedWorkouts;
     });
+
+    // If no workouts remain for this date and user, auto-reset gym_done: false
+    if (targetWorkout && targetWorkout.date && targetWorkout.user_id) {
+      const remainingOnDate = workouts.filter(
+        w => String(w.id).trim() !== idStr && w.user_id === targetWorkout.user_id && w.date === targetWorkout.date
+      );
+      if (remainingOnDate.length === 0) {
+        const existingLog = dailyLogs.find(
+          l => l.user_id === targetWorkout.user_id && l.date === targetWorkout.date
+        );
+        if (existingLog && existingLog.gym_done) {
+          handleUpdateDailyLog({ ...existingLog, gym_done: false });
+        }
+      }
+    }
+
     deleteWorkoutOnServer(idStr);
+  };
+
+  // Clear All Workouts
+  const handleClearAllWorkouts = () => {
+    setWorkouts([]);
+    saveStateToStorage(STORAGE_KEYS.WORKOUTS, []);
+    clearAllWorkoutsOnServer();
+    if (currentUser) {
+      const todayLog = dailyLogs.find(l => l.user_id === currentUser.id && l.date === selectedDate);
+      if (todayLog && todayLog.gym_done) {
+        handleUpdateDailyLog({ ...todayLog, gym_done: false });
+      }
+    }
   };
 
   // Update User Profile & Weight Log
@@ -863,6 +902,7 @@ export function App() {
             currentUser={currentUser}
             onOpenWorkoutModal={() => setIsWorkoutModalOpen(true)}
             onDeleteWorkout={handleDeleteWorkout}
+            onClearAllWorkouts={handleClearAllWorkouts}
           />
         )}
 

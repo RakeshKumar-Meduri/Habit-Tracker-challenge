@@ -182,6 +182,18 @@ export async function deleteWorkoutOnServer(id: string): Promise<boolean> {
   }
 }
 
+export async function clearAllWorkoutsOnServer(): Promise<boolean> {
+  try {
+    const res = await fetch(`${API_BASE}/api/workouts/clear-all`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+    });
+    return res.ok;
+  } catch {
+    return false;
+  }
+}
+
 /**
  * Push weight log to backend
  */

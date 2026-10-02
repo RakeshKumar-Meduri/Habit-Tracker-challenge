@@ -8,6 +8,7 @@ interface WorkoutHistoryProps {
   currentUser: User;
   onOpenWorkoutModal: () => void;
   onDeleteWorkout?: (id: string) => void;
+  onClearAllWorkouts?: () => void;
 }
 
 export const WorkoutHistory: React.FC<WorkoutHistoryProps> = ({
@@ -16,6 +17,7 @@ export const WorkoutHistory: React.FC<WorkoutHistoryProps> = ({
   currentUser,
   onOpenWorkoutModal,
   onDeleteWorkout,
+  onClearAllWorkouts,
 }) => {
   const [selectedUserId, setSelectedUserId] = useState<string>('all');
   const [searchExercise, setSearchExercise] = useState('');
@@ -48,13 +50,27 @@ export const WorkoutHistory: React.FC<WorkoutHistoryProps> = ({
           </p>
         </div>
 
-        <button
-          onClick={onOpenWorkoutModal}
-          className="w-full sm:w-auto justify-center py-2.5 px-4 min-h-[40px] bg-gradient-to-r from-[#c68b59] to-[#b87b4b] hover:from-[#b87b4b] hover:to-[#a06738] text-[#1c1815] font-bold rounded-xl text-xs transition shadow-lg shadow-[#c68b59]/20 flex items-center gap-2 cursor-pointer"
-        >
-          <Dumbbell className="w-4 h-4" />
-          <span>+ Log New Workout</span>
-        </button>
+        <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+          {workouts.length > 0 && onClearAllWorkouts && (
+            <button
+              type="button"
+              onClick={onClearAllWorkouts}
+              className="flex-1 sm:flex-none justify-center py-2.5 px-3.5 min-h-[40px] bg-rose-950/40 hover:bg-rose-900/60 border border-rose-800/60 text-rose-300 font-bold rounded-xl text-xs transition flex items-center gap-1.5 cursor-pointer active:scale-95"
+              title="Clear all recorded workout logs"
+            >
+              <Trash2 className="w-4 h-4 text-rose-400" />
+              <span>Clear All Workouts</span>
+            </button>
+          )}
+
+          <button
+            onClick={onOpenWorkoutModal}
+            className="flex-1 sm:flex-none justify-center py-2.5 px-4 min-h-[40px] bg-gradient-to-r from-[#c68b59] to-[#b87b4b] hover:from-[#b87b4b] hover:to-[#a06738] text-[#1c1815] font-bold rounded-xl text-xs transition shadow-lg shadow-[#c68b59]/20 flex items-center gap-2 cursor-pointer active:scale-95"
+          >
+            <Dumbbell className="w-4 h-4" />
+            <span>+ Log New Workout</span>
+          </button>
+        </div>
       </div>
 
       {/* Filters Bar */}
@@ -129,14 +145,17 @@ export const WorkoutHistory: React.FC<WorkoutHistoryProps> = ({
                         <Globe className="w-3 h-3" /> Public
                       </span>
                     )}
-                    {(w.user_id === currentUser.id || currentUser.role === 'admin' || !w.user_id) && onDeleteWorkout && (
+                    {onDeleteWorkout && (
                       <button
                         type="button"
-                        onClick={() => onDeleteWorkout(w.id)}
-                        className="p-1.5 text-[#c5b4a5] hover:text-rose-400 hover:bg-rose-950/40 rounded-lg border border-transparent hover:border-rose-900/50 transition cursor-pointer"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onDeleteWorkout(w.id);
+                        }}
+                        className="p-2 min-h-[36px] min-w-[36px] flex items-center justify-center text-[#c5b4a5] hover:text-rose-400 hover:bg-rose-950/40 rounded-lg border border-transparent hover:border-rose-900/50 transition cursor-pointer active:scale-95"
                         title="Delete Workout"
                       >
-                        <Trash2 className="w-3.5 h-3.5" />
+                        <Trash2 className="w-4 h-4" />
                       </button>
                     )}
                   </div>

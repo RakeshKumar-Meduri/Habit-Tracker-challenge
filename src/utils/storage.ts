@@ -138,7 +138,7 @@ export function initializeStorageIfEmpty(): {
         id: "dl_user_1790779706015_wepw_2026-09-28",
         user_id: "user_1790779706015_wepw",
         date: "2026-09-28",
-        gym_done: true,
+        gym_done: false,
         steps_done: true,
         sleep_done: true,
         junk_food_avoided: true,
@@ -147,7 +147,7 @@ export function initializeStorageIfEmpty(): {
         sleep_start: "23:00",
         sleep_end: "07:00",
         sleep_duration: 8,
-        points_earned: 50,
+        points_earned: 40,
         steps_value: 10500,
         steps_target: 10000,
         water_target_ml: 2500
@@ -156,7 +156,7 @@ export function initializeStorageIfEmpty(): {
         id: "dl_user_1790779706015_wepw_2026-09-29",
         user_id: "user_1790779706015_wepw",
         date: "2026-09-29",
-        gym_done: true,
+        gym_done: false,
         steps_done: true,
         sleep_done: true,
         junk_food_avoided: true,
@@ -165,7 +165,7 @@ export function initializeStorageIfEmpty(): {
         sleep_start: "23:00",
         sleep_end: "07:00",
         sleep_duration: 8,
-        points_earned: 50,
+        points_earned: 40,
         steps_value: 11000,
         steps_target: 10000,
         water_target_ml: 2500
@@ -192,7 +192,7 @@ export function initializeStorageIfEmpty(): {
         id: "dl_user_1790779706015_wepw_2026-10-01",
         user_id: "user_1790779706015_wepw",
         date: "2026-10-01",
-        gym_done: true,
+        gym_done: false,
         steps_done: true,
         sleep_done: false,
         junk_food_avoided: true,
@@ -201,7 +201,7 @@ export function initializeStorageIfEmpty(): {
         sleep_start: "23:00",
         sleep_end: "07:00",
         sleep_duration: 8,
-        points_earned: 40,
+        points_earned: 30,
         steps_value: 10400,
         steps_target: 10000,
         water_target_ml: 2500
@@ -210,7 +210,24 @@ export function initializeStorageIfEmpty(): {
   }
 
   let workouts: Workout[] = getStoredItemSafely<Workout[]>(STORAGE_KEYS.WORKOUTS, [])
-    .filter(w => w.user_id !== 'user_1790824958946_sy7b' && w.id !== 'w_rakesh_1' && w.id !== 'w_rakesh_2');
+    .filter(w => w && w.id && w.user_id !== 'user_1790824958946_sy7b' && w.id !== 'w_rakesh_1' && w.id !== 'w_rakesh_2' && w.exercise_name !== 'Barbell Bench Press' && w.exercise_name !== 'Treadmill Intervals & Core');
+
+  // Synchronize dailyLogs gym_done with actual workouts presence:
+  // If no workouts exist for that day and user, gym_done should be false unless manually toggled or Sunday
+  dailyLogs = dailyLogs.map(l => {
+    const hasWorkout = workouts.some(w => w.user_id === l.user_id && w.date === l.date);
+    if (!hasWorkout && l.gym_done) {
+      const isSunday = l.date ? new Date(l.date).getDay() === 0 : false;
+      let core = 0;
+      if (isSunday) core += 1;
+      if (l.steps_done) core += 1;
+      if (l.sleep_done) core += 1;
+      if (l.junk_food_avoided) core += 1;
+      if (l.water_done) core += 1;
+      return { ...l, gym_done: false, points_earned: core * 10 };
+    }
+    return l;
+  });
 
   let weightLogs: WeightLog[] = getStoredItemSafely<WeightLog[]>(STORAGE_KEYS.WEIGHT_LOGS, [])
     .filter(wl => wl.user_id !== 'user_1790824958946_sy7b');

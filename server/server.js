@@ -55,7 +55,7 @@ function mergeDb(base, incoming) {
   return {
     users: Array.isArray(incoming.users) ? incoming.users : (base.users || []),
     dailyLogs: Array.isArray(incoming.dailyLogs) ? incoming.dailyLogs : (base.dailyLogs || []),
-    workouts: (Array.isArray(incoming.workouts) ? incoming.workouts : (base.workouts || [])).filter(w => w && w.id !== 'w_rakesh_1' && w.id !== 'w_rakesh_2'),
+    workouts: (Array.isArray(incoming.workouts) ? incoming.workouts : (base.workouts || [])).filter(w => w && w.id && w.id !== 'w_rakesh_1' && w.id !== 'w_rakesh_2' && w.exercise_name !== 'Barbell Bench Press' && w.exercise_name !== 'Treadmill Intervals & Core'),
     weightLogs: Array.isArray(incoming.weightLogs) ? incoming.weightLogs : (base.weightLogs || []),
     missedReasons: Array.isArray(incoming.missedReasons) ? incoming.missedReasons : (base.missedReasons || []),
     reactions: Array.isArray(incoming.reactions) ? incoming.reactions : (base.reactions || []),
@@ -367,7 +367,7 @@ app.get('/api/sync', async (req, res) => {
     data: {
       users: db.users.filter(u => u.is_active !== false && u.username !== 'testuser123' && u.id !== 'user_1790589874177_elgx' && u.username !== 'testuser2' && u.id !== 'user_1790824958946_sy7b' && u.username !== 'tester1' && !u.username.startsWith('test')),
       dailyLogs: db.dailyLogs,
-      workouts: (db.workouts || []).filter(w => w && w.id !== 'w_rakesh_1' && w.id !== 'w_rakesh_2'),
+      workouts: (db.workouts || []).filter(w => w && w.id && w.id !== 'w_rakesh_1' && w.id !== 'w_rakesh_2' && w.exercise_name !== 'Barbell Bench Press' && w.exercise_name !== 'Treadmill Intervals & Core'),
       weightLogs: db.weightLogs,
       missedReasons: db.missedReasons,
       reactions: db.reactions,
@@ -559,13 +559,14 @@ app.post('/api/workouts', async (req, res) => {
 // Delete Workout (DELETE method)
 app.delete('/api/workouts/:id', async (req, res) => {
   const { id } = req.params;
+  const targetId = String(id || '').trim();
   const initialLen = db.workouts.length;
-  db.workouts = db.workouts.filter(w => w.id !== id);
+  db.workouts = db.workouts.filter(w => String(w.id || '').trim() !== targetId);
   await saveDatabase(db);
 
   broadcast({
     type: 'WORKOUT_DELETED',
-    payload: { id },
+    payload: { id: targetId },
   });
 
   res.json({ success: true, deleted: db.workouts.length < initialLen });
@@ -575,16 +576,30 @@ app.delete('/api/workouts/:id', async (req, res) => {
 app.post('/api/workouts/delete', async (req, res) => {
   const { id } = req.body || {};
   if (!id) return res.status(400).json({ error: 'Missing workout id' });
+  const targetId = String(id).trim();
   const initialLen = db.workouts.length;
-  db.workouts = db.workouts.filter(w => w.id !== id);
+  db.workouts = db.workouts.filter(w => String(w.id || '').trim() !== targetId);
   await saveDatabase(db);
 
   broadcast({
     type: 'WORKOUT_DELETED',
-    payload: { id },
+    payload: { id: targetId },
   });
 
   res.json({ success: true, deleted: db.workouts.length < initialLen });
+});
+
+// Clear All Workouts
+app.post('/api/workouts/clear-all', async (req, res) => {
+  db.workouts = [];
+  await saveDatabase(db);
+
+  broadcast({
+    type: 'WORKOUTS_CLEARED',
+    payload: {},
+  });
+
+  res.json({ success: true, message: 'All workouts cleared' });
 });
 
 // Add Weight Log

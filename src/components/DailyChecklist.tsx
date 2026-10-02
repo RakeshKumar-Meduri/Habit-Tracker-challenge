@@ -703,11 +703,14 @@ export const DailyChecklist: React.FC<DailyChecklistProps> = ({
                     {!isViewingOther && onDeleteWorkout && (
                       <button
                         type="button"
-                        onClick={() => onDeleteWorkout(w.id)}
-                        className="p-1.5 text-[#c5b4a5] hover:text-rose-400 hover:bg-rose-950/40 rounded-lg border border-transparent hover:border-rose-900/50 transition cursor-pointer ml-2 shrink-0"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onDeleteWorkout(w.id);
+                        }}
+                        className="p-2 min-h-[36px] min-w-[36px] flex items-center justify-center text-[#c5b4a5] hover:text-rose-400 hover:bg-rose-950/40 rounded-lg border border-transparent hover:border-rose-900/50 transition cursor-pointer ml-2 shrink-0 active:scale-95"
                         title="Delete this logged workout"
                       >
-                        <Trash2 className="w-3.5 h-3.5" />
+                        <Trash2 className="w-4 h-4" />
                       </button>
                     )}
                   </div>
