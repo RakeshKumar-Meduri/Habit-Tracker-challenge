@@ -124,6 +124,7 @@
   "supplementLogs": [],
   "customHabits": [],
   "customHabitLogs": [],
+  "deletedWorkoutIds": [],
   "adminSettings": {
     "step_target": 10000,
     "sleep_min_hours": 7,

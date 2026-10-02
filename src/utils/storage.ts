@@ -209,8 +209,23 @@ export function initializeStorageIfEmpty(): {
     ];
   }
 
+  const tombstoneSet = new Set<string>();
+  try {
+    const rawTombstones = JSON.parse(localStorage.getItem('pulse_fitness_deleted_workout_ids') || '[]');
+    if (Array.isArray(rawTombstones)) {
+      rawTombstones.forEach(id => tombstoneSet.add(String(id).trim()));
+    }
+  } catch {}
+
   let workouts: Workout[] = getStoredItemSafely<Workout[]>(STORAGE_KEYS.WORKOUTS, [])
-    .filter(w => w && w.id && w.user_id !== 'user_1790824958946_sy7b' && w.id !== 'w_rakesh_1' && w.id !== 'w_rakesh_2' && w.exercise_name !== 'Barbell Bench Press' && w.exercise_name !== 'Treadmill Intervals & Core');
+    .filter(w => {
+      if (!w) return false;
+      const wid = String(w.id || (w as any)._id || '').trim();
+      if (!wid || tombstoneSet.has(wid)) return false;
+      if (w.user_id === 'user_1790824958946_sy7b' || w.id === 'w_rakesh_1' || w.id === 'w_rakesh_2') return false;
+      if (w.exercise_name === 'Barbell Bench Press' || w.exercise_name === 'Treadmill Intervals & Core') return false;
+      return true;
+    });
 
   // Synchronize dailyLogs gym_done with actual workouts presence:
   // If no workouts exist for that day and user, gym_done should be false unless manually toggled or Sunday
@@ -338,6 +353,16 @@ export function saveWorkoutsDirectly(newWorkouts: Workout[]): Workout[] {
 
 export function deleteWorkoutDirectly(workoutId: string): Workout[] {
   const targetId = String(workoutId).trim();
+  if (targetId) {
+    try {
+      const tombstones: string[] = JSON.parse(localStorage.getItem('pulse_fitness_deleted_workout_ids') || '[]');
+      if (!tombstones.includes(targetId)) {
+        tombstones.push(targetId);
+        localStorage.setItem('pulse_fitness_deleted_workout_ids', JSON.stringify(tombstones));
+      }
+    } catch {}
+  }
+
   const currentWorkouts: Workout[] = getStoredItemSafely<Workout[]>(STORAGE_KEYS.WORKOUTS, []);
   const filtered = currentWorkouts.filter(w => {
     if (!w) return false;
@@ -359,6 +384,16 @@ export function deleteWorkoutDirectly(workoutId: string): Workout[] {
 }
 
 export function clearAllWorkoutsDirectly(): Workout[] {
+  try {
+    const currentWorkouts: Workout[] = getStoredItemSafely<Workout[]>(STORAGE_KEYS.WORKOUTS, []);
+    const tombstones: string[] = JSON.parse(localStorage.getItem('pulse_fitness_deleted_workout_ids') || '[]');
+    currentWorkouts.forEach(w => {
+      const wid = String(w?.id || (w as any)?._id || '').trim();
+      if (wid && !tombstones.includes(wid)) tombstones.push(wid);
+    });
+    localStorage.setItem('pulse_fitness_deleted_workout_ids', JSON.stringify(tombstones));
+  } catch {}
+
   try {
     localStorage.removeItem(STORAGE_KEYS.WORKOUTS);
     localStorage.setItem(STORAGE_KEYS.WORKOUTS, '[]');

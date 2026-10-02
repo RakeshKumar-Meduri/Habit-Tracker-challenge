@@ -24,3 +24,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Local debug & audit docs
+WORKOUT_DEBUG_AUDIT.md

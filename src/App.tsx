@@ -188,11 +188,30 @@ export function App() {
       });
     }
     if (Array.isArray(serverData.workouts)) {
+      const tombstoneSet = new Set<string>();
+      if (Array.isArray(serverData.deletedWorkoutIds)) {
+        serverData.deletedWorkoutIds.forEach((id: string) => tombstoneSet.add(String(id).trim()));
+      }
+      try {
+        const localTombstones = JSON.parse(localStorage.getItem('pulse_fitness_deleted_workout_ids') || '[]');
+        if (Array.isArray(localTombstones)) {
+          localTombstones.forEach(id => tombstoneSet.add(String(id).trim()));
+        }
+        localStorage.setItem('pulse_fitness_deleted_workout_ids', JSON.stringify(Array.from(tombstoneSet)));
+      } catch {}
+
       const cleanServerWorkouts = serverData.workouts.filter(
-        (w: any) => w && w.id && w.user_id !== 'user_1790824958946_sy7b' && w.id !== 'w_rakesh_1' && w.id !== 'w_rakesh_2' && w.exercise_name !== 'Barbell Bench Press' && w.exercise_name !== 'Treadmill Intervals & Core'
+        (w: any) => {
+          if (!w) return false;
+          const wid = String(w.id || w._id || '').trim();
+          if (!wid || tombstoneSet.has(wid)) return false;
+          if (w.user_id === 'user_1790824958946_sy7b' || w.id === 'w_rakesh_1' || w.id === 'w_rakesh_2') return false;
+          if (w.exercise_name === 'Barbell Bench Press' || w.exercise_name === 'Treadmill Intervals & Core') return false;
+          return true;
+        }
       );
       setWorkouts(cleanServerWorkouts);
-      saveStateToStorage(STORAGE_KEYS.WORKOUTS, cleanServerWorkouts);
+      saveWorkoutsDirectly(cleanServerWorkouts);
     }
     if (Array.isArray(serverData.weightLogs)) {
       setWeightLogs(prev => {
@@ -324,12 +343,22 @@ export function App() {
 
         case 'WORKOUTS_ADDED': {
           const incoming = Array.isArray(msg.payload) ? msg.payload : [msg.payload];
+          const localTombstones = new Set<string>();
+          try {
+            const raw = JSON.parse(localStorage.getItem('pulse_fitness_deleted_workout_ids') || '[]');
+            if (Array.isArray(raw)) raw.forEach(id => localTombstones.add(String(id).trim()));
+          } catch {}
           setWorkouts(prev => {
-            const map = new Map(prev.map(w => [w.id, w]));
+            const map = new Map(prev.map(w => [String(w.id).trim(), w]));
             incoming.forEach(w => {
-              if (w && w.id) map.set(w.id, w);
+              const wid = String(w?.id || '').trim();
+              if (wid && !localTombstones.has(wid)) {
+                map.set(wid, w);
+              }
             });
-            return Array.from(map.values());
+            const updated = Array.from(map.values());
+            saveWorkoutsDirectly(updated);
+            return updated;
           });
           break;
         }
@@ -337,14 +366,20 @@ export function App() {
         case 'WORKOUT_DELETED': {
           const { id } = msg.payload || {};
           if (id) {
-            setWorkouts(prev => prev.filter(w => String(w.id).trim() !== String(id).trim()));
+            const targetId = String(id).trim();
+            deleteWorkoutDirectly(targetId);
+            setWorkouts(prev => {
+              const updated = prev.filter(w => String(w.id).trim() !== targetId);
+              saveWorkoutsDirectly(updated);
+              return updated;
+            });
           }
           break;
         }
 
         case 'WORKOUTS_CLEARED': {
+          clearAllWorkoutsDirectly();
           setWorkouts([]);
-          saveStateToStorage(STORAGE_KEYS.WORKOUTS, []);
           break;
         }
 
@@ -681,8 +716,13 @@ export function App() {
   };
 
   // Delete Logged Workout
-  const handleDeleteWorkout = (workoutId: string) => {
+  const handleDeleteWorkout = async (workoutId: string) => {
     const idStr = String(workoutId).trim();
+    if (!idStr) return;
+
+    // 1. Immediately record in local tombstones so subsequent syncs or rerenders never resurrect it
+    deleteWorkoutDirectly(idStr);
+
     const targetWorkout = workouts.find(w => String(w.id || (w as any)._id || '').trim() === idStr);
 
     let updatedWorkouts: Workout[] = [];
@@ -692,12 +732,10 @@ export function App() {
       return updatedWorkouts;
     });
 
-    deleteWorkoutDirectly(idStr);
-
     // If no workouts remain for this date and user, auto-reset gym_done: false
     if (targetWorkout && targetWorkout.date && targetWorkout.user_id) {
-      const remainingOnDate = workouts.filter(
-        w => String(w.id || (w as any)._id || '').trim() !== idStr && w.user_id === targetWorkout.user_id && w.date === targetWorkout.date
+      const remainingOnDate = updatedWorkouts.filter(
+        w => w.user_id === targetWorkout.user_id && w.date === targetWorkout.date
       );
       if (remainingOnDate.length === 0) {
         const existingLog = dailyLogs.find(
@@ -709,14 +747,18 @@ export function App() {
       }
     }
 
-    deleteWorkoutOnServer(idStr);
+    // 2. Await backend deletion
+    const success = await deleteWorkoutOnServer(idStr);
+    if (!success) {
+      console.error(`[PULSE] Failed to delete workout ${idStr} on server.`);
+    }
   };
 
   // Clear All Workouts
-  const handleClearAllWorkouts = () => {
+  const handleClearAllWorkouts = async () => {
     setWorkouts([]);
     clearAllWorkoutsDirectly();
-    clearAllWorkoutsOnServer();
+    await clearAllWorkoutsOnServer();
     setDailyLogs(prev => prev.map(l => {
       if (l.gym_done) {
         const isSunday = l.date ? new Date(l.date).getDay() === 0 : false;

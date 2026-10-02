@@ -24,6 +24,7 @@ export interface ServerSyncResponse {
   supplementLogs: SupplementLog[];
   customHabits: CustomHabit[];
   customHabitLogs: CustomHabitLog[];
+  deletedWorkoutIds?: string[];
 }
 
 export const API_BASE = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
@@ -165,19 +166,14 @@ export async function pushWorkoutsToServer(workouts: Workout[]): Promise<boolean
  */
 export async function deleteWorkoutOnServer(id: string): Promise<boolean> {
   try {
-    const res = await fetch(`${API_BASE}/api/workouts/${encodeURIComponent(id)}`, {
-      method: 'DELETE',
-    });
-    if (res.ok) return true;
-    
-    // Fallback to POST
-    const postRes = await fetch(`${API_BASE}/api/workouts/delete`, {
+    const res = await fetch(`${API_BASE}/api/workouts/delete`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ id }),
     });
-    return postRes.ok;
-  } catch {
+    return res.ok;
+  } catch (e) {
+    console.error('[API] deleteWorkoutOnServer error:', e);
     return false;
   }
 }
