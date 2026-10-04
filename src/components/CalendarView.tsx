@@ -1004,7 +1004,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
                     <span className="text-[9px] px-1.5 py-0.5 rounded bg-[#131316] text-[#D98B4A] font-bold border border-[#26262C]">
                       {w.exercise_type || 'Strength'}
                     </span>
-                    {onDeleteWorkout && (
+                    {onDeleteWorkout && w.user_id === currentUser.id && (
                       <button
                         type="button"
                         onClick={(e) => {

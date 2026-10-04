@@ -12,7 +12,9 @@ import type {
   Supplement,
   SupplementLog,
   CustomHabit,
-  CustomHabitLog
+  CustomHabitLog,
+  Group,
+  Invite
 } from './types';
 import { 
   initializeStorageIfEmpty, 
@@ -47,6 +49,10 @@ import {
   deleteWorkoutOnServer,
   clearAllWorkoutsOnServer,
   deleteMissedReasonOnServer,
+  createGroupInvite,
+  revokeInvite,
+  leaveGroup,
+  removeGroupMember
 } from './services/apiService';
 import { realtimeClient } from './services/realtimeService';
 
@@ -64,6 +70,8 @@ import { ActivityFeed } from './components/ActivityFeed';
 import { ExcuseAnalytics } from './components/ExcuseAnalytics';
 import { GamificationSection } from './components/GamificationSection';
 import { WeeklyRecapModal } from './components/WeeklyRecapModal';
+import { InviteModal } from './components/InviteModal';
+import { JoinGroupModal } from './components/JoinGroupModal';
 import { Trophy, Swords, Award } from 'lucide-react';
 
 export function App() {
@@ -158,8 +166,39 @@ export function App() {
 
   // Modals state
   const [isAuthModalOpen, setIsAuthModalOpen] = useState<boolean>(false);
+  const [authModalMode, setAuthModalMode] = useState<'login' | 'register'>('login');
   const [isWorkoutModalOpen, setIsWorkoutModalOpen] = useState<boolean>(false);
   const [isRecapModalOpen, setIsRecapModalOpen] = useState<boolean>(false);
+
+  // Group & Invites state
+  const [currentGroup, setCurrentGroup] = useState<Group | null>(null);
+  const [myRole, setMyRole] = useState<'owner' | 'member'>('member');
+  const [groupInvites, setGroupInvites] = useState<Invite[]>([]);
+  const [isInviteModalOpen, setIsInviteModalOpen] = useState<boolean>(false);
+  const [joinToken, setJoinToken] = useState<string | null>(null);
+  const [isJoinModalOpen, setIsJoinModalOpen] = useState<boolean>(false);
+
+  // Detect /join/:token on mount and popstate
+  useEffect(() => {
+    const checkJoinUrl = () => {
+      if (typeof window === 'undefined') return;
+      const match = window.location.pathname.match(/^\/join\/([^/?#]+)/);
+      if (match && match[1]) {
+        const token = match[1].trim();
+        setJoinToken(token);
+        setIsJoinModalOpen(true);
+        try {
+          sessionStorage.setItem('pulse_invite_token', token);
+        } catch {}
+      }
+    };
+
+    checkJoinUrl();
+    window.addEventListener('popstate', checkJoinUrl);
+    return () => {
+      window.removeEventListener('popstate', checkJoinUrl);
+    };
+  }, []);
 
   // Guard to prevent initial mount from overwriting storage with default values
   const isMountedRef = useRef(false);
@@ -172,29 +211,28 @@ export function App() {
   const applyServerData = (serverData: any) => {
     if (!serverData) return;
 
+    if (serverData.group) {
+      setCurrentGroup(serverData.group);
+    }
+    if (serverData.myRole) {
+      setMyRole(serverData.myRole);
+    }
+    if (Array.isArray(serverData.invites)) {
+      setGroupInvites(serverData.invites);
+    }
+
     if (Array.isArray(serverData.users)) {
       const cleanServerUsers = serverData.users.filter(
         (u: any) => u && u.is_active !== false
       );
 
-      // Merge server users with existing local users so locally registered users are NEVER wiped
-      setUsers(prev => {
-        const serverUserMap = new Map(cleanServerUsers.map((u: User) => [u.id, u]));
-        const merged = [...cleanServerUsers];
-        prev.forEach(pu => {
-          if (pu && pu.is_active !== false) {
-            if (!serverUserMap.has(pu.id) && !merged.some(m => m.username.toLowerCase() === pu.username.toLowerCase())) {
-              merged.push(pu);
-            }
-          }
-        });
-        return merged;
-      });
+      // The server is the absolute source of truth for users: replace, don't resurrect deleted local users
+      setUsers(cleanServerUsers);
 
       setCurrentUserId(currId => {
         if (currId && cleanServerUsers.length > 0) {
           const found = cleanServerUsers.find((u: any) => u.id === currId);
-          if (found && found.is_active === false) {
+          if (!found || found.is_active === false) {
             logoutSession();
             return '';
           }
@@ -401,7 +439,17 @@ export function App() {
             setDailyLogs(prev => prev.filter(l => l.user_id !== userId));
             setWorkouts(prev => prev.filter(w => w.user_id !== userId));
             setWeightLogs(prev => prev.filter(w => w.user_id !== userId));
-            setCurrentUserId(curr => (curr === userId ? '' : curr));
+            try {
+              const raw = localStorage.getItem(STORAGE_KEYS.USERS);
+              if (raw) {
+                const list = JSON.parse(raw);
+                localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(list.filter((u: any) => u.id !== userId)));
+              }
+            } catch {}
+            if (currentUserId === userId) {
+              logoutSession();
+              setCurrentUserId('');
+            }
           }
           break;
         }
@@ -584,6 +632,32 @@ export function App() {
               map.set(hlog.id, hlog);
               return Array.from(map.values());
             });
+          }
+          break;
+        }
+
+        case 'MEMBER_JOINED':
+        case 'MEMBER_LEFT':
+        case 'MEMBER_REMOVED':
+        case 'GROUP_UPDATED': {
+          fetchServerSync().then(data => {
+            if (data) applyServerDataRef.current(data);
+          }).catch(() => {});
+          break;
+        }
+
+        case 'INVITE_CREATED': {
+          const inv = msg.payload as Invite;
+          if (inv && inv.token) {
+            setGroupInvites(prev => [...prev.filter(i => i.token !== inv.token), inv]);
+          }
+          break;
+        }
+
+        case 'INVITE_REVOKED': {
+          const { token } = msg.payload || {};
+          if (token) {
+            setGroupInvites(prev => prev.filter(i => i.token !== token));
           }
           break;
         }
@@ -913,13 +987,66 @@ export function App() {
     }
   };
 
-  // Clear All Workouts
+  // Group Management Handlers
+  const handleCreateInvite = async (options: { expiresInDays?: number; maxUses?: number }) => {
+    if (!currentGroup) return { success: false, error: 'No active group found' };
+    const res = await createGroupInvite(currentGroup.id, options);
+    if (res.success) {
+      const data = await fetchServerSync();
+      if (data) applyServerDataRef.current(data);
+    }
+    return res;
+  };
+
+  const handleRevokeInvite = async (token: string) => {
+    const res = await revokeInvite(token);
+    if (res.success) {
+      setGroupInvites(prev => prev.filter(i => i.token !== token));
+      return true;
+    }
+    return false;
+  };
+
+  const handleLeaveGroup = async () => {
+    if (!currentGroup) return;
+    const res = await leaveGroup(currentGroup.id);
+    if (res.success) {
+      const data = await fetchServerSync();
+      if (data) applyServerDataRef.current(data);
+    } else {
+      alert(res.error || 'Failed to leave group');
+    }
+  };
+
+  const handleRemoveGroupMember = async (userId: string) => {
+    if (!currentGroup) return;
+    const res = await removeGroupMember(currentGroup.id, userId);
+    if (res.success) {
+      const data = await fetchServerSync();
+      if (data) applyServerDataRef.current(data);
+    } else {
+      alert(res.error || 'Failed to remove member');
+    }
+  };
+
+  const handleJoinSuccess = async (group: Group) => {
+    setCurrentGroup(group);
+    const data = await fetchServerSync();
+    if (data) applyServerDataRef.current(data);
+  };
+
+  const handleOpenAuth = (mode: 'login' | 'register' = 'login') => {
+    setAuthModalMode(mode);
+    setIsAuthModalOpen(true);
+  };
+
+  // Clear Current User's Workouts
   const handleClearAllWorkouts = async () => {
-    setWorkouts([]);
-    clearAllWorkoutsDirectly();
+    if (!currentUser) return;
+    setWorkouts(prev => prev.filter(w => w.user_id !== currentUser.id));
     await clearAllWorkoutsOnServer();
     setDailyLogs(prev => prev.map(l => {
-      if (l.gym_done) {
+      if (l.user_id === currentUser.id && l.gym_done) {
         const isSunday = l.date ? new Date(l.date).getDay() === 0 : false;
         let core = 0;
         if (isSunday) core += 1;
@@ -947,12 +1074,26 @@ export function App() {
   };
 
   // Delete Current User Account
-  const handleDeleteAccount = (userId: string) => {
-    deleteUserOnServer(userId);
-    logoutSession();
-    const updatedUsers = users.filter(u => u.id !== userId);
-    setUsers(updatedUsers);
-    setCurrentUserId('');
+  const handleDeleteAccount = async (userId: string) => {
+    try {
+      const success = await deleteUserOnServer(userId);
+      if (!success) {
+        alert('Failed to delete account on server. Please check your network connection and try again.');
+        return;
+      }
+      logoutSession();
+      setUsers(prev => prev.filter(u => u.id !== userId));
+      setCurrentUserId('');
+      try {
+        const raw = localStorage.getItem(STORAGE_KEYS.USERS);
+        if (raw) {
+          const list = JSON.parse(raw);
+          localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(list.filter((u: any) => u.id !== userId)));
+        }
+      } catch {}
+    } catch {
+      alert('An error occurred while deleting your account. Please try again.');
+    }
   };
 
   // Logout Handler
@@ -1054,6 +1195,7 @@ export function App() {
       {/* Top Navbar */}
       <Navbar
         currentUser={currentUser}
+        currentGroup={currentGroup}
         allUsers={activeUsers}
         activeTab={activeTab}
         setActiveTab={setActiveTab}
@@ -1061,8 +1203,9 @@ export function App() {
         onToggleTheme={handleToggleTheme}
         onOpenRecap={() => setIsRecapModalOpen(true)}
         onExportCSV={handleExportCSV}
-        onOpenAuth={() => setIsAuthModalOpen(true)}
+        onOpenAuth={() => handleOpenAuth('login')}
         onLogout={handleLogout}
+        onOpenInviteModal={() => setIsInviteModalOpen(true)}
         realtimeStatus={realtimeStatus}
         onRefreshMembers={handleRefreshMembers}
         isRefreshingMembers={isRefreshingMembers}
@@ -1250,11 +1393,18 @@ export function App() {
           <ProfileSection
             currentUser={currentUser}
             allUsers={activeUsers}
+            currentGroup={currentGroup}
+            myRole={myRole}
+            invites={groupInvites}
             weightLogs={weightLogs}
             onUpdateProfile={handleUpdateProfile}
             onDeleteAccount={handleDeleteAccount}
             onRefreshMembers={handleRefreshMembers}
             isRefreshingMembers={isRefreshingMembers}
+            onOpenInviteModal={() => setIsInviteModalOpen(true)}
+            onLeaveGroup={handleLeaveGroup}
+            onRemoveGroupMember={handleRemoveGroupMember}
+            onRevokeInvite={handleRevokeInvite}
           />
         )}
       </main>
@@ -1264,19 +1414,53 @@ export function App() {
         <AuthModal
           isOpen={true}
           isMandatory={!currentUser}
-          initialMode={users.length === 0 ? 'register' : 'login'}
+          initialMode={authModalMode}
           onClose={() => setIsAuthModalOpen(false)}
           users={users}
           onLoginSuccess={(user) => {
             setUsers(prev => [...prev.filter(u => u.id !== user.id), user]);
             setCurrentUserId(user.id);
             setIsAuthModalOpen(false);
+            fetchServerSync().then(data => {
+              if (data) applyServerDataRef.current(data);
+            }).catch(() => {});
           }}
           onRegisterSuccess={(newUser) => {
             setUsers(prev => [...prev.filter(u => u.id !== newUser.id), newUser]);
             setCurrentUserId(newUser.id);
             setIsAuthModalOpen(false);
+            fetchServerSync().then(data => {
+              if (data) applyServerDataRef.current(data);
+            }).catch(() => {});
           }}
+        />
+      )}
+
+      {/* Group Invite Creation & Management Modal */}
+      {currentUser && (
+        <InviteModal
+          isOpen={isInviteModalOpen}
+          onClose={() => setIsInviteModalOpen(false)}
+          group={currentGroup}
+          myRole={myRole}
+          invites={groupInvites}
+          onCreateInvite={handleCreateInvite}
+          onRevokeInvite={handleRevokeInvite}
+        />
+      )}
+
+      {/* Join Group Landing Modal */}
+      {isJoinModalOpen && joinToken && (
+        <JoinGroupModal
+          isOpen={isJoinModalOpen}
+          token={joinToken}
+          onClose={() => {
+            setIsJoinModalOpen(false);
+            setJoinToken(null);
+          }}
+          currentUser={currentUser}
+          onOpenAuth={(mode) => handleOpenAuth(mode || 'register')}
+          onJoinSuccess={handleJoinSuccess}
         />
       )}
 

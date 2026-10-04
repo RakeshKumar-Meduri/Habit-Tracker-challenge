@@ -148,7 +148,7 @@ export const WorkoutHistory: React.FC<WorkoutHistoryProps> = ({
         </div>
 
         <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
-          {workouts.length > 0 && !clearedAll && onClearAllWorkouts && (
+          {workouts.filter(w => w.user_id === currentUser.id).length > 0 && !clearedAll && onClearAllWorkouts && (
             <button
               type="button"
               onClick={handleClearAllClick}
@@ -344,7 +344,7 @@ export const WorkoutHistory: React.FC<WorkoutHistoryProps> = ({
 
                 {/* Bottom Action Footer with Quiet Delete Button */}
                 <div className="pt-3 border-t border-[#26262C] flex items-center justify-end">
-                  {onDeleteWorkout && (
+                  {onDeleteWorkout && w.user_id === currentUser.id && (
                     <button
                       type="button"
                       onClick={(e) => handleDeleteClick(w.id || (w as any)._id, e)}

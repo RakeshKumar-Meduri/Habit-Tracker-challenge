@@ -13,6 +13,7 @@ import type {
   CustomHabitLog
 } from '../types';
 import { calculateSleepDuration } from '../utils/crypto';
+import { isLogForUser, isWorkoutForUser } from '../utils/userMatcher';
 import { 
   Calendar, 
   ChevronLeft, 
@@ -126,25 +127,29 @@ export const DailyChecklist: React.FC<DailyChecklistProps> = ({
   const sleepMax = adminSettings?.sleep_max_hours || 9.0;
   const waterTarget = adminSettings?.water_target_ml || 2500;
 
-  // The daily log to display: if viewing other member, find their log for selectedDate
-  const displayedDailyLog: DailyLog = isViewingOther
-    ? (allDailyLogs?.find(l => l.user_id === selectedMemberId && l.date === selectedDate) || {
-        id: `view_${selectedMemberId}_${selectedDate}`,
-        user_id: selectedMemberId,
-        date: selectedDate,
-        gym_done: false,
-        steps_done: false,
-        sleep_done: false,
-        junk_food_avoided: false,
-        water_done: false,
-        steps_value: 0,
-        steps_target: stepTarget,
-        sleep_start: '23:00',
-        sleep_end: '07:00',
-        sleep_duration: 8,
-        water_intake_ml: 0,
-      })
-    : (allDailyLogs?.find(l => l.user_id === currentUser.id && l.date === selectedDate) || dailyLog);
+  // The daily log to display: if viewing other member, find their log for selectedDate using resilient matcher
+  const actualMemberLog = isViewingOther
+    ? allDailyLogs?.find(l => (l.user_id === selectedMemberId || isLogForUser(l, targetUser, allUsers)) && l.date === selectedDate)
+    : (allDailyLogs?.find(l => (l.user_id === currentUser.id || isLogForUser(l, currentUser, allUsers)) && l.date === selectedDate) || dailyLog);
+
+  const hasLoggedForDate = isViewingOther ? !!actualMemberLog : true;
+
+  const displayedDailyLog: DailyLog = actualMemberLog || {
+    id: `view_${selectedMemberId}_${selectedDate}`,
+    user_id: selectedMemberId,
+    date: selectedDate,
+    gym_done: false,
+    steps_done: false,
+    sleep_done: false,
+    junk_food_avoided: false,
+    water_done: false,
+    steps_value: 0,
+    steps_target: stepTarget,
+    sleep_start: '23:00',
+    sleep_end: '07:00',
+    sleep_duration: 8,
+    water_intake_ml: 0,
+  };
 
   const [deletedWorkoutIds, setDeletedWorkoutIds] = useState<Set<string>>(new Set());
 
@@ -153,7 +158,7 @@ export const DailyChecklist: React.FC<DailyChecklistProps> = ({
       if (!w) return false;
       const wid = String(w.id || (w as any)._id || '').trim();
       if (deletedWorkoutIds.has(wid)) return false;
-      return w.user_id === targetUser.id && w.date === selectedDate;
+      return (w.user_id === targetUser.id || isWorkoutForUser(w, targetUser, allUsers)) && w.date === selectedDate;
     });
   const targetWorkoutsCount = targetWorkouts.length;
 
@@ -500,11 +505,24 @@ export const DailyChecklist: React.FC<DailyChecklistProps> = ({
 
       {/* Read-Only Notice when viewing another member */}
       {isViewingOther && (
-        <div className="bg-amber-500/10 border border-amber-500/25 rounded-xl p-3 flex items-center justify-between text-xs text-[#FBBF24]">
+        <div className={`rounded-xl p-3 flex items-center justify-between text-xs border ${
+          hasLoggedForDate 
+            ? 'bg-amber-500/10 border-amber-500/25 text-[#FBBF24]' 
+            : 'bg-zinc-800/60 border-zinc-700/50 text-[#A1A1AA]'
+        }`}>
           <div className="flex items-center gap-2">
-            <Eye className="w-4 h-4 text-[#FBBF24] shrink-0" />
+            {hasLoggedForDate ? (
+              <Eye className="w-4 h-4 text-[#FBBF24] shrink-0" />
+            ) : (
+              <Clock className="w-4 h-4 text-zinc-400 shrink-0" />
+            )}
             <span>
-              Viewing <strong>{targetUser.name}</strong>'s daily checklist for <strong>{selectedDate}</strong>. Check out their logged goals, steps, sleep, and reasons below!
+              Viewing <strong>{targetUser.name}</strong>'s daily checklist for <strong>{selectedDate}</strong>.
+              {!hasLoggedForDate && (
+                <span className="ml-1 text-zinc-300 font-medium">
+                  — No checklist entry recorded by {targetUser.name} for this date yet.
+                </span>
+              )}
             </span>
           </div>
         </div>
@@ -651,24 +669,56 @@ export const DailyChecklist: React.FC<DailyChecklistProps> = ({
                 className="text-[#D98B4A] transition-all duration-500"
                 fill="transparent"
                 strokeDasharray={138}
-                strokeDashoffset={138 - (138 * completionPercent) / 100}
+                strokeDashoffset={138 - (138 * (isViewingOther && !actualMemberLog ? 0 : completionPercent)) / 100}
                 strokeLinecap="round"
               />
             </svg>
-            <span className="absolute text-xs font-black text-[#F4F4F5] tabular-nums">{completionPercent}%</span>
+            <span className="absolute text-xs font-black text-[#F4F4F5] tabular-nums">
+              {isViewingOther && !actualMemberLog ? '—' : `${completionPercent}%`}
+            </span>
           </div>
           <div>
             <h3 className="text-sm font-bold text-[#F4F4F5]">{isViewingOther ? `${targetUser.name}'s Goals` : 'Daily Goal Completion'}</h3>
             <p className="text-xs text-[#A1A1AA] mt-0.5">
-              <strong className="text-[#F4F4F5] tabular-nums">{completedCount}</strong> of 5 core goals completed for <span className="text-[#F4F4F5]">{selectedDate}</span>
-              {isSunday && <span className="text-[#34D399] font-semibold ml-1">(Sunday Healing)</span>}
+              {isViewingOther && !actualMemberLog ? (
+                <span>No checklist recorded for <span className="text-[#F4F4F5]">{selectedDate}</span></span>
+              ) : (
+                <>
+                  <strong className="text-[#F4F4F5] tabular-nums">{completedCount}</strong> of 5 core goals completed for <span className="text-[#F4F4F5]">{selectedDate}</span>
+                  {isSunday && <span className="text-[#34D399] font-semibold ml-1">(Sunday Healing)</span>}
+                </>
+              )}
             </p>
           </div>
         </div>
       </div>
 
-      {/* Goal Cards Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      {/* Goal Cards Grid or No Data State */}
+      {isViewingOther && !actualMemberLog ? (
+        <div className="bg-[#131316] border border-[#26262C] rounded-2xl p-8 sm:p-12 text-center shadow-sm space-y-4 my-2">
+          <div className="w-16 h-16 rounded-2xl bg-[#1B1B20] border border-[#26262C] flex items-center justify-center mx-auto text-[#D98B4A]">
+            <Clock className="w-8 h-8" />
+          </div>
+          <div className="max-w-md mx-auto space-y-1.5">
+            <h3 className="text-lg font-bold text-[#F4F4F5]">No data for this member yet</h3>
+            <p className="text-xs text-[#A1A1AA] leading-relaxed">
+              <strong>{targetUser.name}</strong> hasn't logged their daily checklist for <strong className="text-[#F4F4F5]">{selectedDate}</strong>.
+              Progress and workout logs will automatically appear here once recorded.
+            </p>
+          </div>
+          <div className="pt-2">
+            <button
+              type="button"
+              onClick={() => setSelectedMemberId(currentUser.id)}
+              className="px-4 py-2 bg-[#1B1B20] hover:bg-[#26262C] text-[#F4F4F5] border border-[#26262C] hover:border-[#D98B4A]/40 font-semibold rounded-xl text-xs transition cursor-pointer inline-flex items-center gap-2 active:scale-95"
+            >
+              <RotateCcw className="w-3.5 h-3.5 text-[#D98B4A]" />
+              <span>Back to My Checklist</span>
+            </button>
+          </div>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         
         {/* Goal 1: Gym Routine */}
         <div className={`relative bg-[#131316] border rounded-xl p-4 sm:p-5 transition-all overflow-hidden ${
@@ -710,8 +760,14 @@ export const DailyChecklist: React.FC<DailyChecklistProps> = ({
                   ? 'bg-[#34D399]/15 text-[#34D399] border border-[#34D399]/30'
                   : 'bg-[#1B1B20] text-[#A1A1AA] border border-[#26262C]'
               }`}>
-                {displayedDailyLog.gym_done ? <CheckCircle2 className="w-4 h-4 text-[#34D399]" /> : <XCircle className="w-4 h-4 text-[#71717A]" />}
-                <span>{displayedDailyLog.gym_done ? 'Completed' : 'Not Done'}</span>
+                {displayedDailyLog.gym_done ? (
+                  <CheckCircle2 className="w-4 h-4 text-[#34D399]" />
+                ) : !hasLoggedForDate ? (
+                  <Clock className="w-4 h-4 text-zinc-500" />
+                ) : (
+                  <XCircle className="w-4 h-4 text-[#71717A]" />
+                )}
+                <span>{displayedDailyLog.gym_done ? 'Completed' : !hasLoggedForDate ? 'Not Logged Yet' : 'Not Done'}</span>
               </span>
             ) : (
               <div className="flex items-center gap-2 w-full xl:w-auto shrink-0">
@@ -824,7 +880,7 @@ export const DailyChecklist: React.FC<DailyChecklistProps> = ({
                       )}
                     </div>
 
-                    {!isViewingOther && onDeleteWorkout && (
+                    {!isViewingOther && onDeleteWorkout && w.user_id === currentUser.id && (
                       <button
                         type="button"
                         onClick={(e) => {
@@ -868,8 +924,20 @@ export const DailyChecklist: React.FC<DailyChecklistProps> = ({
                   ? 'bg-[#34D399]/15 text-[#34D399] border border-[#34D399]/30'
                   : 'bg-[#1B1B20] text-[#A1A1AA] border border-[#26262C]'
               }`}>
-                {displayedDailyLog.steps_done ? <CheckCircle2 className="w-4 h-4 text-[#34D399]" /> : <XCircle className="w-4 h-4 text-[#71717A]" />}
-                <span className="tabular-nums">{displayedDailyLog.steps_done ? `${(displayedDailyLog.steps_value || 0).toLocaleString()} steps (Hit)` : 'Off Target'}</span>
+                {displayedDailyLog.steps_done ? (
+                  <CheckCircle2 className="w-4 h-4 text-[#34D399]" />
+                ) : !hasLoggedForDate ? (
+                  <Clock className="w-4 h-4 text-zinc-500" />
+                ) : (
+                  <XCircle className="w-4 h-4 text-[#71717A]" />
+                )}
+                <span className="tabular-nums">
+                  {displayedDailyLog.steps_done
+                    ? `${(displayedDailyLog.steps_value || 0).toLocaleString()} steps (Hit)`
+                    : !hasLoggedForDate
+                    ? 'Pending'
+                    : 'Off Target'}
+                </span>
               </span>
             ) : (
               <div className="flex items-center gap-2 w-full xl:w-auto shrink-0">
@@ -1010,8 +1078,14 @@ export const DailyChecklist: React.FC<DailyChecklistProps> = ({
                   ? 'bg-[#34D399]/15 text-[#34D399] border border-[#34D399]/30'
                   : 'bg-[#1B1B20] text-[#A1A1AA] border border-[#26262C]'
               }`}>
-                {displayedDailyLog.sleep_done ? <CheckCircle2 className="w-4 h-4 text-[#34D399]" /> : <XCircle className="w-4 h-4 text-[#71717A]" />}
-                <span>{displayedDailyLog.sleep_done ? 'Target Hit' : 'Off Target'}</span>
+                {displayedDailyLog.sleep_done ? (
+                  <CheckCircle2 className="w-4 h-4 text-[#34D399]" />
+                ) : !hasLoggedForDate ? (
+                  <Clock className="w-4 h-4 text-zinc-500" />
+                ) : (
+                  <XCircle className="w-4 h-4 text-[#71717A]" />
+                )}
+                <span>{displayedDailyLog.sleep_done ? 'Target Hit' : !hasLoggedForDate ? 'Pending' : 'Off Target'}</span>
               </span>
             ) : (
               <div className="flex items-center gap-2 w-full xl:w-auto shrink-0">
@@ -1134,8 +1208,14 @@ export const DailyChecklist: React.FC<DailyChecklistProps> = ({
                   ? 'bg-[#34D399]/15 text-[#34D399] border border-[#34D399]/30'
                   : 'bg-[#1B1B20] text-[#A1A1AA] border border-[#26262C]'
               }`}>
-                {displayedDailyLog.junk_food_avoided ? <CheckCircle2 className="w-4 h-4 text-[#34D399]" /> : <XCircle className="w-4 h-4 text-[#71717A]" />}
-                <span>{displayedDailyLog.junk_food_avoided ? 'Clean Nutrition' : 'Had Junk Food'}</span>
+                {displayedDailyLog.junk_food_avoided ? (
+                  <CheckCircle2 className="w-4 h-4 text-[#34D399]" />
+                ) : !hasLoggedForDate ? (
+                  <Clock className="w-4 h-4 text-zinc-500" />
+                ) : (
+                  <XCircle className="w-4 h-4 text-[#71717A]" />
+                )}
+                <span>{displayedDailyLog.junk_food_avoided ? 'Clean Nutrition' : !hasLoggedForDate ? 'Pending' : 'Had Junk Food'}</span>
               </span>
             ) : (
               <div className="flex items-center gap-2 w-full xl:w-auto shrink-0">
@@ -1225,8 +1305,20 @@ export const DailyChecklist: React.FC<DailyChecklistProps> = ({
                   ? 'bg-[#34D399]/15 text-[#34D399] border border-[#34D399]/30'
                   : 'bg-[#1B1B20] text-[#A1A1AA] border border-[#26262C]'
               }`}>
-                {displayedDailyLog.water_done ? <CheckCircle2 className="w-4 h-4 text-[#34D399]" /> : <XCircle className="w-4 h-4 text-[#71717A]" />}
-                <span className="tabular-nums">{displayedDailyLog.water_done ? `${(waterTarget / 1000).toFixed(1)}L Target Hit` : `${((displayedDailyLog.water_intake_ml || 0) / 1000).toFixed(1)}L Logged`}</span>
+                {displayedDailyLog.water_done ? (
+                  <CheckCircle2 className="w-4 h-4 text-[#34D399]" />
+                ) : !hasLoggedForDate ? (
+                  <Clock className="w-4 h-4 text-zinc-500" />
+                ) : (
+                  <XCircle className="w-4 h-4 text-[#71717A]" />
+                )}
+                <span className="tabular-nums">
+                  {displayedDailyLog.water_done
+                    ? `${(waterTarget / 1000).toFixed(1)}L Target Hit`
+                    : !hasLoggedForDate
+                    ? 'Pending'
+                    : `${((displayedDailyLog.water_intake_ml || 0) / 1000).toFixed(1)}L Logged`}
+                </span>
               </span>
             ) : (
               <div className="flex items-center gap-2 w-full xl:w-auto shrink-0">
@@ -1352,8 +1444,8 @@ export const DailyChecklist: React.FC<DailyChecklistProps> = ({
             </div>
           )}
         </div>
-
       </div>
+      )}
 
       {/* Supplements Daily Checklist Section */}
       <div className="bg-[#131316] border border-[#26262C] rounded-xl p-4 sm:p-6 shadow-sm space-y-4">

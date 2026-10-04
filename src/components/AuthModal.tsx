@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import type { User, Gender } from '../types';
-import { authorizeCredentials, registerNewUser, createAuthSession } from '../services/authService';
-import { loginUserOnServer, registerUserOnServer } from '../services/apiService';
-import { ShieldCheck, Lock, User as UserIcon, X, Clock, AlertTriangle, UserPlus, Scale, Ruler, Calendar } from 'lucide-react';
+import type { User, Gender, InvitePreview } from '../types';
+import { authorizeCredentials, createAuthSession } from '../services/authService';
+import { loginUserOnServer, registerUserOnServer, redeemInvite } from '../services/apiService';
+import { ShieldCheck, Lock, User as UserIcon, X, Clock, AlertTriangle, UserPlus, Scale, Ruler, Calendar, Ticket } from 'lucide-react';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -12,6 +12,7 @@ interface AuthModalProps {
   onRegisterSuccess: (newUser: User) => void;
   isMandatory?: boolean;
   initialMode?: 'login' | 'register';
+  invitePreview?: InvitePreview | null;
 }
 
 export const AuthModal: React.FC<AuthModalProps> = ({
@@ -22,6 +23,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   onRegisterSuccess,
   isMandatory = false,
   initialMode = 'login',
+  invitePreview,
 }) => {
   const [mode, setMode] = useState<'login' | 'register'>(initialMode);
   const [prevInitialMode, setPrevInitialMode] = useState(initialMode);
@@ -78,7 +80,40 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
     setIsSubmitting(true);
     try {
-      // 1. Check local credentials cache
+      // 1. Authenticate with backend server FIRST (primary source of truth)
+      const serverResult = await loginUserOnServer(usernameInput, password);
+      if (serverResult.success && serverResult.user) {
+        createAuthSession(serverResult.user, serverResult.token);
+
+        // If an invite token was saved in sessionStorage, redeem it after login
+        const storedInvite = sessionStorage.getItem('pulse_invite_token');
+        if (storedInvite) {
+          const redeemRes = await redeemInvite(storedInvite);
+          if (!redeemRes.success && redeemRes.error) {
+            console.warn('[Invite Redeem Notice]', redeemRes.error);
+          }
+          sessionStorage.removeItem('pulse_invite_token');
+        }
+
+        onLoginSuccess(serverResult.user);
+        onClose();
+        return;
+      }
+
+      // If server returned a definitive authentication failure
+      const isNetworkError = serverResult.error && (
+        serverResult.error.toLowerCase().includes('connect') ||
+        serverResult.error.toLowerCase().includes('network') ||
+        serverResult.error.toLowerCase().includes('failed to fetch') ||
+        serverResult.error.toLowerCase().includes('offline')
+      );
+
+      if (!isNetworkError && serverResult.error) {
+        setError(serverResult.error);
+        return;
+      }
+
+      // 2. Offline fallback ONLY if server is completely unreachable
       const localResult = await authorizeCredentials(users, usernameInput, password);
       if (localResult.success && localResult.user) {
         onLoginSuccess(localResult.user);
@@ -86,16 +121,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         return;
       }
 
-      // 2. Check directly against backend server (cross-device user authentication)
-      const serverResult = await loginUserOnServer(usernameInput, password);
-      if (serverResult.success && serverResult.user) {
-        createAuthSession(serverResult.user);
-        onLoginSuccess(serverResult.user);
-        onClose();
-        return;
-      }
-
-      setError(localResult.error || serverResult.error || 'Authentication failed. Please verify your username and password.');
+      setError(serverResult.error || localResult.error || 'Authentication failed. Please verify your username and password.');
       if (localResult.isLockout && localResult.lockoutSeconds) {
         setLockoutTimer(localResult.lockoutSeconds);
       }
@@ -108,31 +134,47 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     e.preventDefault();
     setError('');
 
+    const cleanUsername = regUsername.trim().replace(/^@+/, '').toLowerCase();
+    const cleanPassword = regPassword.trim();
+
+    if (!cleanUsername) {
+      setError('Please enter a username.');
+      return;
+    }
+    if (cleanUsername.length < 3) {
+      setError('Username must be at least 3 characters long.');
+      return;
+    }
+    if (!cleanPassword || cleanPassword.length < 6) {
+      setError('Password must be at least 6 characters long.');
+      return;
+    }
+
     setIsSubmitting(true);
     try {
-      const regResult = await registerNewUser(users, {
-        fullName,
-        username: regUsername,
-        passwordPlain: regPassword,
+      const inviteToken = sessionStorage.getItem('pulse_invite_token') || undefined;
+
+      // Persist to server with whitelist fields
+      const serverRes = await registerUserOnServer({
+        name: fullName.trim() || cleanUsername,
+        username: cleanUsername,
+        passwordPlain: cleanPassword,
         height,
         weight,
         age,
         gender,
+        inviteToken,
       });
 
-      if (!regResult.success || !regResult.user) {
-        setError(regResult.error || 'Registration failed. Please check your inputs.');
+      if (!serverRes.success || !serverRes.user) {
+        setError(serverRes.error || 'Server registration failed. Please try again.');
         return;
       }
 
-      // Synchronize with backend server (non-blocking for network errors)
-      const serverRes = await registerUserOnServer(regResult.user);
-      if (!serverRes.success && serverRes.error && !serverRes.error.toLowerCase().includes('network') && !serverRes.error.toLowerCase().includes('connect')) {
-        setError(serverRes.error);
-        return;
-      }
-
-      onRegisterSuccess(regResult.user);
+      // Server confirmed registration: create session with server token and complete login
+      createAuthSession(serverRes.user, serverRes.token);
+      sessionStorage.removeItem('pulse_invite_token');
+      onRegisterSuccess(serverRes.user);
       onClose();
     } finally {
       setIsSubmitting(false);
@@ -170,6 +212,21 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               : 'Sign up to log your workouts, track habits, and view analytics.'}
           </p>
         </div>
+
+        {/* Invite Preview Banner */}
+        {invitePreview && invitePreview.valid && (
+          <div className="mb-4 p-3 bg-[#D98B4A]/10 border border-[#D98B4A]/30 rounded-xl text-xs text-[#F4F4F5] flex items-center gap-2.5">
+            <Ticket className="w-5 h-5 text-[#D98B4A] shrink-0" />
+            <div className="min-w-0 flex-1">
+              <p className="font-semibold text-[#D98B4A] truncate">
+                {invitePreview.inviterName} invited you to {invitePreview.groupName}
+              </p>
+              <p className="text-[11px] text-[#A1A1AA] mt-0.5">
+                {invitePreview.memberCount} member{invitePreview.memberCount === 1 ? '' : 's'} in this group
+              </p>
+            </div>
+          </div>
+        )}
 
         {/* Lockout Warning Banner */}
         {lockoutTimer > 0 && (
@@ -337,10 +394,14 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               </div>
             </div>
 
+            <p className="text-[11px] text-[#A1A1AA] text-center my-2">
+              Have an invite link? Opening an invite link joins that private group automatically.
+            </p>
+
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full py-3 min-h-[44px] mt-3 bg-gradient-to-r from-[#D98B4A] to-[#D98B4A] hover:from-[#D98B4A] hover:to-[#B45F1E] text-[#1B1B20] font-black rounded-xl text-sm transition shadow-lg shadow-[#D98B4A]/20 disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed flex items-center justify-center"
+              className="w-full py-3 min-h-[44px] mt-2 bg-gradient-to-r from-[#D98B4A] to-[#D98B4A] hover:from-[#D98B4A] hover:to-[#B45F1E] text-[#1B1B20] font-black rounded-xl text-sm transition shadow-lg shadow-[#D98B4A]/20 disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed flex items-center justify-center"
             >
               {isSubmitting ? 'Registering...' : 'Complete Registration'}
             </button>

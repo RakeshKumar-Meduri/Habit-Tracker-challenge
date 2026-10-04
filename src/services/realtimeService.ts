@@ -20,6 +20,12 @@ export type RealtimeEventType =
   | 'CUSTOM_HABIT_ADDED'
   | 'CUSTOM_HABIT_DELETED'
   | 'CUSTOM_HABIT_LOG_UPDATED'
+  | 'MEMBER_JOINED'
+  | 'MEMBER_LEFT'
+  | 'MEMBER_REMOVED'
+  | 'GROUP_UPDATED'
+  | 'INVITE_CREATED'
+  | 'INVITE_REVOKED'
   | 'FULL_SYNC';
 
 export interface RealtimeMessage {
@@ -79,13 +85,28 @@ class RealtimeClient {
     this.connect();
   }
 
-  public identify(userId: string | null | undefined) {
-    this.currentUserId = userId || null;
+  public identify(userId?: string | null, token?: string | null) {
+    if (userId !== undefined) {
+      this.currentUserId = userId || null;
+    }
+    let sessionToken = token;
+    if (!sessionToken && typeof localStorage !== 'undefined') {
+      try {
+        const raw = localStorage.getItem('pulse_fitness_auth_session');
+        if (raw) {
+          const s = JSON.parse(raw);
+          sessionToken = s?.token;
+        }
+      } catch {}
+    }
     if (this.ws && this.ws.readyState === WebSocket.OPEN) {
       try {
         this.ws.send(JSON.stringify({
           type: 'IDENTIFY',
-          payload: { userId: this.currentUserId },
+          payload: { 
+            userId: this.currentUserId,
+            token: sessionToken || null,
+          },
         }));
       } catch (err) {
         console.error('[Realtime Identify Error]', err);

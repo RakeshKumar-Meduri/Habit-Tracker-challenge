@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import type { User, WeightLog, Gender } from '../types';
+import type { User, WeightLog, Gender, Group, Invite } from '../types';
 import { calculateBMI, calculateAgeFromBirthday } from '../utils/crypto';
 import { 
   User as UserIcon, 
@@ -15,7 +15,9 @@ import {
   Eye,
   CheckCircle2,
   Lock,
-  RefreshCw
+  RefreshCw,
+  LogOut,
+  UserPlus
 } from 'lucide-react';
 
 const CURRENT_YEAR = new Date().getFullYear();
@@ -39,21 +41,35 @@ const MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Se
 interface ProfileSectionProps {
   currentUser: User;
   allUsers?: User[];
+  currentGroup?: Group | null;
+  myRole?: 'owner' | 'member';
+  invites?: Invite[];
   weightLogs: WeightLog[];
   onUpdateProfile: (updatedUser: User, newWeightEntry?: WeightLog) => void;
   onDeleteAccount: (userId: string) => void;
   onRefreshMembers?: () => void;
   isRefreshingMembers?: boolean;
+  onOpenInviteModal?: () => void;
+  onLeaveGroup?: () => Promise<void>;
+  onRemoveGroupMember?: (userId: string) => Promise<void>;
+  onRevokeInvite?: (token: string) => Promise<boolean>;
 }
 
 export const ProfileSection: React.FC<ProfileSectionProps> = ({
   currentUser,
   allUsers,
+  currentGroup,
+  myRole,
+  invites,
   weightLogs,
   onUpdateProfile,
   onDeleteAccount,
   onRefreshMembers,
   isRefreshingMembers = false,
+  onOpenInviteModal,
+  onLeaveGroup,
+  onRemoveGroupMember,
+  onRevokeInvite,
 }) => {
   const [selectedUserId, setSelectedUserId] = useState<string>(currentUser.id);
   const targetUser = allUsers?.find(u => u.id === selectedUserId) || currentUser;
@@ -73,6 +89,7 @@ export const ProfileSection: React.FC<ProfileSectionProps> = ({
   const [bodyShapePhoto, setBodyShapePhoto] = useState(currentUser.body_shape_photo || '');
   const [isPrivate, setIsPrivate] = useState(currentUser.is_private);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
   const [saveSuccessMsg, setSaveSuccessMsg] = useState('');
 
   // Keep state in sync ONLY if currentUser.id changes (switching accounts) to prevent losing active edits
@@ -660,6 +677,173 @@ export const ProfileSection: React.FC<ProfileSectionProps> = ({
               )}
             </div>
           </div>
+
+          {/* Group Settings Panel (Only shown when viewing own profile) */}
+          {!isViewingOther && (
+            <div className="bg-[#131316] border border-[#26262C] rounded-xl p-4 sm:p-6 shadow-xl space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[#26262C]">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-[#D98B4A]/15 border border-[#D98B4A]/30 flex items-center justify-center text-[#D98B4A] shrink-0">
+                    <Users className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="text-base font-bold text-[#F4F4F5] flex items-center gap-2">
+                      {currentGroup?.name || 'My Group'}
+                      <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase ${
+                        myRole === 'owner' 
+                          ? 'bg-[#D98B4A]/20 text-[#D98B4A] border border-[#D98B4A]/30'
+                          : 'bg-zinc-800 text-zinc-300 border border-zinc-700'
+                      }`}>
+                        {myRole === 'owner' ? 'Group Owner' : 'Member'}
+                      </span>
+                    </h3>
+                    <p className="text-xs text-[#A1A1AA]">
+                      {currentGroup?.members?.length || 1} {(currentGroup?.members?.length || 1) === 1 ? 'member' : 'members'} in your private accountability group
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  {onOpenInviteModal && (
+                    <button
+                      type="button"
+                      onClick={onOpenInviteModal}
+                      className="px-3 py-1.5 bg-[#D98B4A]/15 hover:bg-[#D98B4A]/25 text-[#D98B4A] border border-[#D98B4A]/30 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer"
+                    >
+                      <UserPlus className="w-3.5 h-3.5" />
+                      <span>Invite Friends</span>
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* Group Members List */}
+              <div className="space-y-2">
+                <h4 className="text-xs font-bold text-[#A1A1AA] uppercase tracking-wider">
+                  Group Members
+                </h4>
+                <div className="divide-y divide-[#26262C] bg-[#1B1B20] border border-[#26262C] rounded-xl overflow-hidden">
+                  {(currentGroup?.members || []).map(member => (
+                    <div key={member.user_id} className="p-3 flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <div className="w-8 h-8 rounded-full bg-[#131316] border border-[#26262C] flex items-center justify-center font-bold text-xs text-[#F4F4F5] shrink-0">
+                          {member.name.charAt(0).toUpperCase()}
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-xs font-semibold text-[#F4F4F5] truncate flex items-center gap-1.5">
+                            {member.name}
+                            {member.user_id === currentUser.id && <span className="text-[10px] text-[#A1A1AA] font-normal">(You)</span>}
+                          </p>
+                          <p className="text-[10px] text-[#A1A1AA] font-mono">@{member.username}</p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2 shrink-0">
+                        <span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold ${
+                          member.role === 'owner'
+                            ? 'bg-[#D98B4A]/20 text-[#D98B4A] border border-[#D98B4A]/30'
+                            : 'bg-zinc-800 text-zinc-400'
+                        }`}>
+                          {member.role === 'owner' ? 'Owner' : 'Member'}
+                        </span>
+
+                        {/* Owner can remove other members */}
+                        {myRole === 'owner' && member.user_id !== currentUser.id && onRemoveGroupMember && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (window.confirm(`Are you sure you want to remove ${member.name} from the group?`)) {
+                                onRemoveGroupMember(member.user_id);
+                              }
+                            }}
+                            className="p-1.5 hover:bg-rose-500/10 text-[#A1A1AA] hover:text-rose-400 rounded-lg transition cursor-pointer"
+                            title="Remove from group"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Active Invites for Owner */}
+              {myRole === 'owner' && (invites || []).filter(i => !i.revoked).length > 0 && (
+                <div className="space-y-2 pt-2">
+                  <h4 className="text-xs font-bold text-[#A1A1AA] uppercase tracking-wider">
+                    Active Invites ({(invites || []).filter(i => !i.revoked).length})
+                  </h4>
+                  <div className="space-y-2">
+                    {(invites || []).filter(i => !i.revoked).map(inv => (
+                      <div key={inv.token} className="p-2.5 bg-[#1B1B20] border border-[#26262C] rounded-xl flex items-center justify-between gap-2 text-xs">
+                        <span className="font-mono text-[#F4F4F5] truncate text-[11px]">{inv.token}</span>
+                        <div className="flex items-center gap-2 shrink-0">
+                          <span className="text-[11px] text-[#A1A1AA]">{inv.uses}/{inv.max_uses} used</span>
+                          {onRevokeInvite && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                if (window.confirm('Revoke this invite?')) {
+                                  onRevokeInvite(inv.token);
+                                }
+                              }}
+                              className="text-[11px] text-rose-400 hover:underline cursor-pointer"
+                            >
+                              Revoke
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Leave Group Button with Confirmation */}
+              <div className="pt-3 border-t border-[#26262C]">
+                {!showLeaveConfirm ? (
+                  <button
+                    type="button"
+                    onClick={() => setShowLeaveConfirm(true)}
+                    className="px-3.5 py-2 bg-amber-500/10 hover:bg-amber-500/20 text-[#FBBF24] border border-amber-500/25 rounded-xl text-xs font-semibold transition flex items-center gap-1.5 cursor-pointer"
+                  >
+                    <LogOut className="w-3.5 h-3.5" />
+                    <span>Leave Group</span>
+                  </button>
+                ) : (
+                  <div className="p-4 bg-amber-500/10 border border-amber-500/30 rounded-xl space-y-3">
+                    <p className="text-xs font-semibold text-[#FBBF24]">
+                      {myRole === 'owner' && (currentGroup?.members?.length || 1) > 1
+                        ? 'As the group owner, leaving will transfer ownership to the next earliest member. Confirm?'
+                        : 'Are you sure you want to leave this group? You will be placed in your own private group.'}
+                    </p>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          if (onLeaveGroup) {
+                            await onLeaveGroup();
+                            setShowLeaveConfirm(false);
+                          }
+                        }}
+                        className="px-3.5 py-1.5 bg-[#D98B4A] hover:bg-[#B45F1E] text-[#131316] font-bold rounded-lg text-xs transition cursor-pointer"
+                      >
+                        Yes, Leave Group
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setShowLeaveConfirm(false)}
+                        className="px-3.5 py-1.5 bg-[#1B1B20] text-[#A1A1AA] hover:text-[#F4F4F5] rounded-lg text-xs font-semibold transition cursor-pointer"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
 
           {/* Delete My Account Section (Only shown when viewing own profile) */}
           {!isViewingOther && (

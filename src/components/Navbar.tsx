@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import type { User } from '../types';
+import type { User, Group } from '../types';
 import { 
   CheckSquare, 
   Calendar,
@@ -16,11 +16,13 @@ import {
   LogOut,
   MoreVertical,
   X,
-  RefreshCw
+  RefreshCw,
+  UserPlus
 } from 'lucide-react';
 
 interface NavbarProps {
   currentUser: User | null;
+  currentGroup?: Group | null;
   allUsers?: User[];
   activeTab: string;
   setActiveTab: (tab: string) => void;
@@ -30,6 +32,7 @@ interface NavbarProps {
   onExportCSV: () => void;
   onOpenAuth: () => void;
   onLogout: () => void;
+  onOpenInviteModal?: () => void;
   realtimeStatus?: { isConnected: boolean; clientCount: number };
   onRefreshMembers?: () => void;
   isRefreshingMembers?: boolean;
@@ -37,6 +40,7 @@ interface NavbarProps {
 
 export const Navbar: React.FC<NavbarProps> = ({
   currentUser,
+  currentGroup,
   allUsers,
   activeTab,
   setActiveTab,
@@ -46,6 +50,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   onExportCSV,
   onOpenAuth,
   onLogout,
+  onOpenInviteModal,
   realtimeStatus,
   onRefreshMembers,
   isRefreshingMembers = false,
@@ -105,7 +110,9 @@ export const Navbar: React.FC<NavbarProps> = ({
                   PULSE <span className="text-[#D98B4A] text-[10px] sm:text-xs px-1.5 py-0.5 rounded-full bg-[rgba(217,139,74,0.12)] border border-[#D98B4A]/30 font-bold">FITNESS</span>
                 </h1>
                 <div className="flex items-center gap-2 mt-0.5">
-                  <p className="text-[10px] sm:text-[11px] text-[#A1A1AA] hidden xs:block truncate">Group Tracker</p>
+                  <span className="text-[10px] sm:text-[11px] font-bold text-[#D98B4A] bg-[rgba(217,139,74,0.12)] border border-[#D98B4A]/30 px-2 py-0.5 rounded-full truncate max-w-[110px] sm:max-w-[160px] inline-block" title={currentGroup?.name || 'Group'}>
+                    {currentGroup?.name || 'PULSE'}
+                  </span>
                   {realtimeStatus && (() => {
                     const totalUsers = allUsers ? allUsers.length : 0;
                     const effectiveCount = totalUsers > 0
@@ -179,6 +186,19 @@ export const Navbar: React.FC<NavbarProps> = ({
                 </button>
               )}
 
+              {/* Invite Friends Trigger */}
+              {currentUser && onOpenInviteModal && (
+                <button
+                  type="button"
+                  onClick={onOpenInviteModal}
+                  title="Invite Friends to Group"
+                  className="p-2 sm:px-3 rounded-lg bg-[#D98B4A]/15 hover:bg-[#D98B4A]/25 text-[#D98B4A] border border-[#D98B4A]/30 transition flex items-center gap-1.5 text-xs font-semibold cursor-pointer active:scale-95"
+                >
+                  <UserPlus className="w-4 h-4 text-[#D98B4A]" />
+                  <span className="hidden md:inline">Invite Friends</span>
+                </button>
+              )}
+
               {/* Theme Toggle */}
               <button
                 onClick={onToggleTheme}
@@ -210,6 +230,19 @@ export const Navbar: React.FC<NavbarProps> = ({
 
             {/* Mobile Header Actions (Compact, Clean, Touch-Friendly) */}
             <div className="flex sm:hidden items-center gap-1.5">
+              {/* Invite Friends Button (Mobile) */}
+              {currentUser && onOpenInviteModal && (
+                <button
+                  type="button"
+                  onClick={onOpenInviteModal}
+                  aria-label="Invite Friends"
+                  title="Invite Friends to Group"
+                  className="w-9 h-9 rounded-lg bg-[#D98B4A]/15 text-[#D98B4A] border border-[#D98B4A]/30 flex items-center justify-center transition cursor-pointer active:scale-95"
+                >
+                  <UserPlus className="w-4 h-4 text-[#D98B4A]" />
+                </button>
+              )}
+
               {/* Theme Toggle */}
               <button
                 onClick={onToggleTheme}

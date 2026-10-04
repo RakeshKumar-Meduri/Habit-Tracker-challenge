@@ -166,6 +166,13 @@ export async function authorizeCredentials(
   }
 
   // 4. Password Verification (tests both exact password and trimmed password for mobile keyboard autocorrect tolerance)
+  if (!targetUser.password_hash) {
+    return {
+      success: false,
+      error: 'Credentials not cached locally. Please log in with an active server connection.',
+    };
+  }
+
   let isMatch = await verifyPassword(passwordInput, targetUser.password_hash);
   if (!isMatch && passwordInput.trim() !== passwordInput) {
     isMatch = await verifyPassword(passwordInput.trim(), targetUser.password_hash);
@@ -204,9 +211,9 @@ export async function authorizeCredentials(
 /**
  * Generate and store an AuthSession for a given User
  */
-export function createAuthSession(user: User): AuthSession {
+export function createAuthSession(user: User, serverToken?: string): AuthSession {
   const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
-  const sessionToken = `jwt_${user.id}_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+  const sessionToken = serverToken || `jwt_${user.id}_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
 
   const session: AuthSession = {
     user_id: user.id,
@@ -256,19 +263,8 @@ export async function registerNewUser(
     return { success: false, error: 'Password must be at least 6 characters long.' };
   }
 
-  // Cross check with both in-memory users and localStorage users
-  let allUsers = [...existingUsers];
-  try {
-    const raw = localStorage.getItem(STORAGE_KEYS.USERS);
-    if (raw) {
-      const stored: User[] = JSON.parse(raw);
-      stored.forEach(su => {
-        if (!allUsers.some(u => u.id === su.id)) allUsers.push(su);
-      });
-    }
-  } catch {}
-
-  if (checkUsernameExists(allUsers, cleanUsername)) {
+  // Cross check with in-memory users
+  if (checkUsernameExists(existingUsers, cleanUsername)) {
     return { success: false, error: `Username '@${cleanUsername}' is already taken. Please choose another.` };
   }
 
@@ -301,23 +297,9 @@ export async function registerNewUser(
     must_change_password: false,
   };
 
-  // 1. Immediately store new user in localStorage to prevent any reload wipe
-  try {
-    const rawUsers = localStorage.getItem(STORAGE_KEYS.USERS);
-    const usersList: User[] = rawUsers ? JSON.parse(rawUsers) : [];
-    const updatedUsers = [...usersList.filter(u => u.id !== newUser.id), newUser];
-    localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(updatedUsers));
-  } catch (e) {
-    console.error('Error saving new user to storage:', e);
-  }
-
-  // 2. Create and persist the active session immediately
-  const session = createAuthSession(newUser);
-
   return {
     success: true,
     user: newUser,
-    session,
   };
 }
 

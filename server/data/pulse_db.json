@@ -49,6 +49,487 @@
       "created_at": "2026-10-01",
       "is_active": true,
       "must_change_password": false
+    },
+    {
+      "id": "user_1791097951378_9ef57f43",
+      "name": "Alice_1791097951336",
+      "username": "alice_1791097951336",
+      "password_hash": "3119b8af00753c13a4b8d3a45f0cc15f40a2dba9ac9966dd9db57ed1034381bd",
+      "role": "member",
+      "height": 165,
+      "weight_current": 60,
+      "age": 26,
+      "gender": "female",
+      "is_private": false,
+      "avatar_color": "from-amber-500 to-orange-700",
+      "created_at": "2026-10-04",
+      "is_active": true,
+      "must_change_password": false
+    },
+    {
+      "id": "user_1791097951399_975e2157",
+      "name": "Bob_1791097951336",
+      "username": "bob_1791097951336",
+      "password_hash": "3119b8af00753c13a4b8d3a45f0cc15f40a2dba9ac9966dd9db57ed1034381bd",
+      "role": "member",
+      "height": 180,
+      "weight_current": 75,
+      "age": 28,
+      "gender": "male",
+      "is_private": false,
+      "avatar_color": "from-[#D98B4A] to-[#B45F1E]",
+      "created_at": "2026-10-04",
+      "is_active": true,
+      "must_change_password": false
+    },
+    {
+      "id": "user_1791097951406_46b5520a",
+      "name": "Charlie_1791097951336",
+      "username": "charlie_1791097951336",
+      "password_hash": "3119b8af00753c13a4b8d3a45f0cc15f40a2dba9ac9966dd9db57ed1034381bd",
+      "role": "member",
+      "height": 175,
+      "weight_current": 70,
+      "age": 25,
+      "gender": "male",
+      "is_private": false,
+      "avatar_color": "from-[#D98B4A] to-[#B45F1E]",
+      "created_at": "2026-10-04",
+      "is_active": true,
+      "must_change_password": false
+    },
+    {
+      "id": "user_1791097951421_e44f153c",
+      "name": "David_1791097951336",
+      "username": "david_1791097951336",
+      "password_hash": "3119b8af00753c13a4b8d3a45f0cc15f40a2dba9ac9966dd9db57ed1034381bd",
+      "role": "member",
+      "height": 170,
+      "weight_current": 68,
+      "age": 24,
+      "gender": "male",
+      "is_private": false,
+      "avatar_color": "from-amber-500 to-orange-700",
+      "created_at": "2026-10-04",
+      "is_active": true,
+      "must_change_password": false
+    },
+    {
+      "id": "user_1791097951449_e27bc02b",
+      "name": "MaxUser1_1791097951336",
+      "username": "maxuser1_1791097951336",
+      "password_hash": "3119b8af00753c13a4b8d3a45f0cc15f40a2dba9ac9966dd9db57ed1034381bd",
+      "role": "member",
+      "height": 175,
+      "weight_current": 70,
+      "age": 25,
+      "gender": "male",
+      "is_private": false,
+      "avatar_color": "from-cyan-500 to-blue-700",
+      "created_at": "2026-10-04",
+      "is_active": true,
+      "must_change_password": false
+    },
+    {
+      "id": "user_1791097982809_f54b6746",
+      "name": "Alice_1791097982781",
+      "username": "alice_1791097982781",
+      "password_hash": "3119b8af00753c13a4b8d3a45f0cc15f40a2dba9ac9966dd9db57ed1034381bd",
+      "role": "member",
+      "height": 165,
+      "weight_current": 60,
+      "age": 26,
+      "gender": "female",
+      "is_private": false,
+      "avatar_color": "from-rose-500 to-pink-700",
+      "created_at": "2026-10-04",
+      "is_active": true,
+      "must_change_password": false
+    },
+    {
+      "id": "user_1791097982823_1ea48d0f",
+      "name": "Bob_1791097982781",
+      "username": "bob_1791097982781",
+      "password_hash": "3119b8af00753c13a4b8d3a45f0cc15f40a2dba9ac9966dd9db57ed1034381bd",
+      "role": "member",
+      "height": 180,
+      "weight_current": 75,
+      "age": 28,
+      "gender": "male",
+      "is_private": false,
+      "avatar_color": "from-violet-500 to-purple-700",
+      "created_at": "2026-10-04",
+      "is_active": true,
+      "must_change_password": false
+    },
+    {
+      "id": "user_1791097982829_f313de09",
+      "name": "Charlie_1791097982781",
+      "username": "charlie_1791097982781",
+      "password_hash": "3119b8af00753c13a4b8d3a45f0cc15f40a2dba9ac9966dd9db57ed1034381bd",
+      "role": "member",
+      "height": 175,
+      "weight_current": 70,
+      "age": 25,
+      "gender": "male",
+      "is_private": false,
+      "avatar_color": "from-emerald-500 to-teal-700",
+      "created_at": "2026-10-04",
+      "is_active": true,
+      "must_change_password": false
+    },
+    {
+      "id": "user_1791097982840_fa8b8fa8",
+      "name": "David_1791097982781",
+      "username": "david_1791097982781",
+      "password_hash": "3119b8af00753c13a4b8d3a45f0cc15f40a2dba9ac9966dd9db57ed1034381bd",
+      "role": "member",
+      "height": 170,
+      "weight_current": 68,
+      "age": 24,
+      "gender": "male",
+      "is_private": false,
+      "avatar_color": "from-amber-500 to-orange-700",
+      "created_at": "2026-10-04",
+      "is_active": true,
+      "must_change_password": false
+    },
+    {
+      "id": "user_1791097982865_f4e08870",
+      "name": "MaxUser1_1791097982781",
+      "username": "maxuser1_1791097982781",
+      "password_hash": "3119b8af00753c13a4b8d3a45f0cc15f40a2dba9ac9966dd9db57ed1034381bd",
+      "role": "member",
+      "height": 175,
+      "weight_current": 70,
+      "age": 25,
+      "gender": "male",
+      "is_private": false,
+      "avatar_color": "from-violet-500 to-purple-700",
+      "created_at": "2026-10-04",
+      "is_active": true,
+      "must_change_password": false
+    },
+    {
+      "id": "user_1791098216994_23d05621",
+      "name": "Test User",
+      "username": "testuser1",
+      "password_hash": "3119b8af00753c13a4b8d3a45f0cc15f40a2dba9ac9966dd9db57ed1034381bd",
+      "role": "member",
+      "height": 175,
+      "weight_current": 70,
+      "age": 25,
+      "gender": "male",
+      "is_private": false,
+      "avatar_color": "from-amber-500 to-orange-700",
+      "created_at": "2026-10-04",
+      "is_active": true,
+      "must_change_password": false
+    }
+  ],
+  "groups": [
+    {
+      "id": "group_pulse_original",
+      "name": "PULSE Original",
+      "owner_id": "user_1790779706015_wepw",
+      "created_at": "2026-10-04T06:56:24.719Z"
+    },
+    {
+      "id": "grp_1791097951379_99f6bde1",
+      "name": "Alice_1791097951336's Group",
+      "owner_id": "user_1791097951399_975e2157",
+      "created_at": "2026-10-04T07:12:31.378Z"
+    },
+    {
+      "id": "grp_1791097951421_a0a0b91c",
+      "name": "David_1791097951336's Group",
+      "owner_id": "user_1791097951421_e44f153c",
+      "created_at": "2026-10-04T07:12:31.421Z"
+    },
+    {
+      "id": "grp_1791097951465_d0fc5c6d",
+      "name": "Alice_1791097951336's Group",
+      "owner_id": "user_1791097951378_9ef57f43",
+      "created_at": "2026-10-04T07:12:31.465Z"
+    },
+    {
+      "id": "grp_1791097982809_df73cecd",
+      "name": "Alice_1791097982781's Group",
+      "owner_id": "user_1791097982823_1ea48d0f",
+      "created_at": "2026-10-04T07:13:02.809Z"
+    },
+    {
+      "id": "grp_1791097982841_36e91c91",
+      "name": "David_1791097982781's Group",
+      "owner_id": "user_1791097982840_fa8b8fa8",
+      "created_at": "2026-10-04T07:13:02.840Z"
+    },
+    {
+      "id": "grp_1791097982880_3261b998",
+      "name": "Alice_1791097982781's Group",
+      "owner_id": "user_1791097982809_f54b6746",
+      "created_at": "2026-10-04T07:13:02.880Z"
+    },
+    {
+      "id": "grp_1791098216995_a754c0de",
+      "name": "Test's Group",
+      "owner_id": "user_1791098216994_23d05621",
+      "created_at": "2026-10-04T07:16:56.994Z"
+    }
+  ],
+  "memberships": [
+    {
+      "user_id": "user_1790779706015_wepw",
+      "group_id": "group_pulse_original",
+      "role": "owner",
+      "joined_at": "2026-09-30T00:00:00.000Z"
+    },
+    {
+      "user_id": "user_1790824958946_sy7b",
+      "group_id": "group_pulse_original",
+      "role": "member",
+      "joined_at": "2026-10-01T00:00:00.000Z"
+    },
+    {
+      "user_id": "user_1790843934888_9m2c",
+      "group_id": "group_pulse_original",
+      "role": "member",
+      "joined_at": "2026-10-01T00:00:00.000Z"
+    },
+    {
+      "user_id": "user_1791097951399_975e2157",
+      "group_id": "grp_1791097951379_99f6bde1",
+      "role": "owner",
+      "joined_at": "2026-10-04T07:12:31.399Z"
+    },
+    {
+      "user_id": "user_1791097951406_46b5520a",
+      "group_id": "grp_1791097951379_99f6bde1",
+      "role": "member",
+      "joined_at": "2026-10-04T07:12:31.414Z"
+    },
+    {
+      "user_id": "user_1791097951421_e44f153c",
+      "group_id": "grp_1791097951421_a0a0b91c",
+      "role": "owner",
+      "joined_at": "2026-10-04T07:12:31.421Z"
+    },
+    {
+      "user_id": "user_1791097951449_e27bc02b",
+      "group_id": "grp_1791097951421_a0a0b91c",
+      "role": "member",
+      "joined_at": "2026-10-04T07:12:31.449Z"
+    },
+    {
+      "user_id": "user_1791097951378_9ef57f43",
+      "group_id": "grp_1791097951465_d0fc5c6d",
+      "role": "owner",
+      "joined_at": "2026-10-04T07:12:31.465Z"
+    },
+    {
+      "user_id": "user_1791097982823_1ea48d0f",
+      "group_id": "grp_1791097982809_df73cecd",
+      "role": "owner",
+      "joined_at": "2026-10-04T07:13:02.824Z"
+    },
+    {
+      "user_id": "user_1791097982829_f313de09",
+      "group_id": "grp_1791097982809_df73cecd",
+      "role": "member",
+      "joined_at": "2026-10-04T07:13:02.835Z"
+    },
+    {
+      "user_id": "user_1791097982840_fa8b8fa8",
+      "group_id": "grp_1791097982841_36e91c91",
+      "role": "owner",
+      "joined_at": "2026-10-04T07:13:02.840Z"
+    },
+    {
+      "user_id": "user_1791097982865_f4e08870",
+      "group_id": "grp_1791097982841_36e91c91",
+      "role": "member",
+      "joined_at": "2026-10-04T07:13:02.865Z"
+    },
+    {
+      "user_id": "user_1791097982809_f54b6746",
+      "group_id": "grp_1791097982880_3261b998",
+      "role": "owner",
+      "joined_at": "2026-10-04T07:13:02.880Z"
+    },
+    {
+      "user_id": "user_1791098216994_23d05621",
+      "group_id": "grp_1791098216995_a754c0de",
+      "role": "owner",
+      "joined_at": "2026-10-04T07:16:56.994Z"
+    }
+  ],
+  "invites": [
+    {
+      "token": "qppNkkRoFhh6RSCr0CowpQ",
+      "group_id": "grp_1791097951379_99f6bde1",
+      "created_by": "user_1791097951378_9ef57f43",
+      "created_at": "2026-10-04T07:12:31.393Z",
+      "expires_at": "2026-10-11T07:12:31.393Z",
+      "max_uses": 10,
+      "uses": 2,
+      "revoked": false
+    },
+    {
+      "token": "jZanrQH6BU0FOjkBMg5exA",
+      "group_id": "grp_1791097951421_a0a0b91c",
+      "created_by": "user_1791097951421_e44f153c",
+      "created_at": "2026-10-04T07:12:31.425Z",
+      "expires_at": "2026-10-11T07:12:31.425Z",
+      "max_uses": 10,
+      "uses": 0,
+      "revoked": false
+    },
+    {
+      "token": "yTthDRZExn0f4gMDKxg3Wg",
+      "group_id": "grp_1791097951379_99f6bde1",
+      "created_by": "user_1791097951378_9ef57f43",
+      "created_at": "2026-10-04T07:12:31.432Z",
+      "expires_at": "2026-10-03T07:12:31.432Z",
+      "max_uses": 5,
+      "uses": 0,
+      "revoked": false
+    },
+    {
+      "token": "d-PedEUc9dDPLwdGhJW-Vg",
+      "group_id": "grp_1791097951379_99f6bde1",
+      "created_by": "user_1791097951378_9ef57f43",
+      "created_at": "2026-10-04T07:12:31.438Z",
+      "expires_at": "2026-10-11T07:12:31.438Z",
+      "max_uses": 5,
+      "uses": 0,
+      "revoked": true
+    },
+    {
+      "token": "-vvxzCJAFivNxkYgwqhcyQ",
+      "group_id": "grp_1791097951421_a0a0b91c",
+      "created_by": "user_1791097951421_e44f153c",
+      "created_at": "2026-10-04T07:12:31.446Z",
+      "expires_at": "2026-10-11T07:12:31.446Z",
+      "max_uses": 1,
+      "uses": 1,
+      "revoked": false
+    },
+    {
+      "token": "c5LQMhiW4MKxvYofJMBxgQ",
+      "group_id": "grp_1791097982809_df73cecd",
+      "created_by": "user_1791097982809_f54b6746",
+      "created_at": "2026-10-04T07:13:02.819Z",
+      "expires_at": "2026-10-11T07:13:02.819Z",
+      "max_uses": 10,
+      "uses": 2,
+      "revoked": false
+    },
+    {
+      "token": "H6dyvoKOEgVjRAv6Nf49-A",
+      "group_id": "grp_1791097982841_36e91c91",
+      "created_by": "user_1791097982840_fa8b8fa8",
+      "created_at": "2026-10-04T07:13:02.844Z",
+      "expires_at": "2026-10-11T07:13:02.844Z",
+      "max_uses": 10,
+      "uses": 0,
+      "revoked": false
+    },
+    {
+      "token": "M7Gq5voy-4p0QcLwAHgnsw",
+      "group_id": "grp_1791097982809_df73cecd",
+      "created_by": "user_1791097982809_f54b6746",
+      "created_at": "2026-10-04T07:13:02.849Z",
+      "expires_at": "2026-10-03T07:13:02.849Z",
+      "max_uses": 5,
+      "uses": 0,
+      "revoked": false
+    },
+    {
+      "token": "5LJ8hTbsCY-C0ae9zru5pA",
+      "group_id": "grp_1791097982809_df73cecd",
+      "created_by": "user_1791097982809_f54b6746",
+      "created_at": "2026-10-04T07:13:02.854Z",
+      "expires_at": "2026-10-11T07:13:02.854Z",
+      "max_uses": 5,
+      "uses": 0,
+      "revoked": true
+    },
+    {
+      "token": "pN0oXLHdZW0-KjqWSYdotg",
+      "group_id": "grp_1791097982841_36e91c91",
+      "created_by": "user_1791097982840_fa8b8fa8",
+      "created_at": "2026-10-04T07:13:02.862Z",
+      "expires_at": "2026-10-11T07:13:02.862Z",
+      "max_uses": 1,
+      "uses": 1,
+      "revoked": false
+    },
+    {
+      "token": "VKgXuhNvtK1f20LyX3UJmA",
+      "group_id": "grp_1791098216995_a754c0de",
+      "created_by": "user_1791098216994_23d05621",
+      "created_at": "2026-10-04T07:17:53.228Z",
+      "expires_at": "2026-10-11T07:17:53.228Z",
+      "max_uses": 10,
+      "uses": 0,
+      "revoked": false
+    }
+  ],
+  "sessions": [
+    {
+      "token": "nW7hOCkeTyxjYzSLJ8Q7S5KUfm657gEB0mqEI52F08M",
+      "user_id": "user_1791097951378_9ef57f43",
+      "expires_at": "2026-11-03T07:12:31.378Z"
+    },
+    {
+      "token": "wkn0nl4C9lQ6Y5Wk3zB3Tmmk8Jv2xC8b91TbOZ7LDE0",
+      "user_id": "user_1791097951399_975e2157",
+      "expires_at": "2026-11-03T07:12:31.399Z"
+    },
+    {
+      "token": "07l539rhyVnt_O_yyzVqYdwfFZISfxTwybHEEWULcVk",
+      "user_id": "user_1791097951406_46b5520a",
+      "expires_at": "2026-11-03T07:12:31.406Z"
+    },
+    {
+      "token": "LS6YzIvrtqs6_MteYiFwo1lSei_1kDLu49JpFEmfBv0",
+      "user_id": "user_1791097951421_e44f153c",
+      "expires_at": "2026-11-03T07:12:31.421Z"
+    },
+    {
+      "token": "8tLYqWwq1-fe58Iwvr4rwKm7fQ7EHre8AzpdJUDXYwo",
+      "user_id": "user_1791097951449_e27bc02b",
+      "expires_at": "2026-11-03T07:12:31.449Z"
+    },
+    {
+      "token": "6jC9IURziqfECCDb2WQh5g1o1YngcGAGDiQX-UbKZJw",
+      "user_id": "user_1791097982809_f54b6746",
+      "expires_at": "2026-11-03T07:13:02.809Z"
+    },
+    {
+      "token": "kwoyNYAlMKlErmAnQ9CuHzEEtVDLSLIv9BNnkyFj7Bs",
+      "user_id": "user_1791097982823_1ea48d0f",
+      "expires_at": "2026-11-03T07:13:02.824Z"
+    },
+    {
+      "token": "m1DFLmXha71d-JGgjxGP-s2KhzcDkmi_KB8Y6hc5scE",
+      "user_id": "user_1791097982829_f313de09",
+      "expires_at": "2026-11-03T07:13:02.829Z"
+    },
+    {
+      "token": "QG5Hpo1hzENoSH1MvjEQa95kBay7-z_4OSN-XVMZdZo",
+      "user_id": "user_1791097982840_fa8b8fa8",
+      "expires_at": "2026-11-03T07:13:02.840Z"
+    },
+    {
+      "token": "lrUMjal7bMvsF8RliAouOAe7OIN49T1k-r1ThloX5-A",
+      "user_id": "user_1791097982865_f4e08870",
+      "expires_at": "2026-11-03T07:13:02.865Z"
+    },
+    {
+      "token": "HBs5IZiJBLKYHqlLs0DBkQ21UwxWGg5UZMTDKyMXO-s",
+      "user_id": "user_1791098216994_23d05621",
+      "expires_at": "2026-11-03T07:16:56.994Z"
     }
   ],
   "dailyLogs": [
@@ -71,7 +552,26 @@
       "water_target_ml": 2500
     }
   ],
-  "workouts": [],
+  "workouts": [
+    {
+      "id": "w_david_1791097951336",
+      "user_id": "user_1791097951421_e44f153c",
+      "date": "2026-10-04",
+      "exercise_name": "David Secret Exercise",
+      "sets": 3,
+      "reps": 10,
+      "duration": 30
+    },
+    {
+      "id": "w_david_1791097982781",
+      "user_id": "user_1791097982840_fa8b8fa8",
+      "date": "2026-10-04",
+      "exercise_name": "David Secret Exercise",
+      "sets": 3,
+      "reps": 10,
+      "duration": 30
+    }
+  ],
   "weightLogs": [
     {
       "id": "wl_user_1790779706015_wepw_1790786250639",
@@ -115,28 +615,28 @@
   "supplements": [
     {
       "id": "supp_user_1790779706015_wepw_1790785949535",
-      "user_id": "user_1790779706015_wepw",
+      "user_id": "user_1791098216994_23d05621",
       "name": "omega 3",
       "dosage": "1",
       "timing": "Evening / Night"
     },
     {
       "id": "supp_user_1790779706015_wepw_creatine",
-      "user_id": "user_1790779706015_wepw",
+      "user_id": "user_1791098216994_23d05621",
       "name": "Creatine Monohydrate",
       "dosage": "5g",
       "timing": "Morning"
     },
     {
       "id": "supp_user_1790779706015_wepw_whey",
-      "user_id": "user_1790779706015_wepw",
+      "user_id": "user_1791098216994_23d05621",
       "name": "Whey Protein",
       "dosage": "1 scoop",
       "timing": "Post-Workout"
     },
     {
       "id": "supp_user_1790779706015_wepw_multivitamin",
-      "user_id": "user_1790779706015_wepw",
+      "user_id": "user_1791098216994_23d05621",
       "name": "Multivitamin",
       "dosage": "1 tablet",
       "timing": "Morning"
@@ -145,14 +645,17 @@
   "supplementLogs": [],
   "customHabits": [],
   "customHabitLogs": [],
-  "deletedWorkoutIds": [],
+  "deletedWorkoutIds": [
+    "w_bob_1791097951336",
+    "w_bob_1791097982781"
+  ],
   "adminSettings": {
     "step_target": 10000,
     "sleep_min_hours": 7,
     "sleep_max_hours": 9,
     "water_target_ml": 2500,
-    "invite_code": "PULSE2026",
     "cheat_days_enabled": true,
-    "day_cutoff_hour": 0
+    "day_cutoff_hour": 0,
+    "invite_code": "PULSE2026"
   }
 }

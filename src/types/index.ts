@@ -5,7 +5,7 @@ export interface User {
   id: string;
   name: string;
   username: string; // unique, lowercase, no spaces
-  password_hash: string;
+  password_hash?: string;
   role: UserRole;
   height: number; // in cm
   weight_current: number; // in kg
@@ -186,9 +186,53 @@ export interface AdminSettings {
   sleep_min_hours: number;
   sleep_max_hours: number;
   water_target_ml: number;
-  invite_code: string;
+  invite_code?: string;
   cheat_days_enabled: boolean;
   day_cutoff_hour: number; // e.g. 0 for midnight, 3 for 3 AM
+}
+
+export interface GroupMemberInfo {
+  user_id: string;
+  role: 'owner' | 'member';
+  joined_at: string;
+  name: string;
+  username: string;
+  avatar_color?: string;
+}
+
+export interface Group {
+  id: string;
+  name: string;
+  owner_id: string;
+  created_at: string;
+  members?: GroupMemberInfo[];
+}
+
+export interface Membership {
+  user_id: string;
+  group_id: string;
+  role: 'owner' | 'member';
+  joined_at: string;
+}
+
+export interface Invite {
+  token: string;
+  group_id: string;
+  created_by: string;
+  created_at: string;
+  expires_at: string;
+  max_uses: number;
+  uses: number;
+  revoked: boolean;
+}
+
+export interface InvitePreview {
+  success: boolean;
+  valid: boolean;
+  reason?: string;
+  groupName?: string;
+  inviterName?: string;
+  memberCount?: number;
 }
 
 
