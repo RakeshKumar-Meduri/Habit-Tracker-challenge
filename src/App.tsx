@@ -67,10 +67,13 @@ import { WeeklyRecapModal } from './components/WeeklyRecapModal';
 import { Trophy, Swords, Award } from 'lucide-react';
 
 export function App() {
+  // Ref that always holds the latest users to avoid stale closure issues in sync callbacks
+  const usersRef = useRef<User[]>([]);
   // Synchronous lazy state initialization from storage to prevent empty-state wipes
   const [initialData] = useState(() => initializeStorageIfEmpty());
 
   const [users, setUsers] = useState<User[]>(() => initialData.users);
+  usersRef.current = users; // Keep ref in sync with latest state
   const [currentUserId, setCurrentUserId] = useState<string>(() => initialData.currentUserId);
   const [selectedDate, setSelectedDate] = useState<string>(getTodayDateString());
   
@@ -241,9 +244,9 @@ export function App() {
       setWeightLogs(prev => {
         const map = new Map(prev.map(w => [w.id, w]));
         serverData.weightLogs.forEach((w: any) => {
-          if (!map.has(w.id)) {
-            map.set(w.id, w);
-          }
+          // Always upsert: server data should overwrite local stale entries
+          const existing = map.get(w.id);
+          map.set(w.id, existing ? { ...existing, ...w } : w);
         });
         return Array.from(map.values());
       });
@@ -312,9 +315,10 @@ export function App() {
     }
 
     // Auto-discover unknown members who have logs/workouts but are not yet in local users list
+    // Use usersRef.current to avoid stale closure — `users` from the outer scope is stale in periodic sync & WS callbacks
     const knownUserIds = new Set([
       ...(Array.isArray(serverData.users) ? serverData.users.map((u: any) => u.id) : []),
-      ...users.map(u => u.id)
+      ...usersRef.current.map(u => u.id)
     ]);
     const unknownUserIds = new Set<string>();
 
@@ -346,6 +350,10 @@ export function App() {
     }
   };
 
+  // Keep a ref to the latest applyServerData so useEffect callbacks with [] deps always call the fresh version
+  const applyServerDataRef = useRef(applyServerData);
+  applyServerDataRef.current = applyServerData;
+
   // Real-Time WebSockets Engine Listener & Background HTTP Sync
   useEffect(() => {
     let isCancelled = false;
@@ -354,7 +362,7 @@ export function App() {
     const initialSync = async () => {
       const data = await fetchServerSync();
       if (!isCancelled && data) {
-        applyServerData(data);
+        applyServerDataRef.current(data);
       }
     };
     initialSync();
@@ -582,7 +590,7 @@ export function App() {
 
         case 'FULL_SYNC': {
           if (msg.payload) {
-            applyServerData(msg.payload);
+            applyServerDataRef.current(msg.payload);
           }
           break;
         }
@@ -593,7 +601,7 @@ export function App() {
     const interval = setInterval(async () => {
       const data = await fetchServerSync();
       if (!isCancelled && data) {
-        applyServerData(data);
+        applyServerDataRef.current(data);
       }
     }, 20000);
 
@@ -611,7 +619,7 @@ export function App() {
       if (typeof document !== 'undefined' && document.visibilityState === 'visible') {
         const data = await fetchServerSync();
         if (data) {
-          applyServerData(data);
+          applyServerDataRef.current(data);
         }
         const freshUsers = await fetchServerUsers();
         if (freshUsers && freshUsers.length > 0) {
@@ -644,7 +652,7 @@ export function App() {
     try {
       const data = await fetchServerSync();
       if (data) {
-        applyServerData(data);
+        applyServerDataRef.current(data);
       }
       const freshUsers = await fetchServerUsers();
       if (freshUsers && freshUsers.length > 0) {

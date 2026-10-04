@@ -1,8 +1,13 @@
 import type { DailyLog, Workout, WeightLog, Badge, User } from '../types';
+import { isLogForUser, isWorkoutForUser, isWeightForUser, isUserMatch } from './userMatcher';
 
-export function calculateUserPoints(dailyLogs: DailyLog[], userId: string): number {
+export function calculateUserPoints(dailyLogs: DailyLog[], userIdOrUser: string | User, allUsers?: User[]): number {
+  const targetUser: User | null = typeof userIdOrUser === 'object' && userIdOrUser !== null
+    ? userIdOrUser
+    : (allUsers?.find(u => isUserMatch(userIdOrUser, u, allUsers)) || { id: String(userIdOrUser), username: String(userIdOrUser), name: String(userIdOrUser) } as User);
+
   return dailyLogs
-    .filter(log => log.user_id === userId)
+    .filter(log => isLogForUser(log, targetUser, allUsers))
     .reduce((total, log) => {
       // Determine if the day is Sunday (Healing day)
       let isSunday = false;
@@ -32,9 +37,18 @@ export function calculateUserPoints(dailyLogs: DailyLog[], userId: string): numb
     }, 0);
 }
 
-export function calculateGoalStreak(dailyLogs: DailyLog[], userId: string, goalType: 'gym' | 'steps' | 'sleep' | 'junk_food' | 'water'): number {
+export function calculateGoalStreak(
+  dailyLogs: DailyLog[], 
+  userIdOrUser: string | User, 
+  goalType: 'gym' | 'steps' | 'sleep' | 'junk_food' | 'water',
+  allUsers?: User[]
+): number {
+  const targetUser: User | null = typeof userIdOrUser === 'object' && userIdOrUser !== null
+    ? userIdOrUser
+    : (allUsers?.find(u => isUserMatch(userIdOrUser, u, allUsers)) || { id: String(userIdOrUser), username: String(userIdOrUser), name: String(userIdOrUser) } as User);
+
   const userLogs = dailyLogs
-    .filter(log => log.user_id === userId)
+    .filter(log => isLogForUser(log, targetUser, allUsers))
     .sort((a, b) => b.date.localeCompare(a.date)); // Most recent first
 
   if (userLogs.length === 0) return 0;
@@ -63,14 +77,15 @@ export function evaluateBadges(
   dailyLogs: DailyLog[],
   workouts: Workout[],
   weightLogs: WeightLog[],
-  existingBadges: Badge[]
+  existingBadges: Badge[],
+  allUsers?: User[]
 ): Badge[] {
-  const userBadges = [...existingBadges.filter(b => b.user_id === user.id)];
+  const userBadges = [...existingBadges.filter(b => isUserMatch(b.user_id, user, allUsers))];
   const existingTypes = new Set(userBadges.map(b => b.badge_type));
 
-  const gymStreak = calculateGoalStreak(dailyLogs, user.id, 'gym');
-  const stepStreak = calculateGoalStreak(dailyLogs, user.id, 'steps');
-  const junkStreak = calculateGoalStreak(dailyLogs, user.id, 'junk_food');
+  const gymStreak = calculateGoalStreak(dailyLogs, user, 'gym', allUsers);
+  const stepStreak = calculateGoalStreak(dailyLogs, user, 'steps', allUsers);
+  const junkStreak = calculateGoalStreak(dailyLogs, user, 'junk_food', allUsers);
 
   const today = new Date().toISOString().split('T')[0];
 
@@ -115,7 +130,7 @@ export function evaluateBadges(
 
   // 4. Weight Loss Badge
   const userWeights = weightLogs
-    .filter(w => w.user_id === user.id)
+    .filter(w => isWeightForUser(w, user, allUsers))
     .sort((a, b) => a.date.localeCompare(b.date));
     
   if (userWeights.length >= 2) {
@@ -149,7 +164,7 @@ export function evaluateBadges(
   }
 
   // 5. Total Workouts Badge
-  const userWorkoutCount = workouts.filter(w => w.user_id === user.id).length;
+  const userWorkoutCount = workouts.filter(w => isWorkoutForUser(w, user, allUsers)).length;
   if (userWorkoutCount >= 10 && !existingTypes.has('workouts_10')) {
     userBadges.push({
       id: `b_${user.id}_wo_10`,

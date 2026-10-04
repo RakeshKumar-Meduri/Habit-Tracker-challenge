@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import type { User, DailyLog, Workout, WeightLog } from '../types';
 import { calculateUserPoints, calculateGoalStreak } from '../utils/gamification';
+import { isLogForUser, isWorkoutForUser, isWeightForUser } from '../utils/userMatcher';
 import { Swords, Trophy, Flame, Dumbbell, TrendingDown, Zap, Sparkles, RefreshCw } from 'lucide-react';
 
 interface HeadToHeadProps {
@@ -63,13 +64,13 @@ export const HeadToHead: React.FC<HeadToHeadProps> = ({
       stepsStreak: 0,
       cleanSweeps: 0,
     };
-    const uLogs = dailyLogs.filter(l => l.user_id === user.id);
-    const uWorkouts = workouts.filter(w => w.user_id === user.id);
-    const uWeights = weightLogs.filter(w => w.user_id === user.id).sort((a, b) => a.date.localeCompare(b.date));
+    const uLogs = dailyLogs.filter(l => isLogForUser(l, user, users));
+    const uWorkouts = workouts.filter(w => isWorkoutForUser(w, user, users));
+    const uWeights = weightLogs.filter(w => isWeightForUser(w, user, users)).sort((a, b) => a.date.localeCompare(b.date));
 
-    const totalPoints = calculateUserPoints(dailyLogs, user.id);
-    const gymStreak = calculateGoalStreak(dailyLogs, user.id, 'gym');
-    const stepsStreak = calculateGoalStreak(dailyLogs, user.id, 'steps');
+    const totalPoints = calculateUserPoints(dailyLogs, user, users);
+    const gymStreak = calculateGoalStreak(dailyLogs, user, 'gym', users);
+    const stepsStreak = calculateGoalStreak(dailyLogs, user, 'steps', users);
     
     let weightLoss = 0;
     if (uWeights.length >= 2) {
