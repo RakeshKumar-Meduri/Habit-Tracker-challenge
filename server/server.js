@@ -260,16 +260,22 @@ async function runMigrationIfNeeded() {
       return;
     }
 
-    console.log('[PULSE Migration] No groups found. Running group migration...');
-    const rakesh = (d.users || []).find(u => 
+    const activeUsers = (d.users || []).filter(u => u && u.is_active !== false);
+    if (activeUsers.length === 0) {
+      console.log('[PULSE Migration] No active users in database. Migration skipped.');
+      return;
+    }
+
+    console.log('[PULSE Migration] Running group migration for existing users...');
+    const rakesh = activeUsers.find(u => 
       u && (
         u.username === 'rakesh_meduri' || 
         u.id === 'rakesh_meduri' || 
         u.id === 'user_1790779706015_wepw'
       )
-    ) || (d.users && d.users[0]);
+    ) || activeUsers[0];
 
-    const ownerId = rakesh ? rakesh.id : 'rakesh_meduri';
+    const ownerId = rakesh.id;
     const groupId = 'group_pulse_original';
     const now = new Date().toISOString();
 

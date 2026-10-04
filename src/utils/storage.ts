@@ -71,8 +71,30 @@ export function initializeStorageIfEmpty(): {
   challenge: WeeklyChallenge;
   adminSettings: AdminSettings;
 } {
+  // Purge any legacy hardcoded/test accounts from localStorage
+  const isBannedAccount = (u: any) => {
+    if (!u) return true;
+    const uid = String(u.id || '').toLowerCase();
+    const uname = String(u.username || '').toLowerCase();
+    const name = String(u.name || '').toLowerCase();
+    return (
+      uid === 'user_1790779706015_wepw' ||
+      uname === 'rakesh_meduri' ||
+      name === 'rakesh kumar' ||
+      uname.startsWith('testuser') ||
+      uname.startsWith('tester') ||
+      uname.startsWith('alice_') ||
+      uname.startsWith('bob_') ||
+      uname.startsWith('charlie_') ||
+      uname.startsWith('david_') ||
+      uname.startsWith('maxuser') ||
+      uname.startsWith('expuser') ||
+      uname.startsWith('revuser')
+    );
+  };
+
   let users: User[] = getStoredItemSafely<User[]>(STORAGE_KEYS.USERS, [])
-    .filter(u => u && u.is_active !== false)
+    .filter(u => u && u.is_active !== false && !isBannedAccount(u))
     .map(u => ({
       ...u,
       username: u.username || u.name.toLowerCase().replace(/\s+/g, '_'),
@@ -80,29 +102,6 @@ export function initializeStorageIfEmpty(): {
       is_active: u.is_active !== undefined ? u.is_active : true,
       must_change_password: u.must_change_password || false,
     }));
-
-  if (users.length === 0) {
-    users = [
-      {
-        id: "user_1790779706015_wepw",
-        name: "Rakesh Kumar",
-        username: "rakesh_meduri",
-        password_hash: "65a455568ff0aa5c723e94192cd3b7505d9eb7f6042798251d05dfa5fb6d6ceb",
-        role: "member",
-        height: 180,
-        weight_current: 105,
-        age: 21,
-        gender: "male",
-        is_private: false,
-        avatar_color: "from-rose-500 to-pink-700",
-        created_at: "2026-09-28",
-        is_active: true,
-        must_change_password: false,
-        birthday: "2005-01-01",
-        body_shape_photo: ""
-      }
-    ];
-  }
 
   // Resolve current logged in user STRICTLY from valid unexpired auth session
   let currentUserId = '';
@@ -113,8 +112,8 @@ export function initializeStorageIfEmpty(): {
       if (session && session.user_id) {
         const isExpired = session.expires_at && new Date(session.expires_at).getTime() < Date.now();
         if (!isExpired) {
-          const exists = users.some(u => u.id === session.user_id && u.is_active !== false);
-          if (exists) {
+          const foundUser = users.find(u => u.id === session.user_id && u.is_active !== false);
+          if (foundUser && !isBannedAccount(foundUser)) {
             currentUserId = session.user_id;
           }
         }
@@ -130,83 +129,8 @@ export function initializeStorageIfEmpty(): {
     } catch {}
   }
 
-  let dailyLogs: DailyLog[] = getStoredItemSafely<DailyLog[]>(STORAGE_KEYS.DAILY_LOGS, []);
-  if (dailyLogs.length === 0) {
-    dailyLogs = [
-      {
-        id: "dl_user_1790779706015_wepw_2026-09-28",
-        user_id: "user_1790779706015_wepw",
-        date: "2026-09-28",
-        gym_done: false,
-        steps_done: true,
-        sleep_done: true,
-        junk_food_avoided: true,
-        water_done: true,
-        water_intake_ml: 2500,
-        sleep_start: "23:00",
-        sleep_end: "07:00",
-        sleep_duration: 8,
-        points_earned: 40,
-        steps_value: 10500,
-        steps_target: 10000,
-        water_target_ml: 2500
-      },
-      {
-        id: "dl_user_1790779706015_wepw_2026-09-29",
-        user_id: "user_1790779706015_wepw",
-        date: "2026-09-29",
-        gym_done: false,
-        steps_done: true,
-        sleep_done: true,
-        junk_food_avoided: true,
-        water_done: true,
-        water_intake_ml: 2500,
-        sleep_start: "23:00",
-        sleep_end: "07:00",
-        sleep_duration: 8,
-        points_earned: 40,
-        steps_value: 11000,
-        steps_target: 10000,
-        water_target_ml: 2500
-      },
-      {
-        id: "dl_user_1790779706015_wepw_2026-09-30",
-        user_id: "user_1790779706015_wepw",
-        date: "2026-09-30",
-        gym_done: false,
-        steps_done: false,
-        sleep_done: false,
-        junk_food_avoided: false,
-        water_done: true,
-        water_intake_ml: 2500,
-        sleep_start: "23:00",
-        sleep_end: "07:00",
-        sleep_duration: 8,
-        points_earned: 10,
-        steps_value: 4000,
-        steps_target: 10000,
-        water_target_ml: 2500
-      },
-      {
-        id: "dl_user_1790779706015_wepw_2026-10-01",
-        user_id: "user_1790779706015_wepw",
-        date: "2026-10-01",
-        gym_done: false,
-        steps_done: true,
-        sleep_done: false,
-        junk_food_avoided: true,
-        water_done: true,
-        water_intake_ml: 2500,
-        sleep_start: "23:00",
-        sleep_end: "07:00",
-        sleep_duration: 8,
-        points_earned: 30,
-        steps_value: 10400,
-        steps_target: 10000,
-        water_target_ml: 2500
-      }
-    ];
-  }
+  let dailyLogs: DailyLog[] = getStoredItemSafely<DailyLog[]>(STORAGE_KEYS.DAILY_LOGS, [])
+    .filter(l => l && l.user_id && l.user_id !== 'user_1790779706015_wepw' && !l.user_id.toLowerCase().includes('test'));
 
   const tombstoneSet = new Set<string>();
   try {
@@ -221,13 +145,13 @@ export function initializeStorageIfEmpty(): {
       if (!w) return false;
       const wid = String(w.id || (w as any)._id || '').trim();
       if (!wid || tombstoneSet.has(wid)) return false;
-      if (w.id === 'w_rakesh_1' || w.id === 'w_rakesh_2') return false;
+      if (w.user_id === 'user_1790779706015_wepw' || (w.user_id && w.user_id.toLowerCase().includes('test'))) return false;
+      if (w.id === 'w_rakesh_1' || w.id === 'w_rakesh_2' || w.id.includes('david') || w.id.includes('bob')) return false;
       if (w.exercise_name === 'Barbell Bench Press' || w.exercise_name === 'Treadmill Intervals & Core') return false;
       return true;
     });
 
-  // Synchronize dailyLogs gym_done with actual workouts presence:
-  // If no workouts exist for that day and user, gym_done should be false unless manually toggled or Sunday
+  // Synchronize dailyLogs gym_done with actual workouts presence
   dailyLogs = dailyLogs.map(l => {
     const hasWorkout = workouts.some(w => w.user_id === l.user_id && w.date === l.date);
     if (!hasWorkout && l.gym_done) {
@@ -243,25 +167,8 @@ export function initializeStorageIfEmpty(): {
     return l;
   });
 
-  let weightLogs: WeightLog[] = getStoredItemSafely<WeightLog[]>(STORAGE_KEYS.WEIGHT_LOGS, []);
-  if (weightLogs.length === 0) {
-    weightLogs = [
-      {
-        id: "wl_user_1790779706015_wepw_1",
-        user_id: "user_1790779706015_wepw",
-        weight: 106.5,
-        date: "2026-09-28",
-        timestamp: "2026-09-28T07:00:00.000Z"
-      },
-      {
-        id: "wl_user_1790779706015_wepw_2",
-        user_id: "user_1790779706015_wepw",
-        weight: 105.0,
-        date: "2026-09-30",
-        timestamp: "2026-09-30T16:37:30.639Z"
-      }
-    ];
-  }
+  let weightLogs: WeightLog[] = getStoredItemSafely<WeightLog[]>(STORAGE_KEYS.WEIGHT_LOGS, [])
+    .filter(w => w && w.user_id && w.user_id !== 'user_1790779706015_wepw' && !w.user_id.toLowerCase().includes('test'));
 
   const missedReasons: MissedReason[] = getStoredItemSafely<MissedReason[]>(STORAGE_KEYS.MISSED_REASONS, []);
   const reactions: Reaction[] = getStoredItemSafely<Reaction[]>(STORAGE_KEYS.REACTIONS, []);
