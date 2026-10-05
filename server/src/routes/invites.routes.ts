@@ -10,16 +10,22 @@ import { broadcast } from '../websocket/websocket.server';
 import { invalidateGroupSync } from '../db/redis';
 import { WS_EVENTS } from '../config/constants';
 import { ENV } from '../config/env';
+import { getUserPlanTier } from '../services/payment.service';
 
 const router = Router();
 
 // ----------------------------------------------------
-// Create Group Invite (Owner Only)
+// Create Group Invite (Owner with Pro Plan Only)
 // ----------------------------------------------------
 router.post('/api/groups/:id/invites', requireAuth, inviteLimiter, async (req, res, next) => {
   try {
     const { id: groupId } = req.params;
     const validated = createInviteSchema.parse(req.body);
+
+    const tier = await getUserPlanTier(req.user!.id);
+    if (tier !== 'pro') {
+      throw new AppError('Creating group invites requires an active PULSE Pro plan. Upgrade to Pro to invite members.', 403, 'PRO_PLAN_REQUIRED');
+    }
 
     const membership = await prisma.membership.findUnique({
       where: {
@@ -134,13 +140,18 @@ router.get('/api/invites/:token', async (req, res) => {
 });
 
 // ----------------------------------------------------
-// Redeem Invite for Authenticated User
+// Redeem Invite for Authenticated User (Requires Pro Plan)
 // ----------------------------------------------------
 router.post('/api/invites/:token/redeem', requireAuth, inviteLimiter, async (req, res, next) => {
   try {
     const { token } = req.params;
     const userId = req.user!.id;
     const tokenHash = hashToken(token);
+
+    const userTier = await getUserPlanTier(userId);
+    if (userTier !== 'pro') {
+      throw new AppError('Joining a group requires an active PULSE Pro plan. Please upgrade to Pro to join this group.', 403, 'PRO_PLAN_REQUIRED');
+    }
 
     const result = await prisma.$transaction(async (tx) => {
       const invite = await tx.invite.findFirst({

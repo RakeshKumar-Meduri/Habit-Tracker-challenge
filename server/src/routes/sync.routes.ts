@@ -3,6 +3,7 @@ import { prisma } from '../db/prisma';
 import { requireAuth } from '../middleware/auth';
 import { sanitizeUser } from '../utils/crypto';
 import { getCachedGroupSync, cacheGroupSync } from '../db/redis';
+import { getUserPlanTier } from '../services/payment.service';
 
 const router = Router();
 
@@ -14,8 +15,15 @@ router.get('/api/sync', requireAuth, async (req, res, next) => {
     const userId = req.user!.id;
     const groupId = req.user!.groupId;
 
-    if (!groupId) {
-      // User has no group membership, return solo data
+    const userTier = await getUserPlanTier(userId);
+    const subscription = await prisma.subscription.findFirst({
+      where: { user_id: userId, status: 'active' },
+      include: { plan: true },
+      orderBy: { created_at: 'desc' },
+    });
+
+    if (!groupId || userTier === 'base') {
+      // User has no group membership or is on Base (Solo) plan, return solo data
       const user = await prisma.user.findUnique({ where: { id: userId } });
       const dailyLogs = await prisma.dailyLog.findMany({ where: { user_id: userId } });
       const workouts = await prisma.workout.findMany({ where: { user_id: userId, deleted_at: null } });
@@ -40,6 +48,8 @@ router.get('/api/sync', requireAuth, async (req, res, next) => {
           group: null,
           myRole: null,
           invites: [],
+          planTier: userTier,
+          subscription: subscription || null,
         },
       });
     }
@@ -52,6 +62,8 @@ router.get('/api/sync', requireAuth, async (req, res, next) => {
         data: {
           ...cached,
           myRole: req.user!.groupRole,
+          planTier: userTier,
+          subscription: subscription || null,
         },
       });
     }
@@ -204,6 +216,8 @@ router.get('/api/sync', requireAuth, async (req, res, next) => {
       data: {
         ...syncData,
         myRole: req.user!.groupRole,
+        planTier: userTier,
+        subscription: subscription || null,
       },
     });
   } catch (err) {

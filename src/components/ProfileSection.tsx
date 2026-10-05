@@ -18,7 +18,8 @@ import {
   RefreshCw,
   LogOut,
   UserPlus,
-  Edit2
+  Edit2,
+  Crown
 } from 'lucide-react';
 
 const CURRENT_YEAR = new Date().getFullYear();
@@ -55,6 +56,9 @@ interface ProfileSectionProps {
   onRemoveGroupMember?: (userId: string) => Promise<void>;
   onRevokeInvite?: (token: string) => Promise<boolean>;
   onUpdateGroup?: (groupId: string, data: { name?: string; step_target?: number }) => Promise<boolean>;
+  planTier?: 'none' | 'base' | 'pro';
+  activeSubscription?: any;
+  onOpenUpgradeModal?: (highlightPro?: boolean) => void;
 }
 
 export const ProfileSection: React.FC<ProfileSectionProps> = ({
@@ -73,6 +77,9 @@ export const ProfileSection: React.FC<ProfileSectionProps> = ({
   onRemoveGroupMember,
   onRevokeInvite,
   onUpdateGroup,
+  planTier = 'none',
+  activeSubscription,
+  onOpenUpgradeModal,
 }) => {
   const [selectedUserId, setSelectedUserId] = useState<string>(currentUser.id);
   const targetUser = allUsers?.find(u => u.id === selectedUserId) || currentUser;
@@ -695,9 +702,97 @@ export const ProfileSection: React.FC<ProfileSectionProps> = ({
             </div>
           </div>
 
+          {/* Membership & Billing Card (Only shown when viewing own profile) */}
+          {!isViewingOther && (
+            <div className="bg-[#131316] border border-[#26262C] rounded-xl p-4 sm:p-6 shadow-xl space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[#26262C]">
+                <div className="flex items-center gap-3">
+                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
+                    planTier === 'pro'
+                      ? 'bg-amber-500/15 border border-amber-500/30 text-[#FBBF24]'
+                      : planTier === 'base'
+                      ? 'bg-[#D98B4A]/15 border border-[#D98B4A]/30 text-[#D98B4A]'
+                      : 'bg-zinc-800 border border-zinc-700 text-zinc-400'
+                  }`}>
+                    <Crown className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-base font-bold text-[#F4F4F5]">Membership & Billing</h3>
+                      <span className={`text-[10px] px-2.5 py-0.5 rounded-full font-black uppercase tracking-wider ${
+                        planTier === 'pro'
+                          ? 'bg-gradient-to-r from-[#D98B4A] to-[#F59E0B] text-[#0B0B0D]'
+                          : planTier === 'base'
+                          ? 'bg-[rgba(217,139,74,0.15)] text-[#D98B4A] border border-[#D98B4A]/30'
+                          : 'bg-rose-500/20 text-rose-300 border border-rose-500/30'
+                      }`}>
+                        {planTier === 'pro' ? '★ PRO MEMBER' : planTier === 'base' ? 'BASE (SOLO)' : 'INACTIVE'}
+                      </span>
+                    </div>
+                    <p className="text-xs text-[#A1A1AA] mt-0.5">
+                      {planTier === 'pro' 
+                        ? 'Unlimited group members, head-to-head battles, rankings & shared goals.'
+                        : planTier === 'base'
+                        ? '₹49/month • Solo fitness tracking. Upgrade to Pro for group formation & challenges.'
+                        : 'No active plan. Select a membership to unlock habit tracking.'}
+                    </p>
+                  </div>
+                </div>
+
+                {onOpenUpgradeModal && (
+                  <button
+                    type="button"
+                    onClick={() => onOpenUpgradeModal(planTier === 'base')}
+                    className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 cursor-pointer shadow-md active:scale-95 shrink-0 ${
+                      planTier === 'pro'
+                        ? 'bg-[#1B1B20] hover:bg-[#26262C] text-[#F4F4F5] border border-[#3F3F46]'
+                        : 'bg-gradient-to-r from-[#D98B4A] to-[#B45F1E] hover:from-[#B45F1E] hover:to-[#8E4410] text-[#0B0B0D] font-extrabold shadow-[#D98B4A]/20'
+                    }`}
+                  >
+                    <Crown className="w-4 h-4" />
+                    <span>{planTier === 'pro' ? 'Manage Plan' : planTier === 'base' ? 'Upgrade to Pro' : 'Activate Membership'}</span>
+                  </button>
+                )}
+              </div>
+
+              {activeSubscription && (
+                <div className="flex flex-wrap items-center justify-between text-xs text-[#A1A1AA] pt-1">
+                  <span>Current Plan: <strong className="text-[#F4F4F5]">{activeSubscription.plan?.name || (planTier === 'pro' ? 'PULSE Pro' : 'PULSE Base')}</strong></span>
+                  {activeSubscription.expires_at && (
+                    <span>Valid until: <strong className="text-[#F4F4F5] font-mono">{new Date(activeSubscription.expires_at).toLocaleDateString()}</strong></span>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+
           {/* Group Settings Panel (Only shown when viewing own profile) */}
           {!isViewingOther && (
             <div className="bg-[#131316] border border-[#26262C] rounded-xl p-4 sm:p-6 shadow-xl space-y-4">
+              
+              {/* Pro Plan Exclusive Notice for Base Users */}
+              {planTier === 'base' && (
+                <div className="p-4 bg-amber-500/10 border border-amber-500/25 rounded-xl space-y-2">
+                  <div className="flex items-center gap-2 text-xs font-bold text-[#FBBF24]">
+                    <Lock className="w-4 h-4 text-[#FBBF24]" />
+                    <span>Group Formation & Invites are exclusive to PULSE Pro</span>
+                  </div>
+                  <p className="text-xs text-[#A1A1AA] leading-relaxed">
+                    You are on the Base Solo plan (₹49/mo). Upgrade to PULSE Pro to form groups, invite teammates of any group size, and unlock head-to-head battles and team leaderboards. (Note: all joining teammates must also have an active Pro plan).
+                  </p>
+                  {onOpenUpgradeModal && (
+                    <button
+                      type="button"
+                      onClick={() => onOpenUpgradeModal(true)}
+                      className="mt-1 px-3.5 py-1.5 bg-[#D98B4A] hover:bg-[#B45F1E] text-[#0B0B0D] font-extrabold rounded-lg text-xs transition cursor-pointer flex items-center gap-1.5"
+                    >
+                      <Crown className="w-3.5 h-3.5" />
+                      <span>Upgrade to Pro (from ₹149/mo)</span>
+                    </button>
+                  )}
+                </div>
+              )}
+
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[#26262C]">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-xl bg-[#D98B4A]/15 border border-[#D98B4A]/30 flex items-center justify-center text-[#D98B4A] shrink-0">

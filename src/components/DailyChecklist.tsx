@@ -69,6 +69,8 @@ interface DailyChecklistProps {
   onOpenCalendar?: () => void;
   onRefreshMembers?: () => void;
   isRefreshingMembers?: boolean;
+  isBasePlan?: boolean;
+  onOpenUpgradeModal?: () => void;
 }
 
 export const DailyChecklist: React.FC<DailyChecklistProps> = ({
@@ -101,6 +103,8 @@ export const DailyChecklist: React.FC<DailyChecklistProps> = ({
   onOpenCalendar,
   onRefreshMembers,
   isRefreshingMembers = false,
+  isBasePlan = false,
+  onOpenUpgradeModal,
 }) => {
   const [selectedMemberId, setSelectedMemberId] = useState<string>(currentUser.id);
   const isViewingOther = selectedMemberId !== currentUser.id;
@@ -405,7 +409,8 @@ export const DailyChecklist: React.FC<DailyChecklistProps> = ({
   return (
     <div className="space-y-6 max-w-4xl mx-auto font-sans">
       
-      {/* Member Accountability Selector - ALWAYS VISIBLE (Never hidden on mobile or single-user states) */}
+      {/* Member Accountability Selector - Hidden for Base (Solo) Plan */}
+      {!isBasePlan && (
       <div className="bg-[#131316] border border-[#26262C] rounded-xl p-4 shadow-sm space-y-3">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center gap-3">
@@ -505,6 +510,26 @@ export const DailyChecklist: React.FC<DailyChecklistProps> = ({
           </div>
         )}
       </div>
+      )}
+
+      {/* Solo Plan Banner for Base Users */}
+      {isBasePlan && (
+        <div className="bg-[#131316] border border-[#26262C] rounded-xl p-3.5 px-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs text-[#A1A1AA] shadow-sm">
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] px-2 py-0.5 rounded-full bg-[rgba(217,139,74,0.15)] text-[#D98B4A] font-extrabold uppercase tracking-wider">Base Solo Plan</span>
+            <span>Personal tracking active. Upgrade to Pro for group formation and team challenges.</span>
+          </div>
+          {onOpenUpgradeModal && (
+            <button
+              type="button"
+              onClick={onOpenUpgradeModal}
+              className="text-[#D98B4A] hover:text-[#E69A5C] hover:underline font-bold shrink-0 cursor-pointer text-left sm:text-right"
+            >
+              Upgrade to Pro →
+            </button>
+          )}
+        </div>
+      )}
 
       {/* Read-Only Notice when viewing another member */}
       {isViewingOther && (
@@ -531,7 +556,8 @@ export const DailyChecklist: React.FC<DailyChecklistProps> = ({
         </div>
       )}
 
-      {/* Collective Team Daily Goal Progress Bar - ALWAYS VISIBLE */}
+      {/* Collective Team Daily Goal Progress Bar - Only visible on Pro plan */}
+      {!isBasePlan && (
       <div className="bg-[#131316] border border-[#26262C] rounded-xl p-4 sm:p-5 shadow-sm space-y-3">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <div className="flex items-center gap-2.5">
@@ -604,6 +630,7 @@ export const DailyChecklist: React.FC<DailyChecklistProps> = ({
           })}
         </div>
       </div>
+      )}
 
       {/* Date Navigation & Calendar Picker Bar */}
       <div className="bg-[#131316] border border-[#26262C] rounded-xl p-4 sm:p-5 shadow-sm flex flex-col md:flex-row items-center justify-between gap-4">
@@ -1013,10 +1040,10 @@ export const DailyChecklist: React.FC<DailyChecklistProps> = ({
                 )}
               </div>
 
-              {/* Progress Bar towards Group Step Target */}
+              {/* Progress Bar towards Step Target */}
               <div className="mt-3.5 space-y-1">
                 <div className="flex items-center justify-between text-[11px] text-[#A1A1AA]">
-                  <span>Progress to Group Goal</span>
+                  <span>{isBasePlan ? 'Daily Step Target Progress' : 'Progress to Group Goal'}</span>
                   <span className="font-mono font-bold text-[#F4F4F5]">{stepPercent}%</span>
                 </div>
                 <div className="w-full bg-[#1B1B20] rounded-full h-2 overflow-hidden border border-[#26262C]">

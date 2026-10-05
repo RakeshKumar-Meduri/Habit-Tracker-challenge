@@ -17,7 +17,8 @@ import {
   MoreVertical,
   X,
   RefreshCw,
-  UserPlus
+  UserPlus,
+  Crown
 } from 'lucide-react';
 
 interface NavbarProps {
@@ -36,6 +37,8 @@ interface NavbarProps {
   realtimeStatus?: { isConnected: boolean; clientCount: number };
   onRefreshMembers?: () => void;
   isRefreshingMembers?: boolean;
+  planTier?: 'none' | 'base' | 'pro';
+  onOpenUpgradeModal?: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -54,6 +57,8 @@ export const Navbar: React.FC<NavbarProps> = ({
   realtimeStatus,
   onRefreshMembers,
   isRefreshingMembers = false,
+  planTier = 'none',
+  onOpenUpgradeModal,
 }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const mobileMenuRef = useRef<HTMLDivElement>(null);
@@ -197,6 +202,26 @@ export const Navbar: React.FC<NavbarProps> = ({
                   <UserPlus className="w-4 h-4 text-[#D98B4A]" />
                   <span className="hidden md:inline">Invite Friends</span>
                 </button>
+              )}
+
+              {/* Membership Plan Pill / Upgrade */}
+              {currentUser && (
+                planTier === 'pro' ? (
+                  <span className="px-2.5 py-1 rounded-full bg-gradient-to-r from-[#D98B4A]/20 to-[#F59E0B]/20 border border-[#D98B4A]/40 text-[#FBBF24] text-[11px] font-black uppercase tracking-wider flex items-center gap-1">
+                    <Crown className="w-3.5 h-3.5 text-[#FBBF24]" />
+                    <span className="hidden sm:inline">PRO</span>
+                  </span>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={onOpenUpgradeModal}
+                    title="Upgrade to PULSE Pro"
+                    className="px-2.5 py-1 rounded-full bg-gradient-to-r from-[#D98B4A] to-[#B45F1E] text-[#0B0B0D] text-[11px] font-black uppercase tracking-wider flex items-center gap-1 shadow-sm hover:brightness-110 transition cursor-pointer active:scale-95"
+                  >
+                    <Crown className="w-3.5 h-3.5" />
+                    <span>Upgrade Pro</span>
+                  </button>
+                )
               )}
 
               {/* Theme Toggle */}

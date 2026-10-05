@@ -1,20 +1,56 @@
 import React, { useState } from 'react';
 import type { User, DailyLog } from '../types';
 import { calculateUserPoints } from '../utils/gamification';
-import { Trophy, Flame, Zap } from 'lucide-react';
+import { Trophy, Flame, Zap, Crown, Lock } from 'lucide-react';
 
 interface LeaderboardProps {
   users: User[];
   dailyLogs: DailyLog[];
   currentUser: User;
+  isBasePlan?: boolean;
+  onOpenUpgradeModal?: () => void;
 }
 
 export const Leaderboard: React.FC<LeaderboardProps> = ({
   users,
   dailyLogs,
   currentUser,
+  isBasePlan = false,
+  onOpenUpgradeModal,
 }) => {
   const [timeframe, setTimeframe] = useState<'all' | 'weekly'>('all');
+
+  if (isBasePlan) {
+    return (
+      <div className="bg-[#131316] border border-[#26262C] rounded-2xl p-6 sm:p-10 shadow-xl text-center max-w-xl mx-auto my-6 sm:my-8 font-sans space-y-4">
+        <div className="w-14 h-14 mx-auto rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-[#FBBF24]">
+          <Trophy className="w-7 h-7" />
+        </div>
+        <div className="space-y-2">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-[#D98B4A]/10 border border-[#D98B4A]/25 rounded-full text-[#D98B4A] text-xs font-bold uppercase tracking-wider">
+            <Lock className="w-3.5 h-3.5" />
+            <span>PULSE Pro Exclusive</span>
+          </div>
+          <h3 className="text-xl sm:text-2xl font-black text-[#F4F4F5]">Team Leaderboards & Rankings</h3>
+          <p className="text-xs sm:text-sm text-[#A1A1AA] leading-relaxed max-w-md mx-auto">
+            Compete on daily points, streaks, and clean sweeps across your team members. Group rankings are exclusively available on the PULSE Pro Plan.
+          </p>
+        </div>
+        {onOpenUpgradeModal && (
+          <div className="pt-2">
+            <button
+              type="button"
+              onClick={onOpenUpgradeModal}
+              className="px-6 py-3 bg-gradient-to-r from-[#D98B4A] to-[#B45F1E] hover:from-[#B45F1E] hover:to-[#8E4410] text-[#0B0B0D] font-extrabold text-xs sm:text-sm rounded-xl shadow-lg shadow-[#D98B4A]/25 transition cursor-pointer flex items-center gap-2 mx-auto active:scale-95"
+            >
+              <Crown className="w-4 h-4" />
+              <span>Upgrade to Pro (from ₹149/mo)</span>
+            </button>
+          </div>
+        )}
+      </div>
+    );
+  }
 
   // Compute rankings
   const rankings = users.map(user => {

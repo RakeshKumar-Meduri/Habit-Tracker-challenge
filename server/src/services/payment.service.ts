@@ -26,32 +26,77 @@ export const razorpay = razorpayClient;
  * Ensure default plans exist in database
  */
 export async function ensureDefaultPlans() {
-  const existingPlans = await prisma.plan.count();
-  if (existingPlans === 0) {
-    await prisma.plan.createMany({
-      data: [
-        {
-          id: 'plan_pro_monthly',
-          name: 'PULSE Pro Monthly',
-          description: 'Unlimited groups, detailed body shape analytics, and priority badges.',
-          price: 49900, // ₹499.00
-          currency: 'INR',
-          duration: 'monthly',
-          is_active: true,
-        },
-        {
-          id: 'plan_pro_yearly',
-          name: 'PULSE Pro Yearly',
-          description: 'Annual full access with 2 months free and team challenges.',
-          price: 399900, // ₹3,999.00
-          currency: 'INR',
-          duration: 'yearly',
-          is_active: true,
-        },
-      ],
+  const plans = [
+    {
+      id: 'plan_base_monthly',
+      name: 'PULSE Base Monthly',
+      description: 'Solo fitness tracking. Daily checklist, workout logs, personal weights & analytics (no groups).',
+      price: 4900, // ₹49.00
+      currency: 'INR',
+      duration: 'monthly',
+      is_active: true,
+    },
+    {
+      id: 'plan_pro_monthly',
+      name: 'PULSE Pro Monthly',
+      description: 'Full group formation, add unlimited members, head-to-head challenges, team progress & rankings.',
+      price: 14900, // ₹149.00
+      currency: 'INR',
+      duration: 'monthly',
+      is_active: true,
+    },
+    {
+      id: 'plan_pro_yearly',
+      name: 'PULSE Pro Yearly',
+      description: '1 Year of full Pro access: unlimited groups, head-to-head battles, and team leaderboards.',
+      price: 149900, // ₹1,499.00
+      currency: 'INR',
+      duration: 'yearly',
+      is_active: true,
+    },
+  ];
+
+  for (const plan of plans) {
+    await prisma.plan.upsert({
+      where: { id: plan.id },
+      update: {
+        name: plan.name,
+        description: plan.description,
+        price: plan.price,
+        currency: plan.currency,
+        duration: plan.duration,
+        is_active: plan.is_active,
+      },
+      create: plan,
     });
-    console.log('[Payments] Default subscription plans seeded');
   }
+}
+
+/**
+ * Determine a user's current subscription tier:
+ * - 'none': No active subscription (requires paywall checkout)
+ * - 'base': Active on Base Plan (₹49/mo - solo only, no groups)
+ * - 'pro': Active on Pro Plan (₹149/mo or ₹1,499/yr - full groups & head-to-head)
+ */
+export async function getUserPlanTier(userId: string): Promise<'none' | 'base' | 'pro'> {
+  const subscription = await prisma.subscription.findFirst({
+    where: {
+      user_id: userId,
+      status: 'active',
+    },
+    include: { plan: true },
+    orderBy: { created_at: 'desc' },
+  });
+
+  if (!subscription) return 'none';
+  if (subscription.expires_at && new Date(subscription.expires_at) <= new Date()) {
+    return 'none';
+  }
+
+  if (subscription.plan_id.includes('pro')) {
+    return 'pro';
+  }
+  return 'base';
 }
 
 /**

@@ -73,6 +73,7 @@ import { GamificationSection } from './components/GamificationSection';
 import { WeeklyRecapModal } from './components/WeeklyRecapModal';
 import { InviteModal } from './components/InviteModal';
 import { JoinGroupModal } from './components/JoinGroupModal';
+import { SubscriptionModal } from './components/SubscriptionModal';
 import { Trophy, Swords, Award } from 'lucide-react';
 
 export function App() {
@@ -135,6 +136,10 @@ export function App() {
   });
 
   const [activeTab, setActiveTab] = useState<string>('checklist');
+  const [planTier, setPlanTier] = useState<'none' | 'base' | 'pro'>('base');
+  const [activeSubscription, setActiveSubscription] = useState<any>(null);
+  const [isSubscriptionModalOpen, setIsSubscriptionModalOpen] = useState<boolean>(false);
+  const [highlightProInModal, setHighlightProInModal] = useState<boolean>(false);
   const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
     try {
       const saved = localStorage.getItem('pulse_fitness_theme');
@@ -350,6 +355,13 @@ export function App() {
         });
         return Array.from(map.values());
       });
+    }
+
+    if (serverData.planTier) {
+      setPlanTier(serverData.planTier);
+    }
+    if (serverData.subscription !== undefined) {
+      setActiveSubscription(serverData.subscription);
     }
 
     // Auto-discover unknown members who have logs/workouts but are not yet in local users list
@@ -1235,6 +1247,11 @@ export function App() {
         realtimeStatus={realtimeStatus}
         onRefreshMembers={handleRefreshMembers}
         isRefreshingMembers={isRefreshingMembers}
+        planTier={planTier}
+        onOpenUpgradeModal={() => {
+          setHighlightProInModal(planTier === 'base');
+          setIsSubscriptionModalOpen(true);
+        }}
       />
 
       {/* Main Container */}
@@ -1272,6 +1289,11 @@ export function App() {
             onOpenCalendar={() => setActiveTab('calendar')}
             onRefreshMembers={handleRefreshMembers}
             isRefreshingMembers={isRefreshingMembers}
+            isBasePlan={planTier === 'base'}
+            onOpenUpgradeModal={() => {
+              setHighlightProInModal(true);
+              setIsSubscriptionModalOpen(true);
+            }}
           />
         )}
 
@@ -1373,23 +1395,32 @@ export function App() {
               users={activeUsers}
               dailyLogs={dailyLogs}
               currentUser={currentUser}
+              isBasePlan={planTier === 'base'}
+              onOpenUpgradeModal={() => {
+                setHighlightProInModal(true);
+                setIsSubscriptionModalOpen(true);
+              }}
             />
 
-            <ActivityFeed
-              users={activeUsers}
-              dailyLogs={dailyLogs}
-              workouts={workouts}
-              weightLogs={weightLogs}
-              reactions={reactions}
-              onAddReaction={handleAddReaction}
-              currentUser={currentUser}
-            />
+            {planTier !== 'base' && (
+              <>
+                <ActivityFeed
+                  users={activeUsers}
+                  dailyLogs={dailyLogs}
+                  workouts={workouts}
+                  weightLogs={weightLogs}
+                  reactions={reactions}
+                  onAddReaction={handleAddReaction}
+                  currentUser={currentUser}
+                />
 
-            <ExcuseAnalytics
-              missedReasons={missedReasons}
-              users={activeUsers}
-              currentUser={currentUser}
-            />
+                <ExcuseAnalytics
+                  missedReasons={missedReasons}
+                  users={activeUsers}
+                  currentUser={currentUser}
+                />
+              </>
+            )}
           </div>
         )}
 
@@ -1402,6 +1433,11 @@ export function App() {
             weightLogs={weightLogs}
             onRefreshMembers={handleRefreshMembers}
             isRefreshingMembers={isRefreshingMembers}
+            isBasePlan={planTier === 'base'}
+            onOpenUpgradeModal={() => {
+              setHighlightProInModal(true);
+              setIsSubscriptionModalOpen(true);
+            }}
           />
         )}
 
@@ -1428,11 +1464,24 @@ export function App() {
             onDeleteAccount={handleDeleteAccount}
             onRefreshMembers={handleRefreshMembers}
             isRefreshingMembers={isRefreshingMembers}
-            onOpenInviteModal={() => setIsInviteModalOpen(true)}
+            onOpenInviteModal={() => {
+              if (planTier === 'base') {
+                setHighlightProInModal(true);
+                setIsSubscriptionModalOpen(true);
+              } else {
+                setIsInviteModalOpen(true);
+              }
+            }}
             onLeaveGroup={handleLeaveGroup}
             onRemoveGroupMember={handleRemoveGroupMember}
             onRevokeInvite={handleRevokeInvite}
             onUpdateGroup={handleUpdateGroup}
+            planTier={planTier}
+            activeSubscription={activeSubscription}
+            onOpenUpgradeModal={(highlightPro) => {
+              setHighlightProInModal(!!highlightPro);
+              setIsSubscriptionModalOpen(true);
+            }}
           />
         )}
       </main>
@@ -1511,6 +1560,24 @@ export function App() {
           dailyLogs={dailyLogs}
           workouts={workouts}
           weightLogs={weightLogs}
+        />
+      )}
+
+      {/* Subscription & Paywall Modal */}
+      {currentUser && (
+        <SubscriptionModal
+          isOpen={isSubscriptionModalOpen || planTier === 'none'}
+          onClose={() => setIsSubscriptionModalOpen(false)}
+          currentUser={currentUser}
+          currentTier={planTier}
+          activeSubscription={activeSubscription}
+          forcePaywall={planTier === 'none'}
+          highlightPro={highlightProInModal}
+          onSubscriptionSuccess={(sub) => {
+            setActiveSubscription(sub);
+            setPlanTier(sub.plan_id?.includes('pro') ? 'pro' : 'base');
+            handleRefreshMembers();
+          }}
         />
       )}
 

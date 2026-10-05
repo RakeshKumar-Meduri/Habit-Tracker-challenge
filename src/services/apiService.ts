@@ -31,6 +31,8 @@ export interface ServerSyncResponse {
   group?: Group;
   myRole?: 'owner' | 'member';
   invites?: Invite[];
+  planTier?: 'none' | 'base' | 'pro';
+  subscription?: any;
 }
 
 export const API_BASE = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
