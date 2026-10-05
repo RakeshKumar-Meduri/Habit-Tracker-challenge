@@ -27,6 +27,11 @@ export const ENV = {
   RAZORPAY_KEY_SECRET: process.env.RAZORPAY_KEY_SECRET || '',
   RAZORPAY_WEBHOOK_SECRET: process.env.RAZORPAY_WEBHOOK_SECRET || '',
 
+  // Supabase (PostgreSQL & Media Storage)
+  SUPABASE_URL: process.env.SUPABASE_URL || '',
+  SUPABASE_ANON_KEY: process.env.SUPABASE_ANON_KEY || '',
+  SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY || '',
+
   // Security
   SESSION_SECRET: process.env.SESSION_SECRET || 'pulse_session_secret_2026_default',
   COOKIE_NAME: 'pulse_session_token',

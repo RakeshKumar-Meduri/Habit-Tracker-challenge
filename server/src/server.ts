@@ -19,6 +19,8 @@ import workoutsRoutes from './routes/workouts.routes';
 import weightsRoutes from './routes/weights.routes';
 import habitsRoutes from './routes/habits.routes';
 import paymentsRoutes from './routes/payments.routes';
+import mediaRoutes from './routes/media.routes';
+import { ensureStorageBuckets } from './db/supabase';
 
 const app = express();
 
@@ -82,6 +84,10 @@ app.use(workoutsRoutes);
 app.use(weightsRoutes);
 app.use(habitsRoutes);
 app.use(paymentsRoutes);
+app.use(mediaRoutes);
+
+// Initialize Supabase storage buckets if configured
+ensureStorageBuckets().catch(err => console.warn('[Supabase Init Warning]', err.message));
 
 // Centralized error handler (Section 47)
 app.use(errorHandler);
