@@ -1,0 +1,427 @@
+// Prisma schema for PULSE production database
+// Source of truth: PostgreSQL (Supabase / Managed PostgreSQL)
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                   String           @id @default(cuid())
+  username             String           @unique
+  name                 String
+  password_hash        String
+  role                 String           @default("member") // "member" | "admin"
+  height               Float            @default(175)
+  weight_current       Float            @default(70)
+  age                  Int              @default(25)
+  gender               String           @default("male") // "male" | "female" | "other"
+  birthday             String?
+  avatar_color         String?
+  photo_url            String?
+  body_shape_photo     String?
+  is_private           Boolean          @default(false)
+  is_active            Boolean          @default(true)
+  must_change_password Boolean          @default(false)
+  onboarded            Boolean          @default(false)
+  created_at           DateTime         @default(now())
+  updated_at           DateTime         @updatedAt
+
+  // Relationships
+  owned_groups         Group[]          @relation("GroupOwner")
+  memberships          Membership[]
+  invites_created      Invite[]         @relation("InviteCreator")
+  sessions             Session[]
+  daily_logs           DailyLog[]
+  workouts             Workout[]
+  weight_logs          WeightLog[]
+  missed_reasons       MissedReason[]
+  reactions            Reaction[]
+  badges               Badge[]
+  supplements          Supplement[]
+  supplement_logs      SupplementLog[]
+  custom_habits        CustomHabit[]
+  custom_habit_logs    CustomHabitLog[]
+  subscriptions        Subscription[]
+  payments             Payment[]
+
+  @@index([username])
+  @@index([is_active])
+  @@map("users")
+}
+
+model Group {
+  id          String       @id @default(cuid())
+  name        String
+  owner_id    String
+  step_target Int          @default(10000)
+  created_at  DateTime     @default(now())
+  updated_at  DateTime     @updatedAt
+
+  // Relationships
+  owner       User         @relation("GroupOwner", fields: [owner_id], references: [id], onDelete: Cascade)
+  memberships Membership[]
+  invites     Invite[]
+  workouts    Workout[]
+
+  @@index([owner_id])
+  @@map("groups")
+}
+
+model Membership {
+  id        String   @id @default(cuid())
+  user_id   String
+  group_id  String
+  role      String   @default("member") // "owner" | "member"
+  joined_at DateTime @default(now())
+
+  // Relationships
+  user      User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  group     Group    @relation(fields: [group_id], references: [id], onDelete: Cascade)
+
+  @@unique([user_id, group_id])
+  @@index([user_id])
+  @@index([group_id])
+  @@map("memberships")
+}
+
+model Invite {
+  id          String   @id @default(cuid())
+  token       String   @unique
+  token_hash  String?  @unique
+  group_id    String
+  created_by  String
+  max_uses    Int      @default(10)
+  uses        Int      @default(0)
+  expires_at  DateTime
+  revoked     Boolean  @default(false)
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  // Relationships
+  group       Group    @relation(fields: [group_id], references: [id], onDelete: Cascade)
+  creator     User     @relation("InviteCreator", fields: [created_by], references: [id], onDelete: Cascade)
+
+  @@index([group_id])
+  @@index([token])
+  @@index([created_by])
+  @@map("invites")
+}
+
+model Session {
+  id                 String    @id @default(cuid())
+  user_id            String
+  session_token_hash String    @unique
+  token              String?   @unique
+  expires_at         DateTime
+  created_at         DateTime  @default(now())
+  last_used_at       DateTime  @default(now())
+  revoked_at         DateTime?
+
+  // Relationships
+  user               User      @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([user_id])
+  @@index([session_token_hash])
+  @@index([expires_at])
+  @@map("sessions")
+}
+
+model DailyLog {
+  id                 String         @id @default(cuid())
+  user_id            String
+  date               String // YYYY-MM-DD
+  gym_done           Boolean        @default(false)
+  steps_done         Boolean        @default(false)
+  steps_value        Int            @default(0)
+  steps_target       Int            @default(10000)
+  sleep_done         Boolean        @default(false)
+  junk_food_avoided  Boolean        @default(false)
+  cheat_day_used     Boolean        @default(false)
+  water_done         Boolean        @default(false)
+  water_intake_ml    Int            @default(0)
+  water_target_ml    Int            @default(2500)
+  sleep_start        String?
+  sleep_end          String?
+  sleep_duration     Float?
+  points_earned      Float          @default(0)
+  created_at         DateTime       @default(now())
+  updated_at         DateTime       @updatedAt
+
+  // Relationships
+  user               User           @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  missed_reasons     MissedReason[]
+
+  @@unique([user_id, date])
+  @@index([user_id])
+  @@index([date])
+  @@map("daily_logs")
+}
+
+model Workout {
+  id            String    @id @default(cuid())
+  user_id       String
+  group_id      String?
+  date          String // YYYY-MM-DD
+  exercise_name String
+  exercise_type String    @default("strength") // "strength" | "cardio" | "other"
+  sets          Int       @default(0)
+  reps          Int       @default(0)
+  weight        Float     @default(0)
+  weight_unit   String    @default("kg") // "kg" | "lb"
+  duration      Int       @default(0) // minutes
+  notes         String?
+  is_private    Boolean   @default(false)
+  deleted_at    DateTime? // Soft-deletion support
+  created_at    DateTime  @default(now())
+  updated_at    DateTime  @updatedAt
+
+  // Relationships
+  user          User      @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  group         Group?    @relation(fields: [group_id], references: [id], onDelete: SetNull)
+
+  @@index([user_id])
+  @@index([group_id])
+  @@index([date])
+  @@index([deleted_at])
+  @@map("workouts")
+}
+
+model WeightLog {
+  id          String   @id @default(cuid())
+  user_id     String
+  weight      Float
+  date        String // YYYY-MM-DD
+  recorded_at DateTime @default(now())
+  created_at  DateTime @default(now())
+
+  // Relationships
+  user        User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([user_id])
+  @@index([date])
+  @@map("weight_logs")
+}
+
+model MissedReason {
+  id           String    @id @default(cuid())
+  daily_log_id String?
+  user_id      String
+  date         String // YYYY-MM-DD
+  goal_type    String // "gym" | "steps" | "sleep" | "junk_food" | "water"
+  reason_tag   String // "Tired" | "Work" | "Travel" | "Lazy" | "Sick" | "Weather" | "Sore" | "Cheat Day" | "Other"
+  reason_text  String?
+  created_at   DateTime  @default(now())
+
+  // Relationships
+  user         User      @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  daily_log    DailyLog? @relation(fields: [daily_log_id], references: [id], onDelete: SetNull)
+
+  @@index([user_id])
+  @@index([daily_log_id])
+  @@index([date])
+  @@map("missed_reasons")
+}
+
+model Reaction {
+  id           String   @id @default(cuid())
+  from_user_id String
+  target_id    String // daily_log_id or workout_id
+  target_type  String // "daily_log" | "workout"
+  emoji        String
+  created_at   DateTime @default(now())
+
+  // Relationships
+  from_user    User     @relation(fields: [from_user_id], references: [id], onDelete: Cascade)
+
+  @@index([target_id])
+  @@index([from_user_id])
+  @@map("reactions")
+}
+
+model Badge {
+  id          String   @id @default(cuid())
+  user_id     String
+  badge_type  String
+  title       String
+  description String
+  icon        String
+  earned_date String // YYYY-MM-DD
+  created_at  DateTime @default(now())
+
+  // Relationships
+  user        User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([user_id])
+  @@index([badge_type])
+  @@map("badges")
+}
+
+model Supplement {
+  id         String          @id @default(cuid())
+  user_id    String
+  name       String
+  dosage     String?
+  timing     String? // e.g. "Morning", "Pre-workout"
+  created_at DateTime        @default(now())
+
+  // Relationships
+  user       User            @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  logs       SupplementLog[]
+
+  @@index([user_id])
+  @@map("supplements")
+}
+
+model SupplementLog {
+  id            String     @id @default(cuid())
+  user_id       String
+  supplement_id String
+  date          String // YYYY-MM-DD
+  taken         Boolean    @default(false)
+  created_at    DateTime   @default(now())
+
+  // Relationships
+  user          User       @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  supplement    Supplement @relation(fields: [supplement_id], references: [id], onDelete: Cascade)
+
+  @@unique([user_id, supplement_id, date])
+  @@index([user_id])
+  @@index([date])
+  @@map("supplement_logs")
+}
+
+model CustomHabit {
+  id          String           @id @default(cuid())
+  user_id     String
+  title       String
+  description String?
+  is_private  Boolean          @default(true)
+  created_at  DateTime         @default(now())
+
+  // Relationships
+  user        User             @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  logs        CustomHabitLog[]
+
+  @@index([user_id])
+  @@map("custom_habits")
+}
+
+model CustomHabitLog {
+  id         String      @id @default(cuid())
+  user_id    String
+  habit_id   String
+  date       String // YYYY-MM-DD
+  completed  Boolean     @default(false)
+  created_at DateTime    @default(now())
+
+  // Relationships
+  user       User        @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  habit      CustomHabit @relation(fields: [habit_id], references: [id], onDelete: Cascade)
+
+  @@unique([user_id, habit_id, date])
+  @@index([user_id])
+  @@index([date])
+  @@map("custom_habit_logs")
+}
+
+model DeletedWorkout {
+  id         String   @id @default(cuid())
+  workout_id String   @unique
+  user_id    String?
+  deleted_at DateTime @default(now())
+
+  @@index([workout_id])
+  @@map("deleted_workouts")
+}
+
+model Setting {
+  id         String   @id @default(cuid())
+  key        String   @unique
+  value      String // JSON or string scalar
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@index([key])
+  @@map("settings")
+}
+
+model Plan {
+  id            String         @id @default(cuid())
+  name          String
+  description   String?
+  price         Int // In smallest currency unit, e.g. 49900 = ₹499.00
+  currency      String         @default("INR")
+  duration      String         @default("monthly") // "monthly" | "yearly" | "quarterly"
+  is_active     Boolean        @default(true)
+  created_at    DateTime       @default(now())
+  updated_at    DateTime       @updatedAt
+
+  subscriptions Subscription[]
+
+  @@map("plans")
+}
+
+model Subscription {
+  id                       String    @id @default(cuid())
+  user_id                  String
+  plan_id                  String
+  status                   String    @default("active") // "active" | "cancelled" | "expired" | "pending"
+  razorpay_subscription_id String?   @unique
+  starts_at                DateTime  @default(now())
+  expires_at               DateTime?
+  cancelled_at             DateTime?
+  created_at               DateTime  @default(now())
+  updated_at               DateTime  @updatedAt
+
+  // Relationships
+  user                     User      @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  plan                     Plan      @relation(fields: [plan_id], references: [id], onDelete: Restrict)
+  payments                 Payment[]
+
+  @@index([user_id])
+  @@index([status])
+  @@map("subscriptions")
+}
+
+model Payment {
+  id                  String        @id @default(cuid())
+  user_id             String
+  subscription_id     String?
+  razorpay_order_id   String        @unique
+  razorpay_payment_id String?       @unique
+  razorpay_signature  String?
+  amount              Int // In smallest currency unit, e.g. paise
+  currency            String        @default("INR")
+  status              String        @default("created") // "created" | "captured" | "failed" | "refunded"
+  created_at          DateTime      @default(now())
+  updated_at          DateTime      @updatedAt
+
+  // Relationships
+  user                User          @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  subscription        Subscription? @relation(fields: [subscription_id], references: [id], onDelete: SetNull)
+
+  @@index([user_id])
+  @@index([razorpay_order_id])
+  @@index([razorpay_payment_id])
+  @@index([status])
+  @@map("payments")
+}
+
+model PaymentEvent {
+  id                String    @id @default(cuid())
+  provider_event_id String    @unique // CRITICAL for webhook idempotency
+  event_type        String
+  payload           String // Full JSON webhook payload
+  processed         Boolean   @default(false)
+  processed_at      DateTime?
+  created_at        DateTime  @default(now())
+
+  @@index([provider_event_id])
+  @@index([processed])
+  @@map("payment_events")
+}

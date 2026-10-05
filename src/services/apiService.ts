@@ -65,6 +65,7 @@ export async function apiFetch(endpoint: string, options: RequestInit = {}): Pro
   }
 
   return fetch(url, {
+    credentials: 'include',
     ...options,
     headers,
   });
@@ -188,6 +189,7 @@ export async function registerUserOnServer(data: {
     };
     const res = await fetch(`${API_BASE}/api/auth/register`, {
       method: 'POST',
+      credentials: 'include',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
     });
@@ -197,7 +199,7 @@ export async function registerUserOnServer(data: {
     }
     const json = await res.json().catch(() => ({}));
     if (!res.ok || json.success === false) {
-      return { success: false, error: json.error || 'Server registration failed' };
+      return { success: false, error: json.error?.message || json.error || 'Server registration failed' };
     }
     return { success: true, token: json.token, user: json.user };
   } catch (err: any) {
@@ -216,6 +218,7 @@ export async function loginUserOnServer(
   try {
     const res = await fetch(`${API_BASE}/api/auth/login`, {
       method: 'POST',
+      credentials: 'include',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ identifier, password: passwordPlain, passwordHash }),
     });
@@ -225,11 +228,23 @@ export async function loginUserOnServer(
     }
     const data = await res.json().catch(() => ({}));
     if (!res.ok || !data.success) {
-      return { success: false, error: data.error || 'Invalid credentials' };
+      return { success: false, error: data.error?.message || data.error || 'Invalid credentials' };
     }
     return { success: true, token: data.token, user: data.user };
   } catch (err: any) {
     return { success: false, error: err.message || 'Network error reaching server' };
+  }
+}
+
+/**
+ * Logout user from backend server
+ */
+export async function logoutUserOnServer(): Promise<boolean> {
+  try {
+    const res = await apiFetch('/api/auth/logout', { method: 'POST' });
+    return res.ok;
+  } catch {
+    return false;
   }
 }
 

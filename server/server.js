@@ -1349,6 +1349,29 @@ app.post('/api/logs', requireAuth, async (req, res) => {
 
   log.user_id = req.user.id;
 
+  // Server-authoritative points calculation (Section 26)
+  let isSunday = false;
+  if (log.date) {
+    const [y, m, d] = String(log.date).split('-').map(Number);
+    if (!isNaN(y) && !isNaN(m) && !isNaN(d)) {
+      isSunday = new Date(y, m - 1, d).getDay() === 0;
+    }
+  }
+  let basePoints = 0;
+  if (log.gym_done || (isSunday && log.gym_done !== false)) basePoints += 10;
+  if (log.sleep_done) basePoints += 10;
+  if (log.junk_food_avoided) basePoints += 10;
+  if (log.water_done) basePoints += 10;
+
+  const currentGroup = (db.groups || []).find(g => g.id === req.user.groupId);
+  const target = Math.max(1000, Number(log.steps_target) || (currentGroup && currentGroup.step_target) || 10000);
+  const stepsVal = Math.max(0, Number(log.steps_value) || 0);
+  const stepPoints = (log.steps_done || stepsVal >= target)
+    ? 10
+    : Math.min(10, Math.round((stepsVal / target) * 100) / 10);
+
+  log.points_earned = Math.min(50, Math.round((basePoints + stepPoints) * 10) / 10);
+
   await mutate(d => {
     const idx = d.dailyLogs.findIndex(l => l.id === log.id || (l.user_id === log.user_id && l.date === log.date));
     if (idx >= 0) {
