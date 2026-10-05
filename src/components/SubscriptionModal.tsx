@@ -35,13 +35,13 @@ export const SubscriptionModal: React.FC<SubscriptionModalProps> = ({
   onClose,
   currentUser,
   currentTier = 'none',
-  activeSubscription: _activeSubscription,
+  activeSubscription,
   onSubscriptionSuccess,
   forcePaywall = false,
   highlightPro = false,
 }) => {
   const [plans, setPlans] = useState<Plan[]>([]);
-  const [selectedPlanId, setSelectedPlanId] = useState<string>('plan_pro_yearly');
+  const [selectedPlanId, setSelectedPlanId] = useState<string>('plan_pro_monthly');
   const [isLoadingPlans, setIsLoadingPlans] = useState<boolean>(true);
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string>('');
@@ -55,9 +55,9 @@ export const SubscriptionModal: React.FC<SubscriptionModalProps> = ({
           if (fetchedPlans.length > 0) {
             setPlans(fetchedPlans);
             // Default selection based on intent
-            if (highlightPro) {
-              const proYearly = fetchedPlans.find(p => p.id === 'plan_pro_yearly');
-              if (proYearly) setSelectedPlanId(proYearly.id);
+            if (currentTier === 'base' || highlightPro) {
+              const proMonthly = fetchedPlans.find(p => p.id === 'plan_pro_monthly');
+              if (proMonthly) setSelectedPlanId(proMonthly.id);
             } else if (currentTier === 'none') {
               const basePlan = fetchedPlans.find(p => p.id === 'plan_base_monthly');
               if (basePlan) setSelectedPlanId(basePlan.id);
@@ -171,232 +171,285 @@ export const SubscriptionModal: React.FC<SubscriptionModalProps> = ({
             <Loader2 className="w-8 h-8 animate-spin text-[#D98B4A]" />
             <p className="text-xs font-semibold">Loading membership options...</p>
           </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 mb-6">
-            
-            {/* 1. BASE PLAN (Solo) */}
-            <div 
-              onClick={() => setSelectedPlanId(basePlan.id)}
-              className={`relative flex flex-col justify-between rounded-xl p-5 border transition-all cursor-pointer ${
-                selectedPlanId === basePlan.id
-                  ? 'bg-[#18181C] border-[#D98B4A] shadow-lg shadow-[#D98B4A]/10 ring-2 ring-[#D98B4A]/40'
-                  : 'bg-[#16161A] border-[#26262C] hover:border-[#3F3F46]'
-              }`}
-            >
-              <div>
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-xs font-bold text-[#A1A1AA] uppercase tracking-wider">Solo Tracker</span>
-                  <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${
-                    selectedPlanId === basePlan.id ? 'border-[#D98B4A] bg-[#D98B4A]' : 'border-[#3F3F46]'
-                  }`}>
-                    {selectedPlanId === basePlan.id && <div className="w-1.5 h-1.5 bg-[#0B0B0D] rounded-full" />}
+        ) : (() => {
+          const isBaseCurrent = currentTier === 'base';
+          const isProMonthlyCurrent = currentTier === 'pro' && activeSubscription?.plan_id === proMonthly.id;
+          const isProYearlyCurrent = currentTier === 'pro' && (activeSubscription?.plan_id === proYearly.id || (!isProMonthlyCurrent && currentTier === 'pro'));
+          const isSelectedPlanCurrent =
+            (selectedPlanId === basePlan.id && isBaseCurrent) ||
+            (selectedPlanId === proMonthly.id && isProMonthlyCurrent) ||
+            (selectedPlanId === proYearly.id && isProYearlyCurrent);
+
+          return (
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 mb-6">
+                
+                {/* 1. BASE PLAN (Solo) */}
+                <div 
+                  onClick={() => setSelectedPlanId(basePlan.id)}
+                  className={`relative flex flex-col justify-between rounded-xl p-5 border transition-all cursor-pointer ${
+                    selectedPlanId === basePlan.id
+                      ? 'bg-[#18181C] border-[#D98B4A] shadow-lg shadow-[#D98B4A]/10 ring-2 ring-[#D98B4A]/40'
+                      : 'bg-[#16161A] border-[#26262C] hover:border-[#3F3F46]'
+                  }`}
+                >
+                  {isBaseCurrent && (
+                    <div className="absolute -top-3 right-4 px-2.5 py-0.5 bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 text-[10px] font-black rounded-full uppercase tracking-wider shadow-md">
+                      ✓ Current Plan
+                    </div>
+                  )}
+
+                  <div>
+                    <div className="flex items-center justify-between mb-3">
+                      <span className="text-xs font-bold text-[#A1A1AA] uppercase tracking-wider">Solo Tracker</span>
+                      <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${
+                        selectedPlanId === basePlan.id ? 'border-[#D98B4A] bg-[#D98B4A]' : 'border-[#3F3F46]'
+                      }`}>
+                        {selectedPlanId === basePlan.id && <div className="w-1.5 h-1.5 bg-[#0B0B0D] rounded-full" />}
+                      </div>
+                    </div>
+
+                    <h3 className="text-lg font-bold text-[#F4F4F5] mb-1">Base Monthly</h3>
+                    <p className="text-xs text-[#71717A] mb-4">Dedicated personal fitness & habit tracking for solo users.</p>
+
+                    <div className="flex items-baseline gap-1 mb-5">
+                      <span className="text-3xl font-extrabold text-[#F4F4F5]">₹{basePlan.price / 100}</span>
+                      <span className="text-xs text-[#71717A]">/ month</span>
+                    </div>
+
+                    <div className="space-y-2.5 text-xs border-t border-[#26262C] pt-4 mb-4">
+                      <div className="flex items-center gap-2 text-[#E4E4E7]">
+                        <Check className="w-4 h-4 text-emerald-400 shrink-0" />
+                        <span>Daily Checklist & Habit Logs</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-[#E4E4E7]">
+                        <Check className="w-4 h-4 text-emerald-400 shrink-0" />
+                        <span>Workout Logging & Sets</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-[#E4E4E7]">
+                        <Check className="w-4 h-4 text-emerald-400 shrink-0" />
+                        <span>Body Weight & BMI Analytics</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-[#E4E4E7]">
+                        <Check className="w-4 h-4 text-emerald-400 shrink-0" />
+                        <span>Custom Habits & Supplements</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-[#71717A] line-through">
+                        <X className="w-4 h-4 text-[#52525B] shrink-0" />
+                        <span>No Group Creation or Joining</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-[#71717A] line-through">
+                        <X className="w-4 h-4 text-[#52525B] shrink-0" />
+                        <span>No Head-to-Head Battles</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-[#71717A] line-through">
+                        <X className="w-4 h-4 text-[#52525B] shrink-0" />
+                        <span>No Team Rankings & Leaderboards</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {isBaseCurrent ? (
+                    <div className="text-[11px] font-bold text-center text-emerald-400 bg-emerald-500/10 border border-emerald-500/25 py-1.5 rounded-lg flex items-center justify-center gap-1.5">
+                      <Check className="w-3.5 h-3.5" />
+                      <span>Your Current Plan</span>
+                    </div>
+                  ) : (
+                    <div className="text-[11px] font-semibold text-center text-[#71717A] bg-[#1B1B20] py-1.5 rounded-lg">
+                      Solo User Only
+                    </div>
+                  )}
+                </div>
+
+                {/* 2. PRO MONTHLY */}
+                <div 
+                  onClick={() => setSelectedPlanId(proMonthly.id)}
+                  className={`relative flex flex-col justify-between rounded-xl p-5 border transition-all cursor-pointer ${
+                    selectedPlanId === proMonthly.id
+                      ? 'bg-[#18181C] border-[#D98B4A] shadow-lg shadow-[#D98B4A]/10 ring-2 ring-[#D98B4A]/40'
+                      : 'bg-[#16161A] border-[#26262C] hover:border-[#3F3F46]'
+                  }`}
+                >
+                  {isProMonthlyCurrent && (
+                    <div className="absolute -top-3 right-4 px-2.5 py-0.5 bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 text-[10px] font-black rounded-full uppercase tracking-wider shadow-md">
+                      ✓ Current Plan
+                    </div>
+                  )}
+
+                  <div>
+                    <div className="flex items-center justify-between mb-3">
+                      <span className="text-xs font-bold text-[#D98B4A] uppercase tracking-wider flex items-center gap-1">
+                        <Users className="w-3.5 h-3.5" /> Group & Team
+                      </span>
+                      <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${
+                        selectedPlanId === proMonthly.id ? 'border-[#D98B4A] bg-[#D98B4A]' : 'border-[#3F3F46]'
+                      }`}>
+                        {selectedPlanId === proMonthly.id && <div className="w-1.5 h-1.5 bg-[#0B0B0D] rounded-full" />}
+                      </div>
+                    </div>
+
+                    <h3 className="text-lg font-bold text-[#F4F4F5] mb-1">Pro Monthly</h3>
+                    <p className="text-xs text-[#71717A] mb-4">Form groups with friends, add unlimited members, and compete.</p>
+
+                    <div className="flex items-baseline gap-1 mb-5">
+                      <span className="text-3xl font-extrabold text-[#F4F4F5]">₹{proMonthly.price / 100}</span>
+                      <span className="text-xs text-[#71717A]">/ month</span>
+                    </div>
+
+                    <div className="space-y-2.5 text-xs border-t border-[#26262C] pt-4 mb-4">
+                      <div className="flex items-center gap-2 text-amber-300 font-semibold">
+                        <Sparkles className="w-4 h-4 text-[#D98B4A] shrink-0" />
+                        <span>Everything in Base Plan</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-[#E4E4E7]">
+                        <Check className="w-4 h-4 text-emerald-400 shrink-0" />
+                        <span>Add Members (Any Group Size)</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-[#E4E4E7]">
+                        <Check className="w-4 h-4 text-emerald-400 shrink-0" />
+                        <span>Head-to-Head 1v1 Battles</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-[#E4E4E7]">
+                        <Check className="w-4 h-4 text-emerald-400 shrink-0" />
+                        <span>Team Rankings & Leaderboard</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-[#E4E4E7]">
+                        <Check className="w-4 h-4 text-emerald-400 shrink-0" />
+                        <span>Team Progress Bar & Goals</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-[#E4E4E7]">
+                        <Check className="w-4 h-4 text-emerald-400 shrink-0" />
+                        <span>Group Clean Sweep Challenge</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="text-[11px] font-semibold text-center text-[#D98B4A] bg-[#D98B4A]/10 border border-[#D98B4A]/20 py-1.5 rounded-lg">
+                    Group Member Requirement: Pro Plan
                   </div>
                 </div>
 
-                <h3 className="text-lg font-bold text-[#F4F4F5] mb-1">Base Monthly</h3>
-                <p className="text-xs text-[#71717A] mb-4">Dedicated personal fitness & habit tracking for solo users.</p>
+                {/* 3. PRO YEARLY (Best Value) */}
+                <div 
+                  onClick={() => setSelectedPlanId(proYearly.id)}
+                  className={`relative flex flex-col justify-between rounded-xl p-5 border transition-all cursor-pointer ${
+                    selectedPlanId === proYearly.id
+                      ? 'bg-gradient-to-b from-[#1C1A17] to-[#18181C] border-[#FBBF24] shadow-xl shadow-[#D98B4A]/15 ring-2 ring-[#FBBF24]/50'
+                      : 'bg-[#16161A] border-[#26262C] hover:border-[#3F3F46]'
+                  }`}
+                >
+                  {isProYearlyCurrent ? (
+                    <div className="absolute -top-3 right-4 px-2.5 py-0.5 bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 text-[10px] font-black rounded-full uppercase tracking-wider shadow-md">
+                      ✓ Current Plan
+                    </div>
+                  ) : (
+                    <div className="absolute -top-3 right-4 px-2.5 py-0.5 bg-gradient-to-r from-[#D98B4A] to-[#F59E0B] text-[#0B0B0D] text-[10px] font-black rounded-full uppercase tracking-wider shadow-md">
+                      Best Value • 16% OFF
+                    </div>
+                  )}
 
-                <div className="flex items-baseline gap-1 mb-5">
-                  <span className="text-3xl font-extrabold text-[#F4F4F5]">₹{basePlan.price / 100}</span>
-                  <span className="text-xs text-[#71717A]">/ month</span>
+                  <div>
+                    <div className="flex items-center justify-between mb-3">
+                      <span className="text-xs font-bold text-[#FBBF24] uppercase tracking-wider flex items-center gap-1">
+                        <Crown className="w-3.5 h-3.5" /> Annual Full Access
+                      </span>
+                      <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${
+                        selectedPlanId === proYearly.id ? 'border-[#FBBF24] bg-[#FBBF24]' : 'border-[#3F3F46]'
+                      }`}>
+                        {selectedPlanId === proYearly.id && <div className="w-1.5 h-1.5 bg-[#0B0B0D] rounded-full" />}
+                      </div>
+                    </div>
+
+                    <h3 className="text-lg font-bold text-[#F4F4F5] mb-1">Pro Yearly</h3>
+                    <p className="text-xs text-[#71717A] mb-4">Complete 1-year access to all features with maximum savings.</p>
+
+                    <div className="flex items-baseline gap-1 mb-5">
+                      <span className="text-3xl font-extrabold text-[#FBBF24]">₹{proYearly.price / 100}</span>
+                      <span className="text-xs text-[#71717A]">/ year (~₹125/mo)</span>
+                    </div>
+
+                    <div className="space-y-2.5 text-xs border-t border-[#26262C] pt-4 mb-4">
+                      <div className="flex items-center gap-2 text-amber-300 font-semibold">
+                        <Sparkles className="w-4 h-4 text-[#FBBF24] shrink-0" />
+                        <span>All Pro Features Included</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-[#E4E4E7]">
+                        <Check className="w-4 h-4 text-emerald-400 shrink-0" />
+                        <span>1 Full Year (365 Days) Uninterrupted</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-[#E4E4E7]">
+                        <Check className="w-4 h-4 text-emerald-400 shrink-0" />
+                        <span>Unlimited Groups of Any Size</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-[#E4E4E7]">
+                        <Check className="w-4 h-4 text-emerald-400 shrink-0" />
+                        <span>Head-to-Head & Leaderboards</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-[#E4E4E7]">
+                        <Check className="w-4 h-4 text-emerald-400 shrink-0" />
+                        <span>Priority Pro Crown Badge on Profile</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="text-[11px] font-semibold text-center text-[#FBBF24] bg-[#FBBF24]/10 border border-[#FBBF24]/20 py-1.5 rounded-lg">
+                    Save ₹289 vs Monthly Billing
+                  </div>
                 </div>
 
-                <div className="space-y-2.5 text-xs border-t border-[#26262C] pt-4 mb-4">
-                  <div className="flex items-center gap-2 text-[#E4E4E7]">
-                    <Check className="w-4 h-4 text-emerald-400 shrink-0" />
-                    <span>Daily Checklist & Habit Logs</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-[#E4E4E7]">
-                    <Check className="w-4 h-4 text-emerald-400 shrink-0" />
-                    <span>Workout Logging & Sets</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-[#E4E4E7]">
-                    <Check className="w-4 h-4 text-emerald-400 shrink-0" />
-                    <span>Body Weight & BMI Analytics</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-[#E4E4E7]">
-                    <Check className="w-4 h-4 text-emerald-400 shrink-0" />
-                    <span>Custom Habits & Supplements</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-[#71717A] line-through">
-                    <X className="w-4 h-4 text-[#52525B] shrink-0" />
-                    <span>No Group Creation or Joining</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-[#71717A] line-through">
-                    <X className="w-4 h-4 text-[#52525B] shrink-0" />
-                    <span>No Head-to-Head Battles</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-[#71717A] line-through">
-                    <X className="w-4 h-4 text-[#52525B] shrink-0" />
-                    <span>No Team Rankings & Leaderboards</span>
-                  </div>
-                </div>
               </div>
 
-              <div className="text-[11px] font-semibold text-center text-[#71717A] bg-[#1B1B20] py-1.5 rounded-lg">
-                Solo User Only
-              </div>
-            </div>
-
-            {/* 2. PRO MONTHLY */}
-            <div 
-              onClick={() => setSelectedPlanId(proMonthly.id)}
-              className={`relative flex flex-col justify-between rounded-xl p-5 border transition-all cursor-pointer ${
-                selectedPlanId === proMonthly.id
-                  ? 'bg-[#18181C] border-[#D98B4A] shadow-lg shadow-[#D98B4A]/10 ring-2 ring-[#D98B4A]/40'
-                  : 'bg-[#16161A] border-[#26262C] hover:border-[#3F3F46]'
-              }`}
-            >
-              <div>
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-xs font-bold text-[#D98B4A] uppercase tracking-wider flex items-center gap-1">
-                    <Users className="w-3.5 h-3.5" /> Group & Team
-                  </span>
-                  <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${
-                    selectedPlanId === proMonthly.id ? 'border-[#D98B4A] bg-[#D98B4A]' : 'border-[#3F3F46]'
-                  }`}>
-                    {selectedPlanId === proMonthly.id && <div className="w-1.5 h-1.5 bg-[#0B0B0D] rounded-full" />}
-                  </div>
+              {/* Security & Payment Footer */}
+              <div className="border-t border-[#26262C] pt-5 flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div className="flex items-center gap-2 text-xs text-[#71717A]">
+                  <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
+                  <span>Secured with Razorpay 256-bit encryption (UPI, Cards, NetBanking)</span>
                 </div>
 
-                <h3 className="text-lg font-bold text-[#F4F4F5] mb-1">Pro Monthly</h3>
-                <p className="text-xs text-[#71717A] mb-4">Form groups with friends, add unlimited members, and compete.</p>
-
-                <div className="flex items-baseline gap-1 mb-5">
-                  <span className="text-3xl font-extrabold text-[#F4F4F5]">₹{proMonthly.price / 100}</span>
-                  <span className="text-xs text-[#71717A]">/ month</span>
-                </div>
-
-                <div className="space-y-2.5 text-xs border-t border-[#26262C] pt-4 mb-4">
-                  <div className="flex items-center gap-2 text-amber-300 font-semibold">
-                    <Sparkles className="w-4 h-4 text-[#D98B4A] shrink-0" />
-                    <span>Everything in Base Plan</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-[#E4E4E7]">
-                    <Check className="w-4 h-4 text-emerald-400 shrink-0" />
-                    <span>Add Members (Any Group Size)</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-[#E4E4E7]">
-                    <Check className="w-4 h-4 text-emerald-400 shrink-0" />
-                    <span>Head-to-Head 1v1 Battles</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-[#E4E4E7]">
-                    <Check className="w-4 h-4 text-emerald-400 shrink-0" />
-                    <span>Team Rankings & Leaderboard</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-[#E4E4E7]">
-                    <Check className="w-4 h-4 text-emerald-400 shrink-0" />
-                    <span>Team Progress Bar & Goals</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-[#E4E4E7]">
-                    <Check className="w-4 h-4 text-emerald-400 shrink-0" />
-                    <span>Group Clean Sweep Challenge</span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="text-[11px] font-semibold text-center text-[#D98B4A] bg-[#D98B4A]/10 border border-[#D98B4A]/20 py-1.5 rounded-lg">
-                Group Member Requirement: Pro Plan
-              </div>
-            </div>
-
-            {/* 3. PRO YEARLY (Best Value) */}
-            <div 
-              onClick={() => setSelectedPlanId(proYearly.id)}
-              className={`relative flex flex-col justify-between rounded-xl p-5 border transition-all cursor-pointer ${
-                selectedPlanId === proYearly.id
-                  ? 'bg-gradient-to-b from-[#1C1A17] to-[#18181C] border-[#FBBF24] shadow-xl shadow-[#D98B4A]/15 ring-2 ring-[#FBBF24]/50'
-                  : 'bg-[#16161A] border-[#26262C] hover:border-[#3F3F46]'
-              }`}
-            >
-              {/* Badge */}
-              <div className="absolute -top-3 right-4 px-2.5 py-0.5 bg-gradient-to-r from-[#D98B4A] to-[#F59E0B] text-[#0B0B0D] text-[10px] font-black rounded-full uppercase tracking-wider shadow-md">
-                Best Value • 16% OFF
-              </div>
-
-              <div>
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-xs font-bold text-[#FBBF24] uppercase tracking-wider flex items-center gap-1">
-                    <Crown className="w-3.5 h-3.5" /> Annual Full Access
-                  </span>
-                  <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${
-                    selectedPlanId === proYearly.id ? 'border-[#FBBF24] bg-[#FBBF24]' : 'border-[#3F3F46]'
-                  }`}>
-                    {selectedPlanId === proYearly.id && <div className="w-1.5 h-1.5 bg-[#0B0B0D] rounded-full" />}
-                  </div>
-                </div>
-
-                <h3 className="text-lg font-bold text-[#F4F4F5] mb-1">Pro Yearly</h3>
-                <p className="text-xs text-[#71717A] mb-4">Complete 1-year access to all features with maximum savings.</p>
-
-                <div className="flex items-baseline gap-1 mb-5">
-                  <span className="text-3xl font-extrabold text-[#FBBF24]">₹{proYearly.price / 100}</span>
-                  <span className="text-xs text-[#71717A]">/ year (~₹125/mo)</span>
-                </div>
-
-                <div className="space-y-2.5 text-xs border-t border-[#26262C] pt-4 mb-4">
-                  <div className="flex items-center gap-2 text-amber-300 font-semibold">
-                    <Sparkles className="w-4 h-4 text-[#FBBF24] shrink-0" />
-                    <span>All Pro Features Included</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-[#E4E4E7]">
-                    <Check className="w-4 h-4 text-emerald-400 shrink-0" />
-                    <span>1 Full Year (365 Days) Uninterrupted</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-[#E4E4E7]">
-                    <Check className="w-4 h-4 text-emerald-400 shrink-0" />
-                    <span>Unlimited Groups of Any Size</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-[#E4E4E7]">
-                    <Check className="w-4 h-4 text-emerald-400 shrink-0" />
-                    <span>Head-to-Head & Leaderboards</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-[#E4E4E7]">
-                    <Check className="w-4 h-4 text-emerald-400 shrink-0" />
-                    <span>Priority Pro Crown Badge on Profile</span>
-                  </div>
+                <div className="w-full sm:w-auto flex flex-col items-center sm:items-end gap-1">
+                  {isSelectedPlanCurrent ? (
+                    <button
+                      disabled={true}
+                      className="w-full sm:w-auto px-7 py-3 bg-[#1B1B20] text-emerald-400 border border-emerald-500/30 font-extrabold text-sm rounded-xl cursor-not-allowed flex items-center justify-center gap-2"
+                    >
+                      <Check className="w-4 h-4 text-emerald-400" />
+                      <span>Currently Active Plan</span>
+                    </button>
+                  ) : (
+                    <button
+                      onClick={handleCheckout}
+                      disabled={isProcessing || isLoadingPlans}
+                      className="w-full sm:w-auto px-7 py-3 bg-gradient-to-r from-[#D98B4A] to-[#B45F1E] hover:from-[#B45F1E] hover:to-[#8E4410] disabled:opacity-50 text-[#0B0B0D] font-extrabold text-sm rounded-xl transition shadow-lg shadow-[#D98B4A]/25 flex items-center justify-center gap-2 cursor-pointer active:scale-95"
+                    >
+                      {isProcessing ? (
+                        <>
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                          <span>Launching Razorpay...</span>
+                        </>
+                      ) : (
+                        <>
+                          <span>
+                            {selectedPlanId === 'plan_base_monthly'
+                              ? 'Start Solo Tracking (₹49/mo)'
+                              : selectedPlanId === 'plan_pro_monthly'
+                              ? (isBaseCurrent ? 'Upgrade to Pro Monthly (₹149/mo)' : 'Unlock Pro Groups (₹149/mo)')
+                              : (isBaseCurrent ? 'Upgrade to Pro Yearly (₹1,499/yr)' : 'Activate Pro Yearly (₹1,499/yr)')}
+                          </span>
+                          <ArrowRight className="w-4 h-4" />
+                        </>
+                      )}
+                    </button>
+                  )}
+                  {isSelectedPlanCurrent && isBaseCurrent && (
+                    <p className="text-[11px] text-amber-400/90 text-center sm:text-right">
+                      Select Pro Monthly or Pro Yearly to upgrade to team & group features.
+                    </p>
+                  )}
                 </div>
               </div>
-
-              <div className="text-[11px] font-semibold text-center text-[#FBBF24] bg-[#FBBF24]/10 border border-[#FBBF24]/20 py-1.5 rounded-lg">
-                Save ₹289 vs Monthly Billing
-              </div>
-            </div>
-
-          </div>
-        )}
-
-        {/* Security & Payment Footer */}
-        <div className="border-t border-[#26262C] pt-5 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2 text-xs text-[#71717A]">
-            <ShieldCheck className="w-4 h-4 text-emerald-400" />
-            <span>Secured with Razorpay 256-bit encryption (UPI, Cards, NetBanking)</span>
-          </div>
-
-          <button
-            onClick={handleCheckout}
-            disabled={isProcessing || isLoadingPlans}
-            className="w-full sm:w-auto px-7 py-3 bg-gradient-to-r from-[#D98B4A] to-[#B45F1E] hover:from-[#B45F1E] hover:to-[#8E4410] disabled:opacity-50 text-[#0B0B0D] font-extrabold text-sm rounded-xl transition shadow-lg shadow-[#D98B4A]/25 flex items-center justify-center gap-2 cursor-pointer active:scale-95"
-          >
-            {isProcessing ? (
-              <>
-                <Loader2 className="w-4 h-4 animate-spin" />
-                <span>Launching Razorpay...</span>
-              </>
-            ) : (
-              <>
-                <span>
-                  {selectedPlanId === 'plan_base_monthly'
-                    ? 'Start Solo Tracking (₹49/mo)'
-                    : selectedPlanId === 'plan_pro_monthly'
-                    ? 'Unlock Pro Groups (₹149/mo)'
-                    : 'Activate Pro Yearly (₹1,499/yr)'}
-                </span>
-                <ArrowRight className="w-4 h-4" />
-              </>
-            )}
-          </button>
-        </div>
+            </>
+          );
+        })()}
 
       </div>
     </div>

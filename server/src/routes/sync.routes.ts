@@ -22,6 +22,33 @@ router.get('/api/sync', requireAuth, async (req, res, next) => {
       orderBy: { created_at: 'desc' },
     });
 
+    let activeSub = subscription;
+    if (userTier === 'pro' && !activeSub) {
+      activeSub = {
+        id: `sub_vip_${userId}`,
+        user_id: userId,
+        plan_id: 'plan_pro_yearly',
+        status: 'active',
+        razorpay_subscription_id: null,
+        starts_at: new Date().toISOString(),
+        expires_at: new Date(Date.now() + 10 * 365 * 24 * 60 * 60 * 1000).toISOString(),
+        cancelled_at: null,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        plan: {
+          id: 'plan_pro_yearly',
+          name: 'PULSE Pro (VIP Lifetime)',
+          description: 'Full complimentary Pro access for challenge members',
+          price: 0,
+          currency: 'INR',
+          duration: 'yearly',
+          is_active: true,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        },
+      } as any;
+    }
+
     if (!groupId || userTier === 'base') {
       // User has no group membership or is on Base (Solo) plan, return solo data
       const user = await prisma.user.findUnique({ where: { id: userId } });
@@ -49,7 +76,7 @@ router.get('/api/sync', requireAuth, async (req, res, next) => {
           myRole: null,
           invites: [],
           planTier: userTier,
-          subscription: subscription || null,
+          subscription: activeSub || null,
         },
       });
     }
@@ -217,7 +244,7 @@ router.get('/api/sync', requireAuth, async (req, res, next) => {
         ...syncData,
         myRole: req.user!.groupRole,
         planTier: userTier,
-        subscription: subscription || null,
+        subscription: activeSub || null,
       },
     });
   } catch (err) {

@@ -675,8 +675,8 @@ export const ProfileSection: React.FC<ProfileSectionProps> = ({
         </div>
 
         {/* Timestamped Weight History Log & Delete Account Card */}
-        <div className="space-y-4 sm:space-y-6 flex flex-col">
-          <div className="bg-[#131316] border border-[#26262C] rounded-xl p-4 sm:p-6 shadow-xl flex flex-col">
+        <div className="space-y-4 sm:space-y-6 flex flex-col min-w-0">
+          <div className="bg-[#131316] border border-[#26262C] rounded-xl p-4 sm:p-6 shadow-xl flex flex-col min-w-0">
             <h3 className="text-sm sm:text-base font-bold text-[#F4F4F5] mb-3 flex items-center gap-2">
               <Scale className="w-4 h-4 text-[#D98B4A]" />
               {isViewingOther ? `${targetUser.name}'s Weight Log` : 'Weight History Log'}
@@ -704,9 +704,9 @@ export const ProfileSection: React.FC<ProfileSectionProps> = ({
 
           {/* Membership & Billing Card (Only shown when viewing own profile) */}
           {!isViewingOther && (
-            <div className="bg-[#131316] border border-[#26262C] rounded-xl p-4 sm:p-6 shadow-xl space-y-4">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[#26262C]">
-                <div className="flex items-center gap-3">
+            <div className="bg-[#131316] border border-[#26262C] rounded-xl p-4 sm:p-5 shadow-xl space-y-4 min-w-0 overflow-hidden">
+              <div className="flex flex-col gap-3 pb-3 border-b border-[#26262C]">
+                <div className="flex items-start gap-3 min-w-0">
                   <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
                     planTier === 'pro'
                       ? 'bg-amber-500/15 border border-amber-500/30 text-[#FBBF24]'
@@ -716,8 +716,8 @@ export const ProfileSection: React.FC<ProfileSectionProps> = ({
                   }`}>
                     <Crown className="w-5 h-5" />
                   </div>
-                  <div>
-                    <div className="flex items-center gap-2">
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-center gap-2">
                       <h3 className="text-base font-bold text-[#F4F4F5]">Membership & Billing</h3>
                       <span className={`text-[10px] px-2.5 py-0.5 rounded-full font-black uppercase tracking-wider ${
                         planTier === 'pro'
@@ -729,7 +729,7 @@ export const ProfileSection: React.FC<ProfileSectionProps> = ({
                         {planTier === 'pro' ? '★ PRO MEMBER' : planTier === 'base' ? 'BASE (SOLO)' : 'INACTIVE'}
                       </span>
                     </div>
-                    <p className="text-xs text-[#A1A1AA] mt-0.5">
+                    <p className="text-xs text-[#A1A1AA] mt-1 break-words">
                       {planTier === 'pro' 
                         ? 'Unlimited group members, head-to-head battles, rankings & shared goals.'
                         : planTier === 'base'
@@ -740,18 +740,20 @@ export const ProfileSection: React.FC<ProfileSectionProps> = ({
                 </div>
 
                 {onOpenUpgradeModal && (
-                  <button
-                    type="button"
-                    onClick={() => onOpenUpgradeModal(planTier === 'base')}
-                    className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 cursor-pointer shadow-md active:scale-95 shrink-0 ${
-                      planTier === 'pro'
-                        ? 'bg-[#1B1B20] hover:bg-[#26262C] text-[#F4F4F5] border border-[#3F3F46]'
-                        : 'bg-gradient-to-r from-[#D98B4A] to-[#B45F1E] hover:from-[#B45F1E] hover:to-[#8E4410] text-[#0B0B0D] font-extrabold shadow-[#D98B4A]/20'
-                    }`}
-                  >
-                    <Crown className="w-4 h-4" />
-                    <span>{planTier === 'pro' ? 'Manage Plan' : planTier === 'base' ? 'Upgrade to Pro' : 'Activate Membership'}</span>
-                  </button>
+                  <div className="pt-1">
+                    <button
+                      type="button"
+                      onClick={() => onOpenUpgradeModal(planTier === 'base')}
+                      className={`w-full py-2.5 px-4 rounded-xl text-xs font-bold transition flex items-center justify-center gap-2 cursor-pointer shadow-md active:scale-95 ${
+                        planTier === 'pro'
+                          ? 'bg-[#1B1B20] hover:bg-[#26262C] text-[#F4F4F5] border border-[#3F3F46]'
+                          : 'bg-gradient-to-r from-[#D98B4A] to-[#B45F1E] hover:from-[#B45F1E] hover:to-[#8E4410] text-[#0B0B0D] font-extrabold shadow-[#D98B4A]/20'
+                      }`}
+                    >
+                      <Crown className="w-4 h-4" />
+                      <span>{planTier === 'pro' ? 'Manage Plan' : planTier === 'base' ? 'Upgrade to Pro' : 'Activate Membership'}</span>
+                    </button>
+                  </div>
                 )}
               </div>
 
@@ -768,7 +770,7 @@ export const ProfileSection: React.FC<ProfileSectionProps> = ({
 
           {/* Group Settings Panel (Only shown when viewing own profile) */}
           {!isViewingOther && (
-            <div className="bg-[#131316] border border-[#26262C] rounded-xl p-4 sm:p-6 shadow-xl space-y-4">
+            <div className="bg-[#131316] border border-[#26262C] rounded-xl p-4 sm:p-5 shadow-xl space-y-4 min-w-0 overflow-hidden">
               
               {/* Pro Plan Exclusive Notice for Base Users */}
               {planTier === 'base' && (
@@ -793,14 +795,16 @@ export const ProfileSection: React.FC<ProfileSectionProps> = ({
                 </div>
               )}
 
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[#26262C]">
-                <div className="flex items-center gap-3">
+              <div className="flex flex-col gap-3 pb-3 border-b border-[#26262C]">
+                <div className="flex items-start gap-3 min-w-0">
                   <div className="w-10 h-10 rounded-xl bg-[#D98B4A]/15 border border-[#D98B4A]/30 flex items-center justify-center text-[#D98B4A] shrink-0">
                     <Users className="w-5 h-5" />
                   </div>
-                  <div>
-                    <h3 className="text-base font-bold text-[#F4F4F5] flex items-center gap-2">
-                      {currentGroup?.name || 'My Group'}
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <h3 className="text-base font-bold text-[#F4F4F5] truncate">
+                        {currentGroup?.name || 'My Group'}
+                      </h3>
                       <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase ${
                         myRole === 'owner' 
                           ? 'bg-[#D98B4A]/20 text-[#D98B4A] border border-[#D98B4A]/30'
@@ -808,19 +812,19 @@ export const ProfileSection: React.FC<ProfileSectionProps> = ({
                       }`}>
                         {myRole === 'owner' ? 'Group Owner' : 'Member'}
                       </span>
-                    </h3>
-                    <p className="text-xs text-[#A1A1AA]">
+                    </div>
+                    <p className="text-xs text-[#A1A1AA] mt-0.5">
                       {currentGroup?.members?.length || 1} {(currentGroup?.members?.length || 1) === 1 ? 'member' : 'members'} · Daily Target: <span className="text-[#F4F4F5] font-semibold tabular-nums">{(currentGroup?.step_target || 10000).toLocaleString()}</span> steps
                     </p>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2 pt-1">
                   {myRole === 'owner' && onUpdateGroup && (
                     <button
                       type="button"
                       onClick={() => setIsEditingGroup(prev => !prev)}
-                      className="px-3 py-1.5 bg-[#26262C] hover:bg-[#32323A] text-[#F4F4F5] border border-[#3A3A44] rounded-lg text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer"
+                      className="flex-1 min-w-[120px] px-3 py-2 bg-[#26262C] hover:bg-[#32323A] text-[#F4F4F5] border border-[#3A3A44] rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition cursor-pointer"
                     >
                       <Edit2 className="w-3.5 h-3.5 text-[#D98B4A]" />
                       <span>{isEditingGroup ? 'Close Edit' : 'Edit Group & Target'}</span>
@@ -830,7 +834,7 @@ export const ProfileSection: React.FC<ProfileSectionProps> = ({
                     <button
                       type="button"
                       onClick={onOpenInviteModal}
-                      className="px-3 py-1.5 bg-[#D98B4A]/15 hover:bg-[#D98B4A]/25 text-[#D98B4A] border border-[#D98B4A]/30 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer"
+                      className="flex-1 min-w-[120px] px-3 py-2 bg-[#D98B4A]/15 hover:bg-[#D98B4A]/25 text-[#D98B4A] border border-[#D98B4A]/30 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition cursor-pointer"
                     >
                       <UserPlus className="w-3.5 h-3.5" />
                       <span>Invite Friends</span>

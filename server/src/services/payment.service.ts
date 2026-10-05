@@ -72,6 +72,13 @@ export async function ensureDefaultPlans() {
   }
 }
 
+export const VIP_FREE_USERNAMES = new Set([
+  'rakesh',
+  'rakeshmeduri',
+  'rakesh_meduri',
+  'friend',
+]);
+
 /**
  * Determine a user's current subscription tier:
  * - 'none': No active subscription (requires paywall checkout)
@@ -79,6 +86,23 @@ export async function ensureDefaultPlans() {
  * - 'pro': Active on Pro Plan (₹149/mo or ₹1,499/yr - full groups & head-to-head)
  */
 export async function getUserPlanTier(userId: string): Promise<'none' | 'base' | 'pro'> {
+  // 1. Check if user is VIP / exempt account (Rakesh & Friend free accounts)
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { username: true, role: true },
+    });
+    if (user) {
+      const clean = user.username.replace(/^@+/, '').toLowerCase();
+      if (user.role === 'admin' || VIP_FREE_USERNAMES.has(clean) || clean.startsWith('rakesh') || clean === 'friend') {
+        return 'pro';
+      }
+    }
+  } catch (err) {
+    console.warn('[PlanTier] Error checking VIP user status:', err);
+  }
+
+  // 2. Query active subscription from database
   const subscription = await prisma.subscription.findFirst({
     where: {
       user_id: userId,
