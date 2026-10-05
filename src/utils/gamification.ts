@@ -1,14 +1,19 @@
 import type { DailyLog, Workout, WeightLog, Badge, User } from '../types';
 import { isLogForUser, isWorkoutForUser, isWeightForUser, isUserMatch } from './userMatcher';
 
-export function calculateUserPoints(dailyLogs: DailyLog[], userIdOrUser: string | User, allUsers?: User[]): number {
+export function calculateUserPoints(
+  dailyLogs: DailyLog[], 
+  userIdOrUser: string | User, 
+  allUsers?: User[],
+  groupStepTarget: number = 10000
+): number {
   const targetUser: User | null = typeof userIdOrUser === 'object' && userIdOrUser !== null
     ? userIdOrUser
     : (allUsers?.find(u => isUserMatch(userIdOrUser, u, allUsers)) || { id: String(userIdOrUser), username: String(userIdOrUser), name: String(userIdOrUser) } as User);
 
-  return dailyLogs
+  const total = dailyLogs
     .filter(log => isLogForUser(log, targetUser, allUsers))
-    .reduce((total, log) => {
+    .reduce((sum, log) => {
       // Determine if the day is Sunday (Healing day)
       let isSunday = false;
       if (log.date) {
@@ -16,25 +21,35 @@ export function calculateUserPoints(dailyLogs: DailyLog[], userIdOrUser: string 
         isSunday = new Date(y, m - 1, d).getDay() === 0;
       }
 
-      let coreDone = 0;
+      // Other 4 Core Goals (10 pts each)
+      let otherPoints = 0;
       // 1. Gym / Workout (Sunday healing automatically counts)
-      if (log.gym_done || (isSunday && log.gym_done !== false)) coreDone += 1;
-      // 2. Steps goal
-      if (log.steps_done || (log.steps_value || 0) >= 6000) coreDone += 1;
-      // 3. Sleep goal
-      if (log.sleep_done) coreDone += 1;
-      // 4. Junk food avoided
-      if (log.junk_food_avoided) coreDone += 1;
-      // 5. Water target
-      if (log.water_done) coreDone += 1;
+      if (log.gym_done || (isSunday && log.gym_done !== false)) otherPoints += 10;
+      // 2. Sleep goal
+      if (log.sleep_done) otherPoints += 10;
+      // 3. Junk food avoided
+      if (log.junk_food_avoided) otherPoints += 10;
+      // 4. Water target
+      if (log.water_done) otherPoints += 10;
 
-      // 10 points per completed goal (Max 50 points/day)
-      const earned = (log.points_earned !== undefined && log.points_earned !== null && log.points_earned > 0)
-        ? Math.max(log.points_earned, coreDone * 10)
-        : coreDone * 10;
+      // Partial points for steps (up to 10 points proportional to step target)
+      const target = log.steps_target || groupStepTarget || 10000;
+      const stepsVal = log.steps_value || 0;
+      const stepPoints = (log.steps_done || stepsVal >= target)
+        ? 10
+        : Math.min(10, Math.round((stepsVal / target) * 100) / 10);
 
-      return total + earned;
+      const calculated = otherPoints + stepPoints;
+
+      // If points_earned is already stored on log, use it if higher or valid
+      const earned = (log.points_earned !== undefined && log.points_earned !== null)
+        ? Math.max(log.points_earned, calculated)
+        : calculated;
+
+      return sum + earned;
     }, 0);
+
+  return Math.round(total * 10) / 10;
 }
 
 export function calculateGoalStreak(

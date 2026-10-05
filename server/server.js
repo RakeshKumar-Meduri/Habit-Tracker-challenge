@@ -631,6 +631,7 @@ app.post('/api/auth/register', async (req, res) => {
         name: groupName,
         owner_id: newUser.id,
         created_at: now,
+        step_target: 10000,
       });
       d.memberships.push({
         user_id: newUser.id,
@@ -984,6 +985,7 @@ app.post('/api/groups/:id/leave', requireAuth, async (req, res) => {
       name: `${firstName}'s Group`,
       owner_id: req.user.id,
       created_at: now,
+      step_target: 10000,
     });
     d.memberships.push({
       user_id: req.user.id,
@@ -1032,6 +1034,7 @@ app.delete('/api/groups/:id/members/:userId', requireAuth, async (req, res) => {
         name: `${firstName}'s Group`,
         owner_id: targetUser.id,
         created_at: now,
+        step_target: 10000,
       });
       d.memberships.push({
         user_id: targetUser.id,
@@ -1048,6 +1051,62 @@ app.delete('/api/groups/:id/members/:userId', requireAuth, async (req, res) => {
   }, null, id);
 
   res.json({ success: true, message: 'Member removed from group' });
+});
+
+// Update Group Settings (Group Name and Step Target - Owner only)
+app.patch('/api/groups/:id', requireAuth, async (req, res) => {
+  const { id } = req.params;
+  const { name, step_target } = req.body || {};
+
+  const group = (db.groups || []).find(g => g.id === id);
+  if (!group) {
+    return res.status(404).json({ success: false, error: 'Group not found' });
+  }
+
+  const myMem = (db.memberships || []).find(m => m.group_id === id && m.user_id === req.user.id);
+  if (!myMem || myMem.role !== 'owner') {
+    return res.status(403).json({ success: false, error: 'Only the group owner can update group settings' });
+  }
+
+  let updatedName = group.name;
+  if (typeof name === 'string' && name.trim().length >= 2) {
+    updatedName = name.trim();
+  }
+
+  let updatedStepTarget = group.step_target || 10000;
+  if (step_target !== undefined && step_target !== null) {
+    const parsedSteps = Number(step_target);
+    if (!isNaN(parsedSteps) && parsedSteps >= 1000 && parsedSteps <= 100000) {
+      updatedStepTarget = Math.round(parsedSteps);
+    }
+  }
+
+  let updatedGroup = null;
+  await mutate(d => {
+    d.groups = d.groups || [];
+    const grp = d.groups.find(g => g.id === id);
+    if (grp) {
+      grp.name = updatedName;
+      grp.step_target = updatedStepTarget;
+      updatedGroup = { ...grp };
+    }
+  });
+
+  broadcast({
+    type: 'GROUP_UPDATED',
+    payload: {
+      groupId: id,
+      name: updatedName,
+      step_target: updatedStepTarget,
+      group: updatedGroup,
+    },
+  }, null, id);
+
+  res.json({
+    success: true,
+    message: 'Group settings updated successfully',
+    group: updatedGroup,
+  });
 });
 
 // ----------------------------------------------------
@@ -1076,6 +1135,7 @@ app.get('/api/sync', requireAuth, async (req, res) => {
         name: `${firstName}'s Group`,
         owner_id: req.user.id,
         created_at: now,
+        step_target: 10000,
       };
       const newMem = {
         user_id: req.user.id,
@@ -1125,6 +1185,7 @@ app.get('/api/sync', requireAuth, async (req, res) => {
     data: {
       group: {
         ...group,
+        step_target: group.step_target || 10000,
         members: membersInfo,
       },
       myRole,

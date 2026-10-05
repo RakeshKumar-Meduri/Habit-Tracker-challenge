@@ -210,14 +210,26 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
 
     let coreTasksDone = 0;
     if (log?.gym_done || (isSunday && log?.gym_done !== false)) coreTasksDone += 1;
-    if (log?.steps_done) coreTasksDone += 1;
+    if (log?.steps_done || (log?.steps_value || 0) >= (log?.steps_target || 10000)) coreTasksDone += 1;
     if (log?.sleep_done) coreTasksDone += 1;
     if (log?.junk_food_avoided) coreTasksDone += 1;
     if (log?.water_done) coreTasksDone += 1;
 
-    // Daily points: 10 pts per core goal (Max 50 pts/day)
-    const calculatedPoints = coreTasksDone * 10;
-    const points = (log?.points_earned !== undefined && log.points_earned !== null && log.points_earned > 0)
+    let otherTasksDone = 0;
+    if (log?.gym_done || (isSunday && log?.gym_done !== false)) otherTasksDone += 10;
+    if (log?.sleep_done) otherTasksDone += 10;
+    if (log?.junk_food_avoided) otherTasksDone += 10;
+    if (log?.water_done) otherTasksDone += 10;
+
+    const targetSteps = log?.steps_target || 10000;
+    const currentSteps = log?.steps_value || 0;
+    const stepPts = (log?.steps_done || currentSteps >= targetSteps)
+      ? 10
+      : Math.min(10, Math.round((currentSteps / targetSteps) * 100) / 10);
+
+    // Daily points: 10 pts per core goal + partial step points (Max 50 pts/day)
+    const calculatedPoints = Math.round((otherTasksDone + stepPts) * 10) / 10;
+    const points = (log?.points_earned !== undefined && log.points_earned !== null)
       ? Math.max(log.points_earned, calculatedPoints)
       : calculatedPoints;
 

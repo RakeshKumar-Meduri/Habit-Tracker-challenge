@@ -602,3 +602,22 @@ export async function removeGroupMember(groupId: string, userId: string): Promis
     return { success: false, error: err.message || 'Failed to remove group member' };
   }
 }
+
+/**
+ * Update group settings (group name and step target - owner only)
+ */
+export async function updateGroupSettings(
+  groupId: string,
+  data: { name?: string; step_target?: number }
+): Promise<{ success: boolean; group?: Group; error?: string }> {
+  try {
+    const res = await apiFetch(`/api/groups/${encodeURIComponent(groupId)}`, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    });
+    const json = await res.json();
+    return json;
+  } catch (err: any) {
+    return { success: false, error: err.message || 'Failed to update group settings' };
+  }
+}

@@ -52,7 +52,8 @@ import {
   createGroupInvite,
   revokeInvite,
   leaveGroup,
-  removeGroupMember
+  removeGroupMember,
+  updateGroupSettings
 } from './services/apiService';
 import { realtimeClient } from './services/realtimeService';
 
@@ -852,22 +853,35 @@ export function App() {
 
   // Update Daily Log
   const handleUpdateDailyLog = (updatedLog: DailyLog) => {
-    // Automatically recompute points_earned based on 10 pts per completed goal
+    // Automatically recompute points_earned based on 10 pts per goal + partial points for steps
     let isSunday = false;
     if (updatedLog.date) {
       const [y, m, d] = updatedLog.date.split('-').map(Number);
       isSunday = new Date(y, m - 1, d).getDay() === 0;
     }
-    let coreDone = 0;
-    if (updatedLog.gym_done || (isSunday && updatedLog.gym_done !== false)) coreDone += 1;
-    if (updatedLog.steps_done || (updatedLog.steps_value || 0) >= (adminSettings?.step_target || 10000)) coreDone += 1;
-    if (updatedLog.sleep_done) coreDone += 1;
-    if (updatedLog.junk_food_avoided) coreDone += 1;
-    if (updatedLog.water_done) coreDone += 1;
+
+    const groupTarget = currentGroup?.step_target || adminSettings?.step_target || 10000;
+    const stepsVal = updatedLog.steps_value || 0;
+    const isStepsHit = updatedLog.steps_done || stepsVal >= groupTarget;
+
+    // Partial points for steps (up to 10 points proportional to group target)
+    const stepPoints = isStepsHit 
+      ? 10 
+      : Math.min(10, Math.round((stepsVal / groupTarget) * 100) / 10);
+
+    let otherPoints = 0;
+    if (updatedLog.gym_done || (isSunday && updatedLog.gym_done !== false)) otherPoints += 10;
+    if (updatedLog.sleep_done) otherPoints += 10;
+    if (updatedLog.junk_food_avoided) otherPoints += 10;
+    if (updatedLog.water_done) otherPoints += 10;
+
+    const totalPointsEarned = Math.round((otherPoints + stepPoints) * 10) / 10;
 
     const logToSave: DailyLog = {
       ...updatedLog,
-      points_earned: coreDone * 10,
+      steps_done: isStepsHit,
+      steps_target: groupTarget,
+      points_earned: totalPointsEarned,
     };
 
     let newLogs: DailyLog[] = [];
@@ -1025,6 +1039,19 @@ export function App() {
       if (data) applyServerDataRef.current(data);
     } else {
       alert(res.error || 'Failed to remove member');
+    }
+  };
+
+  const handleUpdateGroup = async (groupId: string, data: { name?: string; step_target?: number }): Promise<boolean> => {
+    const res = await updateGroupSettings(groupId, data);
+    if (res.success && res.group) {
+      setCurrentGroup(res.group);
+      const syncData = await fetchServerSync();
+      if (syncData) applyServerDataRef.current(syncData);
+      return true;
+    } else {
+      alert(res.error || 'Failed to update group settings');
+      return false;
     }
   };
 
@@ -1223,6 +1250,7 @@ export function App() {
             selectedDate={selectedDate}
             setSelectedDate={setSelectedDate}
             dailyLog={currentDailyLog}
+            currentGroup={currentGroup}
             missedReasons={missedReasons}
             adminSettings={adminSettings}
             supplements={supplements}
@@ -1404,6 +1432,7 @@ export function App() {
             onLeaveGroup={handleLeaveGroup}
             onRemoveGroupMember={handleRemoveGroupMember}
             onRevokeInvite={handleRevokeInvite}
+            onUpdateGroup={handleUpdateGroup}
           />
         )}
       </main>

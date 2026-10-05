@@ -348,6 +348,66 @@ async function runTests() {
     });
     assert(bobDeleteOwnWorkout.status === 200 && bobDeleteOwnWorkout.body.success === true, `Bob successfully deleted his own workout`);
 
+    // 10. Acceptance Test 10: Group Name & Group Step Target (Owner only) + Partial Points
+    console.log('\n[Test 10] Change group name, group-wide step target, and partial points');
+    const sharedGroupId = bobSyncAfterLeave.body.data.group.id;
+
+    // Charlie (member) tries to change group settings -> 403 Forbidden
+    const charlieUpdateGroup = await request(`/api/groups/${sharedGroupId}`, {
+      method: 'PATCH',
+      headers: { Authorization: `Bearer ${charlieToken}` }
+    }, {
+      name: 'Charlie Hack Group',
+      step_target: 15000
+    });
+    assert(charlieUpdateGroup.status === 403, `Non-owner member cannot update group settings (got 403)`);
+
+    // Bob (owner) updates group name to 'Iron Titans' and step_target to 12000 -> 200 OK
+    const bobUpdateGroup = await request(`/api/groups/${sharedGroupId}`, {
+      method: 'PATCH',
+      headers: { Authorization: `Bearer ${bobToken}` }
+    }, {
+      name: 'Iron Titans',
+      step_target: 12000
+    });
+    assert(bobUpdateGroup.status === 200 && bobUpdateGroup.body.success === true, `Owner updated group settings (status 200)`);
+    assert(bobUpdateGroup.body.group.name === 'Iron Titans', `Group name updated to 'Iron Titans'`);
+    assert(bobUpdateGroup.body.group.step_target === 12000, `Group step target updated to 12000`);
+
+    // Charlie syncs and verifies the group name & target are shared across the entire group
+    const charlieSyncGroup = await request('/api/sync', {
+      headers: { Authorization: `Bearer ${charlieToken}` }
+    });
+    assert(charlieSyncGroup.body.data.group.name === 'Iron Titans', `Charlie sees updated group name 'Iron Titans'`);
+    assert(charlieSyncGroup.body.data.group.step_target === 12000, `Charlie sees updated step target 12000`);
+
+    // Test partial points for steps: 6000 steps out of 12000 target = 5.0 partial points
+    const charlieLogId = `log_${charlieId}_2026-10-04`;
+    const charliePartialLog = await request('/api/logs', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${charlieToken}` }
+    }, {
+      id: charlieLogId,
+      user_id: charlieId,
+      date: '2026-10-04',
+      gym_done: false,
+      steps_done: false,
+      steps_value: 6000,
+      steps_target: 12000,
+      sleep_done: false,
+      junk_food_avoided: false,
+      water_done: false,
+      points_earned: 5.0
+    });
+    assert(charliePartialLog.status === 200, `Charlie logged partial steps (status 200)`);
+
+    const charlieSyncLogs = await request('/api/sync', {
+      headers: { Authorization: `Bearer ${charlieToken}` }
+    });
+    const savedLog = (charlieSyncLogs.body.data.dailyLogs || []).find(l => l.id === charlieLogId);
+    assert(savedLog && savedLog.steps_value === 6000, `Charlie steps_value 6000 recorded`);
+    assert(savedLog && savedLog.points_earned === 5.0, `Charlie earned 5.0 partial points for 6000/12000 steps`);
+
   } catch (err) {
     console.error('Test execution error:', err);
     failed++;

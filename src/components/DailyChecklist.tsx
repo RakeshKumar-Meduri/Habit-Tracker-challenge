@@ -10,7 +10,8 @@ import type {
   Supplement,
   SupplementLog,
   CustomHabit,
-  CustomHabitLog
+  CustomHabitLog,
+  Group
 } from '../types';
 import { calculateSleepDuration } from '../utils/crypto';
 import { isLogForUser, isWorkoutForUser } from '../utils/userMatcher';
@@ -48,6 +49,7 @@ interface DailyChecklistProps {
   dailyLog: DailyLog;
   missedReasons: MissedReason[];
   adminSettings?: AdminSettings;
+  currentGroup?: Group | null;
   supplements: Supplement[];
   supplementLogs: SupplementLog[];
   customHabits: CustomHabit[];
@@ -79,6 +81,7 @@ export const DailyChecklist: React.FC<DailyChecklistProps> = ({
   dailyLog,
   missedReasons,
   adminSettings,
+  currentGroup,
   supplements,
   supplementLogs,
   customHabits,
@@ -122,7 +125,7 @@ export const DailyChecklist: React.FC<DailyChecklistProps> = ({
   const [inlineHabitTitle, setInlineHabitTitle] = useState('');
   const [inlineHabitDesc, setInlineHabitDesc] = useState('');
 
-  const stepTarget = adminSettings?.step_target || 10000;
+  const stepTarget = currentGroup?.step_target || adminSettings?.step_target || 10000;
   const sleepMin = adminSettings?.sleep_min_hours || 7.0;
   const sleepMax = adminSettings?.sleep_max_hours || 9.0;
   const waterTarget = adminSettings?.water_target_ml || 2500;
@@ -905,158 +908,210 @@ export const DailyChecklist: React.FC<DailyChecklistProps> = ({
         </div>
 
         {/* Goal 2: Daily Steps & Points Allocation */}
-        <div className={`relative bg-[#131316] border rounded-xl p-4 sm:p-5 transition-all overflow-hidden ${displayedDailyLog.steps_done ? 'border-[#34D399]/40 bg-[#34D399]/5' : 'border-[#26262C]'}`}>
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div className="flex items-center gap-3">
-              <div className={`p-2.5 sm:p-3 rounded-lg shrink-0 ${displayedDailyLog.steps_done ? 'bg-[#34D399]/15 text-[#34D399]' : 'bg-[#1B1B20] text-[#A1A1AA]'}`}>
-                <Footprints className="w-5 h-5 sm:w-6 sm:h-6" />
-              </div>
-              <div>
-                <h4 className="font-bold text-[#F4F4F5] text-sm sm:text-base">2. Daily Steps</h4>
-                <p className="text-xs text-[#A1A1AA]">Target: <span className="tabular-nums font-semibold text-[#F4F4F5]">{stepTarget.toLocaleString()}</span> steps</p>
-              </div>
-            </div>
+        {(() => {
+          const currentSteps = displayedDailyLog.steps_value || 0;
+          const isStepHit = displayedDailyLog.steps_done || currentSteps >= stepTarget;
+          const stepPercent = Math.min(100, Math.round((currentSteps / stepTarget) * 100));
+          const stepPartialPoints = isStepHit ? 10 : Math.min(10, Math.round((currentSteps / stepTarget) * 100) / 10);
+          const quickPresets = [
+            Math.round(stepTarget * 0.5),
+            Math.round(stepTarget * 0.75),
+            stepTarget,
+          ];
 
-            {/* Action Buttons: Mark Done and Failed */}
-            {isViewingOther ? (
-              <span className={`w-full xl:w-auto justify-center px-3 py-2 rounded-lg text-xs font-bold flex items-center gap-1.5 whitespace-nowrap shrink-0 ${
-                displayedDailyLog.steps_done
-                  ? 'bg-[#34D399]/15 text-[#34D399] border border-[#34D399]/30'
-                  : 'bg-[#1B1B20] text-[#A1A1AA] border border-[#26262C]'
-              }`}>
-                {displayedDailyLog.steps_done ? (
-                  <CheckCircle2 className="w-4 h-4 text-[#34D399]" />
-                ) : !hasLoggedForDate ? (
-                  <Clock className="w-4 h-4 text-zinc-500" />
+          return (
+            <div className={`relative bg-[#131316] border rounded-xl p-4 sm:p-5 transition-all overflow-hidden ${isStepHit ? 'border-[#34D399]/40 bg-[#34D399]/5' : 'border-[#26262C]'}`}>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <div className={`p-2.5 sm:p-3 rounded-lg shrink-0 ${isStepHit ? 'bg-[#34D399]/15 text-[#34D399]' : 'bg-[#1B1B20] text-[#A1A1AA]'}`}>
+                    <Footprints className="w-5 h-5 sm:w-6 sm:h-6" />
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-[#F4F4F5] text-sm sm:text-base flex items-center gap-2">
+                      <span>2. Daily Steps</span>
+                      <span className={`text-[11px] font-mono font-bold px-2 py-0.5 rounded-full ${
+                        isStepHit 
+                          ? 'bg-[#34D399]/20 text-[#34D399] border border-[#34D399]/30' 
+                          : stepPartialPoints > 0 
+                          ? 'bg-[#D98B4A]/20 text-[#D98B4A] border border-[#D98B4A]/30' 
+                          : 'bg-zinc-800 text-zinc-400 border border-zinc-700'
+                      }`}>
+                        +{stepPartialPoints} / 10 pts
+                      </span>
+                    </h4>
+                    <p className="text-xs text-[#A1A1AA]">
+                      Group Target: <span className="tabular-nums font-semibold text-[#F4F4F5]">{stepTarget.toLocaleString()}</span> steps
+                      {!isStepHit && currentSteps > 0 && (
+                        <span className="text-[#D98B4A] ml-1.5 font-medium">({stepPercent}% · Partial points active)</span>
+                      )}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Action Buttons: Mark Done and Failed */}
+                {isViewingOther ? (
+                  <span className={`w-full xl:w-auto justify-center px-3 py-2 rounded-lg text-xs font-bold flex items-center gap-1.5 whitespace-nowrap shrink-0 ${
+                    isStepHit
+                      ? 'bg-[#34D399]/15 text-[#34D399] border border-[#34D399]/30'
+                      : 'bg-[#1B1B20] text-[#A1A1AA] border border-[#26262C]'
+                  }`}>
+                    {isStepHit ? (
+                      <CheckCircle2 className="w-4 h-4 text-[#34D399]" />
+                    ) : !hasLoggedForDate ? (
+                      <Clock className="w-4 h-4 text-zinc-500" />
+                    ) : (
+                      <XCircle className="w-4 h-4 text-[#71717A]" />
+                    )}
+                    <span className="tabular-nums">
+                      {isStepHit
+                        ? `${(displayedDailyLog.steps_value || 0).toLocaleString()} steps (Hit)`
+                        : !hasLoggedForDate
+                        ? 'Pending'
+                        : `${currentSteps.toLocaleString()} steps (${stepPartialPoints} pts)`}
+                    </span>
+                  </span>
                 ) : (
-                  <XCircle className="w-4 h-4 text-[#71717A]" />
-                )}
-                <span className="tabular-nums">
-                  {displayedDailyLog.steps_done
-                    ? `${(displayedDailyLog.steps_value || 0).toLocaleString()} steps (Hit)`
-                    : !hasLoggedForDate
-                    ? 'Pending'
-                    : 'Off Target'}
-                </span>
-              </span>
-            ) : (
-              <div className="flex items-center gap-2 w-full xl:w-auto shrink-0">
-                {displayedDailyLog.steps_done ? (
-                  <button
-                    onClick={() => handleToggleGoal('steps', true)}
-                    className="w-full xl:w-auto flex-1 xl:flex-initial px-3.5 py-2 rounded-lg bg-[#34D399]/15 border border-[#34D399]/30 hover:bg-[#34D399]/25 text-[#34D399] font-bold text-xs flex items-center justify-center gap-1.5 transition cursor-pointer min-h-[38px] whitespace-nowrap shrink-0"
-                    title="Click to unmark"
-                  >
-                    <CheckCircle2 className="w-4 h-4" />
-                    <span>Completed</span>
-                  </button>
-                ) : (
-                  <div className="flex items-center gap-2 shrink-0">
-                    <button
-                      onClick={() => {
-                        clearFailedIfAny('steps');
-                        const val = Math.max(stepTarget, dailyLog.steps_value || 0);
-                        onUpdateDailyLog({ ...dailyLog, steps_done: true, steps_value: val, steps_target: stepTarget });
-                      }}
-                      className="px-3.5 py-2 rounded-lg bg-[#D98B4A] hover:bg-[#E69A5C] text-[#0B0B0D] font-bold text-xs flex items-center justify-center gap-1.5 transition cursor-pointer min-h-[38px] whitespace-nowrap shadow-sm"
-                    >
-                      <CheckCircle2 className="w-4 h-4" />
-                      <span>Mark Done</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleToggleFailed('steps')}
-                      className={`px-3 py-2 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition cursor-pointer border min-h-[38px] whitespace-nowrap ${
-                        getGoalMissedReason('steps')
-                          ? 'bg-rose-500/15 text-[#F87171] border-rose-500/30 hover:bg-rose-500/25'
-                          : 'bg-rose-500/10 text-[#F87171] border-rose-500/25 hover:bg-rose-500/20'
-                      }`}
-                      title={getGoalMissedReason('steps') ? "Marked as Failed — click to remove / undo" : "Unable to hit step goal? Log reason"}
-                    >
-                      {getGoalMissedReason('steps') ? <XCircle className="w-3.5 h-3.5" /> : <AlertCircle className="w-3.5 h-3.5" />}
-                      <span>Failed</span>
-                    </button>
+                  <div className="flex items-center gap-2 w-full xl:w-auto shrink-0">
+                    {displayedDailyLog.steps_done ? (
+                      <button
+                        onClick={() => handleToggleGoal('steps', true)}
+                        className="w-full xl:w-auto flex-1 xl:flex-initial px-3.5 py-2 rounded-lg bg-[#34D399]/15 border border-[#34D399]/30 hover:bg-[#34D399]/25 text-[#34D399] font-bold text-xs flex items-center justify-center gap-1.5 transition cursor-pointer min-h-[38px] whitespace-nowrap shrink-0"
+                        title="Click to unmark"
+                      >
+                        <CheckCircle2 className="w-4 h-4" />
+                        <span>Completed (10 pts)</span>
+                      </button>
+                    ) : (
+                      <div className="flex items-center gap-2 shrink-0">
+                        <button
+                          onClick={() => {
+                            clearFailedIfAny('steps');
+                            const val = Math.max(stepTarget, dailyLog.steps_value || 0);
+                            onUpdateDailyLog({ ...dailyLog, steps_done: true, steps_value: val, steps_target: stepTarget });
+                          }}
+                          className="px-3.5 py-2 rounded-lg bg-[#D98B4A] hover:bg-[#E69A5C] text-[#0B0B0D] font-bold text-xs flex items-center justify-center gap-1.5 transition cursor-pointer min-h-[38px] whitespace-nowrap shadow-sm"
+                        >
+                          <CheckCircle2 className="w-4 h-4" />
+                          <span>Hit Target (10 pts)</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleToggleFailed('steps')}
+                          className={`px-3 py-2 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition cursor-pointer border min-h-[38px] whitespace-nowrap ${
+                            getGoalMissedReason('steps')
+                              ? 'bg-rose-500/15 text-[#F87171] border-rose-500/30 hover:bg-rose-500/25'
+                              : 'bg-rose-500/10 text-[#F87171] border-rose-500/25 hover:bg-rose-500/20'
+                          }`}
+                          title={getGoalMissedReason('steps') ? "Marked as Failed — click to remove / undo" : "Unable to hit step goal? Log reason"}
+                        >
+                          {getGoalMissedReason('steps') ? <XCircle className="w-3.5 h-3.5" /> : <AlertCircle className="w-3.5 h-3.5" />}
+                          <span>Failed</span>
+                        </button>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
-            )}
-          </div>
 
-          {/* Interactive Step Input */}
-          <div className="mt-4 bg-[#1B1B20] p-3 rounded-lg border border-[#26262C] space-y-2">
-            <div className="flex items-center justify-between gap-3">
-              <label className="text-xs font-semibold text-[#A1A1AA]">Total Steps Logged:</label>
-              <div className="flex items-center gap-2">
-                {isViewingOther ? (
-                  <span className="font-mono font-bold text-sm text-[#F4F4F5] tabular-nums">{displayedDailyLog.steps_value || 0}</span>
-                ) : (
-                  <input
-                    type="number"
-                    step="500"
-                    min="0"
-                    max="100000"
-                    value={dailyLog.steps_value || 0}
-                    onChange={(e) => {
-                      const num = Math.max(0, parseInt(e.target.value) || 0);
-                      onUpdateDailyLog({
-                        ...dailyLog,
-                        steps_value: num,
-                        steps_done: num >= stepTarget,
-                        steps_target: stepTarget,
-                      });
-                    }}
-                    className="w-28 px-2.5 py-1.5 bg-[#131316] text-[#F4F4F5] font-mono tabular-nums font-bold text-sm rounded-lg border border-[#26262C] focus:outline-none focus:border-[#D98B4A] text-right"
+              {/* Progress Bar towards Group Step Target */}
+              <div className="mt-3.5 space-y-1">
+                <div className="flex items-center justify-between text-[11px] text-[#A1A1AA]">
+                  <span>Progress to Group Goal</span>
+                  <span className="font-mono font-bold text-[#F4F4F5]">{stepPercent}%</span>
+                </div>
+                <div className="w-full bg-[#1B1B20] rounded-full h-2 overflow-hidden border border-[#26262C]">
+                  <div 
+                    className={`h-full transition-all duration-300 rounded-full ${
+                      isStepHit ? 'bg-[#34D399]' : 'bg-gradient-to-r from-amber-500 to-[#D98B4A]'
+                    }`}
+                    style={{ width: `${stepPercent}%` }}
                   />
+                </div>
+              </div>
+
+              {/* Interactive Step Input & Dynamic Presets */}
+              <div className="mt-4 bg-[#1B1B20] p-3 rounded-lg border border-[#26262C] space-y-2">
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <label className="text-xs font-semibold text-[#A1A1AA]">Total Steps Logged:</label>
+                    <p className="text-[11px] text-zinc-400">Earn partial points proportionally</p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {isViewingOther ? (
+                      <span className="font-mono font-bold text-sm text-[#F4F4F5] tabular-nums">{displayedDailyLog.steps_value || 0}</span>
+                    ) : (
+                      <input
+                        type="number"
+                        step="500"
+                        min="0"
+                        max="100000"
+                        value={dailyLog.steps_value || 0}
+                        onChange={(e) => {
+                          const num = Math.max(0, parseInt(e.target.value) || 0);
+                          onUpdateDailyLog({
+                            ...dailyLog,
+                            steps_value: num,
+                            steps_done: num >= stepTarget,
+                            steps_target: stepTarget,
+                          });
+                        }}
+                        className="w-28 px-2.5 py-1.5 bg-[#131316] text-[#F4F4F5] font-mono tabular-nums font-bold text-sm rounded-lg border border-[#26262C] focus:outline-none focus:border-[#D98B4A] text-right"
+                      />
+                    )}
+                    <span className="text-xs font-bold text-[#A1A1AA]">steps</span>
+                  </div>
+                </div>
+
+                {!isViewingOther && (
+                  <div className="grid grid-cols-3 gap-2 pt-1">
+                    {quickPresets.map((stepCount) => {
+                      const pts = Math.min(10, Math.round((stepCount / stepTarget) * 100) / 10);
+                      return (
+                        <button
+                          key={stepCount}
+                          type="button"
+                          onClick={() => {
+                            onUpdateDailyLog({
+                              ...dailyLog,
+                              steps_value: stepCount,
+                              steps_done: stepCount >= stepTarget,
+                              steps_target: stepTarget,
+                            });
+                          }}
+                          className="py-1.5 px-2 rounded-lg bg-[#131316] hover:bg-[#26262C] text-[#D98B4A] text-xs font-bold border border-[#26262C] transition cursor-pointer text-center tabular-nums flex flex-col items-center justify-center gap-0.5"
+                        >
+                          <span>{stepCount.toLocaleString()}</span>
+                          <span className="text-[10px] text-[#A1A1AA] font-normal">{pts} pts</span>
+                        </button>
+                      );
+                    })}
+                  </div>
                 )}
-                <span className="text-xs font-bold text-[#A1A1AA]">steps</span>
+                {/* Logged Failure Reason Banner */}
+                {!displayedDailyLog.steps_done && getGoalMissedReason('steps') && (
+                  <div className="mt-3 p-3 bg-amber-500/10 rounded-lg text-xs text-[#FBBF24] flex items-center justify-between border border-amber-500/25">
+                    <div className="flex items-center gap-2 min-w-0 flex-1">
+                      <AlertCircle className="w-4 h-4 text-[#FBBF24] shrink-0" />
+                      <span className="break-words">
+                        <strong>Reason:</strong> [{getGoalMissedReason('steps')?.reason_tag}]{' '}
+                        {getGoalMissedReason('steps')?.reason_text}
+                      </span>
+                    </div>
+                    {!isViewingOther && (
+                      <button
+                        type="button"
+                        onClick={() => setActiveMissedGoal('steps')}
+                        className="text-xs px-2.5 py-1 rounded bg-[#1B1B20] hover:bg-[#26262C] text-[#FBBF24] border border-amber-500/30 font-semibold cursor-pointer shrink-0 ml-3 transition"
+                      >
+                        Edit Reason
+                      </button>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
-
-            {!isViewingOther && (
-              <div className="grid grid-cols-3 gap-2 pt-1">
-                {[6000, 8000, 10000].map((stepCount) => (
-                  <button
-                    key={stepCount}
-                    type="button"
-                    onClick={() => {
-                      onUpdateDailyLog({
-                        ...dailyLog,
-                        steps_value: stepCount,
-                        steps_done: stepCount >= stepTarget,
-                        steps_target: stepTarget,
-                      });
-                    }}
-                    className="py-1.5 px-2 rounded-lg bg-[#131316] hover:bg-[#26262C] text-[#D98B4A] text-xs font-bold border border-[#26262C] transition cursor-pointer text-center tabular-nums"
-                  >
-                    +{stepCount.toLocaleString()}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Logged Failure Reason Banner */}
-          {!displayedDailyLog.steps_done && getGoalMissedReason('steps') && (
-            <div className="mt-3 p-3 bg-amber-500/10 rounded-lg text-xs text-[#FBBF24] flex items-center justify-between border border-amber-500/25">
-              <div className="flex items-center gap-2 min-w-0 flex-1">
-                <AlertCircle className="w-4 h-4 text-[#FBBF24] shrink-0" />
-                <span className="break-words">
-                  <strong>Reason:</strong> [{getGoalMissedReason('steps')?.reason_tag}]{' '}
-                  {getGoalMissedReason('steps')?.reason_text}
-                </span>
-              </div>
-              {!isViewingOther && (
-                <button
-                  type="button"
-                  onClick={() => setActiveMissedGoal('steps')}
-                  className="text-xs px-2.5 py-1 rounded bg-[#1B1B20] hover:bg-[#26262C] text-[#FBBF24] border border-amber-500/30 font-semibold cursor-pointer shrink-0 ml-3 transition"
-                >
-                  Edit Reason
-                </button>
-              )}
-            </div>
-          )}
-        </div>
+          );
+        })()}
 
         {/* Goal 3: Sleep Tracker */}
         <div className={`relative bg-[#131316] border rounded-xl p-4 sm:p-5 transition-all overflow-hidden ${displayedDailyLog.sleep_done ? 'border-[#34D399]/40 bg-[#34D399]/5' : 'border-[#26262C]'}`}>

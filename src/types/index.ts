@@ -205,6 +205,7 @@ export interface Group {
   name: string;
   owner_id: string;
   created_at: string;
+  step_target?: number;
   members?: GroupMemberInfo[];
 }
 

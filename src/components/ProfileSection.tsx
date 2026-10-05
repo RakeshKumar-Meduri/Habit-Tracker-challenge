@@ -17,7 +17,8 @@ import {
   Lock,
   RefreshCw,
   LogOut,
-  UserPlus
+  UserPlus,
+  Edit2
 } from 'lucide-react';
 
 const CURRENT_YEAR = new Date().getFullYear();
@@ -53,6 +54,7 @@ interface ProfileSectionProps {
   onLeaveGroup?: () => Promise<void>;
   onRemoveGroupMember?: (userId: string) => Promise<void>;
   onRevokeInvite?: (token: string) => Promise<boolean>;
+  onUpdateGroup?: (groupId: string, data: { name?: string; step_target?: number }) => Promise<boolean>;
 }
 
 export const ProfileSection: React.FC<ProfileSectionProps> = ({
@@ -70,6 +72,7 @@ export const ProfileSection: React.FC<ProfileSectionProps> = ({
   onLeaveGroup,
   onRemoveGroupMember,
   onRevokeInvite,
+  onUpdateGroup,
 }) => {
   const [selectedUserId, setSelectedUserId] = useState<string>(currentUser.id);
   const targetUser = allUsers?.find(u => u.id === selectedUserId) || currentUser;
@@ -91,6 +94,20 @@ export const ProfileSection: React.FC<ProfileSectionProps> = ({
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
   const [saveSuccessMsg, setSaveSuccessMsg] = useState('');
+
+  // Group editing state (owner only)
+  const [groupNameInput, setGroupNameInput] = useState(currentGroup?.name || '');
+  const [groupStepTargetInput, setGroupStepTargetInput] = useState(String(currentGroup?.step_target || 10000));
+  const [isEditingGroup, setIsEditingGroup] = useState(false);
+  const [isSavingGroup, setIsSavingGroup] = useState(false);
+  const [groupSaveSuccess, setGroupSaveSuccess] = useState('');
+
+  useEffect(() => {
+    if (currentGroup) {
+      setGroupNameInput(currentGroup.name || '');
+      setGroupStepTargetInput(String(currentGroup.step_target || 10000));
+    }
+  }, [currentGroup?.name, currentGroup?.step_target]);
 
   // Keep state in sync ONLY if currentUser.id changes (switching accounts) to prevent losing active edits
   const lastLoadedUserIdRef = useRef<string>(currentUser.id);
@@ -698,12 +715,22 @@ export const ProfileSection: React.FC<ProfileSectionProps> = ({
                       </span>
                     </h3>
                     <p className="text-xs text-[#A1A1AA]">
-                      {currentGroup?.members?.length || 1} {(currentGroup?.members?.length || 1) === 1 ? 'member' : 'members'} in your private accountability group
+                      {currentGroup?.members?.length || 1} {(currentGroup?.members?.length || 1) === 1 ? 'member' : 'members'} · Daily Target: <span className="text-[#F4F4F5] font-semibold tabular-nums">{(currentGroup?.step_target || 10000).toLocaleString()}</span> steps
                     </p>
                   </div>
                 </div>
 
                 <div className="flex items-center gap-2">
+                  {myRole === 'owner' && onUpdateGroup && (
+                    <button
+                      type="button"
+                      onClick={() => setIsEditingGroup(prev => !prev)}
+                      className="px-3 py-1.5 bg-[#26262C] hover:bg-[#32323A] text-[#F4F4F5] border border-[#3A3A44] rounded-lg text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer"
+                    >
+                      <Edit2 className="w-3.5 h-3.5 text-[#D98B4A]" />
+                      <span>{isEditingGroup ? 'Close Edit' : 'Edit Group & Target'}</span>
+                    </button>
+                  )}
                   {onOpenInviteModal && (
                     <button
                       type="button"
@@ -716,6 +743,125 @@ export const ProfileSection: React.FC<ProfileSectionProps> = ({
                   )}
                 </div>
               </div>
+
+              {/* Owner Edit Form (Group Name & Group Step Target) */}
+              {myRole === 'owner' && isEditingGroup && onUpdateGroup && (
+                <form
+                  onSubmit={async (e) => {
+                    e.preventDefault();
+                    if (!currentGroup) return;
+                    setIsSavingGroup(true);
+                    setGroupSaveSuccess('');
+                    const ok = await onUpdateGroup(currentGroup.id, {
+                      name: groupNameInput.trim() || currentGroup.name,
+                      step_target: Math.max(1000, parseInt(groupStepTargetInput) || 10000),
+                    });
+                    setIsSavingGroup(false);
+                    if (ok) {
+                      setGroupSaveSuccess('Group name and daily step target updated successfully!');
+                      setTimeout(() => setGroupSaveSuccess(''), 4000);
+                    }
+                  }}
+                  className="bg-[#1B1B20] border border-[#D98B4A]/30 rounded-xl p-4 space-y-3.5"
+                >
+                  <div className="flex items-center justify-between">
+                    <h4 className="text-xs font-bold uppercase tracking-wider text-[#D98B4A] flex items-center gap-1.5">
+                      <Edit2 className="w-3.5 h-3.5" />
+                      <span>Group Configuration (Owner Controls)</span>
+                    </h4>
+                    {groupSaveSuccess && (
+                      <span className="text-xs text-emerald-400 font-semibold flex items-center gap-1">
+                        <CheckCircle2 className="w-3.5 h-3.5" />
+                        <span>{groupSaveSuccess}</span>
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-[11px] font-semibold text-[#A1A1AA] mb-1">
+                        Group Name
+                      </label>
+                      <input
+                        type="text"
+                        value={groupNameInput}
+                        onChange={(e) => setGroupNameInput(e.target.value)}
+                        placeholder="e.g. Iron Legion, Sunrise Runners"
+                        className="w-full px-3 py-2 bg-[#131316] border border-[#26262C] rounded-lg text-xs text-[#F4F4F5] focus:outline-none focus:border-[#D98B4A]"
+                        required
+                        minLength={2}
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[11px] font-semibold text-[#A1A1AA] mb-1">
+                        Daily Step Target (For all members)
+                      </label>
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="number"
+                          step="500"
+                          min="1000"
+                          max="100000"
+                          value={groupStepTargetInput}
+                          onChange={(e) => setGroupStepTargetInput(e.target.value)}
+                          className="w-full px-3 py-2 bg-[#131316] border border-[#26262C] rounded-lg text-xs text-[#F4F4F5] font-mono tabular-nums focus:outline-none focus:border-[#D98B4A]"
+                          required
+                        />
+                        <span className="text-xs text-[#A1A1AA] font-bold shrink-0">steps</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Step Target Presets */}
+                  <div>
+                    <label className="block text-[11px] text-[#A1A1AA] mb-1.5">
+                      Quick Step Presets:
+                    </label>
+                    <div className="flex flex-wrap gap-2">
+                      {[6000, 8000, 10000, 12000, 15000].map(cnt => (
+                        <button
+                          key={cnt}
+                          type="button"
+                          onClick={() => setGroupStepTargetInput(String(cnt))}
+                          className={`px-2.5 py-1 rounded-lg text-xs font-semibold border transition cursor-pointer ${
+                            Number(groupStepTargetInput) === cnt
+                              ? 'bg-[#D98B4A]/20 text-[#D98B4A] border-[#D98B4A]/40'
+                              : 'bg-[#131316] hover:bg-[#26262C] text-[#A1A1AA] border-[#26262C]'
+                          }`}
+                        >
+                          {cnt.toLocaleString()}
+                        </button>
+                      ))}
+                    </div>
+                    <p className="text-[11px] text-[#A1A1AA] mt-1.5">
+                      💡 Partial points for daily steps are awarded proportionally up to 10 points based on this group target.
+                    </p>
+                  </div>
+
+                  <div className="flex items-center justify-end gap-2 pt-1">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setGroupNameInput(currentGroup?.name || '');
+                        setGroupStepTargetInput(String(currentGroup?.step_target || 10000));
+                        setIsEditingGroup(false);
+                      }}
+                      className="px-3.5 py-1.5 bg-[#131316] hover:bg-[#26262C] text-[#A1A1AA] text-xs font-semibold rounded-lg border border-[#26262C] transition cursor-pointer"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={isSavingGroup}
+                      className="px-4 py-1.5 bg-[#D98B4A] hover:bg-[#B45F1E] disabled:opacity-50 text-[#131316] font-bold text-xs rounded-lg transition flex items-center gap-1.5 cursor-pointer shadow-sm"
+                    >
+                      <Save className="w-3.5 h-3.5" />
+                      <span>{isSavingGroup ? 'Saving...' : 'Save Group Settings'}</span>
+                    </button>
+                  </div>
+                </form>
+              )}
 
               {/* Group Members List */}
               <div className="space-y-2">
