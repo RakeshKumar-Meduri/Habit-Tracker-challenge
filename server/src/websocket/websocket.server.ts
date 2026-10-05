@@ -1,6 +1,6 @@
 import { Server as HttpServer } from 'http';
 import { WebSocketServer, WebSocket } from 'ws';
-import cookie from 'cookie';
+import * as cookie from 'cookie';
 import { prisma } from '../db/prisma';
 import { hashToken } from '../utils/crypto';
 import { ENV } from '../config/env';
