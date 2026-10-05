@@ -77,6 +77,7 @@ export const VIP_FREE_USERNAMES = new Set([
   'rakeshmeduri',
   'rakesh_meduri',
   'friend',
+  'enumulahitesh',
 ]);
 
 /**
@@ -94,7 +95,13 @@ export async function getUserPlanTier(userId: string): Promise<'none' | 'base' |
     });
     if (user) {
       const clean = user.username.replace(/^@+/, '').toLowerCase();
-      if (user.role === 'admin' || VIP_FREE_USERNAMES.has(clean) || clean.startsWith('rakesh') || clean === 'friend') {
+      if (
+        user.role === 'admin' ||
+        VIP_FREE_USERNAMES.has(clean) ||
+        clean.startsWith('rakesh') ||
+        clean === 'friend' ||
+        clean === 'enumulahitesh'
+      ) {
         return 'pro';
       }
     }

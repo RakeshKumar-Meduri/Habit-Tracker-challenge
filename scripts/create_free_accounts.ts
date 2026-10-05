@@ -47,19 +47,24 @@ async function main() {
     console.log(`Activated 10-year Lifetime Pro for @${u.username} (${u.id})`);
   }
 
-  // 2. Find or create 'friend' account
+  // 2. Find or create 'enumulahitesh' account
   const salt = await bcrypt.genSalt(10);
-  const passwordHash = await bcrypt.hash('password123', salt);
+  const passwordHash = await bcrypt.hash('hitesh', salt);
 
-  let friendUser = await prisma.user.findUnique({
-    where: { username: 'friend' },
+  let friendUser = await prisma.user.findFirst({
+    where: {
+      OR: [
+        { username: 'enumulahitesh' },
+        { username: 'friend' },
+      ],
+    },
   });
 
   if (!friendUser) {
     friendUser = await prisma.user.create({
       data: {
-        username: 'friend',
-        name: 'Fitness Friend',
+        username: 'enumulahitesh',
+        name: 'Hitesh Enumula',
         password_hash: passwordHash,
         role: 'member',
         height: 172,
@@ -70,16 +75,18 @@ async function main() {
         is_active: true,
       },
     });
-    console.log(`Created friend user @friend (${friendUser.id}) with password: password123`);
+    console.log(`Created friend user @enumulahitesh (${friendUser.id}) with password: hitesh`);
   } else {
     friendUser = await prisma.user.update({
       where: { id: friendUser.id },
       data: {
+        username: 'enumulahitesh',
+        name: 'Hitesh Enumula',
         password_hash: passwordHash,
         is_active: true,
       },
     });
-    console.log(`Updated friend user @friend (${friendUser.id}) password to: password123`);
+    console.log(`Updated friend user @enumulahitesh (${friendUser.id}) password to: hitesh`);
   }
 
   // Give friend account 10-year Lifetime Pro
