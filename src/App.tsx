@@ -271,7 +271,6 @@ export function App() {
           const wid = String(w.id || w._id || '').trim();
           if (!wid || tombstoneSet.has(wid)) return false;
           if (w.id === 'w_rakesh_1' || w.id === 'w_rakesh_2') return false;
-          if (w.exercise_name === 'Barbell Bench Press' || w.exercise_name === 'Treadmill Intervals & Core') return false;
           return true;
         }
       );

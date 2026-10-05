@@ -71,18 +71,20 @@ export function initializeStorageIfEmpty(): {
   challenge: WeeklyChallenge;
   adminSettings: AdminSettings;
 } {
-  // Purge any legacy hardcoded/test accounts from localStorage
+  // Purge any legacy hardcoded mock/test accounts from localStorage
   const isBannedAccount = (u: any) => {
     if (!u) return true;
     const uid = String(u.id || '').toLowerCase();
     const uname = String(u.username || '').toLowerCase();
-    const name = String(u.name || '').toLowerCase();
     return (
       uid === 'user_1790779706015_wepw' ||
+      uid === 'user_1790824958946_sy7b' ||
+      uid === 'user_1790843934888_9m2c' ||
       uname === 'rakesh_meduri' ||
-      name === 'rakesh kumar' ||
-      uname.startsWith('testuser') ||
-      uname.startsWith('tester') ||
+      uid === 'rakesh_meduri' ||
+      uname === 'testuser1' ||
+      uname === 'testuser2' ||
+      uname === 'tester1' ||
       uname.startsWith('alice_') ||
       uname.startsWith('bob_') ||
       uname.startsWith('charlie_') ||
@@ -130,7 +132,7 @@ export function initializeStorageIfEmpty(): {
   }
 
   let dailyLogs: DailyLog[] = getStoredItemSafely<DailyLog[]>(STORAGE_KEYS.DAILY_LOGS, [])
-    .filter(l => l && l.user_id && l.user_id !== 'user_1790779706015_wepw' && !l.user_id.toLowerCase().includes('test'));
+    .filter(l => l && l.user_id && l.user_id !== 'user_1790779706015_wepw');
 
   const tombstoneSet = new Set<string>();
   try {
@@ -145,9 +147,8 @@ export function initializeStorageIfEmpty(): {
       if (!w) return false;
       const wid = String(w.id || (w as any)._id || '').trim();
       if (!wid || tombstoneSet.has(wid)) return false;
-      if (w.user_id === 'user_1790779706015_wepw' || (w.user_id && w.user_id.toLowerCase().includes('test'))) return false;
-      if (w.id === 'w_rakesh_1' || w.id === 'w_rakesh_2' || w.id.includes('david') || w.id.includes('bob')) return false;
-      if (w.exercise_name === 'Barbell Bench Press' || w.exercise_name === 'Treadmill Intervals & Core') return false;
+      if (w.user_id === 'user_1790779706015_wepw') return false;
+      if (w.id === 'w_rakesh_1' || w.id === 'w_rakesh_2') return false;
       return true;
     });
 

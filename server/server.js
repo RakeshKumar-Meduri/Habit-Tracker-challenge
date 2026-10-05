@@ -70,8 +70,7 @@ function mergeDb(base, incoming) {
     dailyLogs: Array.isArray(incoming.dailyLogs) ? incoming.dailyLogs : (base.dailyLogs || []),
     workouts: (Array.isArray(incoming.workouts) ? incoming.workouts : (base.workouts || [])).filter(w =>
       w && w.id && !tombstoneSet.has(String(w.id).trim()) &&
-      w.id !== 'w_rakesh_1' && w.id !== 'w_rakesh_2' &&
-      w.exercise_name !== 'Barbell Bench Press' && w.exercise_name !== 'Treadmill Intervals & Core'
+      w.id !== 'w_rakesh_1' && w.id !== 'w_rakesh_2'
     ),
     weightLogs: Array.isArray(incoming.weightLogs) ? incoming.weightLogs : (base.weightLogs || []),
     missedReasons: Array.isArray(incoming.missedReasons) ? incoming.missedReasons : (base.missedReasons || []),
@@ -267,15 +266,8 @@ async function runMigrationIfNeeded() {
     }
 
     console.log('[PULSE Migration] Running group migration for existing users...');
-    const rakesh = activeUsers.find(u => 
-      u && (
-        u.username === 'rakesh_meduri' || 
-        u.id === 'rakesh_meduri' || 
-        u.id === 'user_1790779706015_wepw'
-      )
-    ) || activeUsers[0];
-
-    const ownerId = rakesh.id;
+    const owner = activeUsers[0];
+    const ownerId = owner.id;
     const groupId = 'group_pulse_original';
     const now = new Date().toISOString();
 
@@ -287,7 +279,6 @@ async function runMigrationIfNeeded() {
     };
     d.groups.push(originalGroup);
 
-    const activeUsers = (d.users || []).filter(u => u && u.is_active !== false);
     for (const u of activeUsers) {
       const isOwner = u.id === ownerId;
       d.memberships.push({
@@ -806,8 +797,8 @@ app.post('/api/groups/:id/invites', requireAuth, async (req, res) => {
   }
 
   const myMem = (db.memberships || []).find(m => m.group_id === id && m.user_id === req.user.id);
-  if (!myMem || myMem.role !== 'owner') {
-    return res.status(403).json({ success: false, error: 'Only the group owner can create invite links' });
+  if (!myMem) {
+    return res.status(403).json({ success: false, error: 'You are not a member of this group' });
   }
 
   const token = crypto.randomBytes(16).toString('base64url');
@@ -941,8 +932,8 @@ app.delete('/api/invites/:token', requireAuth, async (req, res) => {
   }
 
   const groupMem = (db.memberships || []).find(m => m.group_id === invite.group_id && m.user_id === req.user.id);
-  if (!groupMem || groupMem.role !== 'owner') {
-    return res.status(403).json({ success: false, error: 'Only the group owner can revoke invites' });
+  if (!groupMem || (groupMem.role !== 'owner' && invite.created_by !== req.user.id)) {
+    return res.status(403).json({ success: false, error: 'Only the group owner or invite creator can revoke this link' });
   }
 
   await mutate(d => {
@@ -1115,9 +1106,7 @@ app.get('/api/sync', requireAuth, async (req, res) => {
   const tombstoneSet = new Set((db.deletedWorkoutIds || []).map(id => String(id).trim()));
 
   const myRole = membership.role;
-  const invites = (myRole === 'owner')
-    ? (db.invites || []).filter(i => i.group_id === groupId && !i.revoked && new Date(i.expires_at) > new Date())
-    : [];
+  const invites = (db.invites || []).filter(i => i.group_id === groupId && !i.revoked && new Date(i.expires_at) > new Date());
 
   const membersInfo = groupMemberships.map(m => {
     const u = (db.users || []).find(usr => usr.id === m.user_id);
@@ -1144,8 +1133,7 @@ app.get('/api/sync', requireAuth, async (req, res) => {
       dailyLogs: (db.dailyLogs || []).filter(l => memberUserIds.has(l.user_id)),
       workouts: (db.workouts || []).filter(w =>
         w && w.id && memberUserIds.has(w.user_id) && !tombstoneSet.has(String(w.id).trim()) &&
-        w.id !== 'w_rakesh_1' && w.id !== 'w_rakesh_2' &&
-        w.exercise_name !== 'Barbell Bench Press' && w.exercise_name !== 'Treadmill Intervals & Core'
+        w.id !== 'w_rakesh_1' && w.id !== 'w_rakesh_2'
       ),
       weightLogs: (db.weightLogs || []).filter(w => memberUserIds.has(w.user_id)),
       missedReasons: (db.missedReasons || []).filter(m => memberUserIds.has(m.user_id)),

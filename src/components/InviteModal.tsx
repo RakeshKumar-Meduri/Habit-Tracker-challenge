@@ -134,9 +134,7 @@ export const InviteModal: React.FC<InviteModalProps> = ({
               Invite to {group?.name || 'Group'}
             </h3>
             <p className="text-xs text-[#A1A1AA]">
-              {isOwner 
-                ? 'Generate tokenized invite links with expiration and usage limits' 
-                : 'Share active invite links with your workout partners'}
+              Generate tokenized invite links with expiration and usage limits to add members
             </p>
           </div>
         </div>
@@ -148,12 +146,11 @@ export const InviteModal: React.FC<InviteModalProps> = ({
           </div>
         )}
 
-        {/* Owner Create Link Section */}
-        {isOwner && (
-          <form onSubmit={handleCreate} className="bg-[#1B1B20] border border-[#26262C] rounded-xl p-4 mb-5 space-y-3">
-            <h4 className="text-xs font-bold text-[#F4F4F5] uppercase tracking-wider text-[#D98B4A]">
-              Create New Invite Link
-            </h4>
+        {/* Create Link Section */}
+        <form onSubmit={handleCreate} className="bg-[#1B1B20] border border-[#26262C] rounded-xl p-4 mb-5 space-y-3">
+          <h4 className="text-xs font-bold text-[#F4F4F5] uppercase tracking-wider text-[#D98B4A]">
+            Create New Invite Link
+          </h4>
 
             <div className="grid grid-cols-2 gap-3">
               <div>
@@ -200,7 +197,6 @@ export const InviteModal: React.FC<InviteModalProps> = ({
               <span>{isCreating ? 'Creating Link...' : 'Generate Invite Link'}</span>
             </button>
           </form>
-        )}
 
         {/* Active Invites List */}
         <div>
