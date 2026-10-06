@@ -19,7 +19,8 @@ import {
   LogOut,
   UserPlus,
   Edit2,
-  Crown
+  Crown,
+  RotateCcw
 } from 'lucide-react';
 
 const CURRENT_YEAR = new Date().getFullYear();
@@ -273,43 +274,51 @@ export const ProfileSection: React.FC<ProfileSectionProps> = ({
           </div>
         </div>
 
-        <div className="flex items-center gap-2 w-full sm:w-auto">
-          <span className="text-xs font-semibold text-[#A1A1AA] shrink-0">Member:</span>
-          <select
-            value={selectedUserId}
-            onChange={(e) => setSelectedUserId(e.target.value)}
-            className="flex-1 sm:flex-initial sm:w-auto min-h-[44px] sm:min-h-[38px] bg-[#1B1B20] text-[#F4F4F5] font-bold text-xs border border-[#26262C] rounded-xl px-3 py-2 focus:outline-none focus:border-[#D98B4A] cursor-pointer"
-          >
-            {allUsers && allUsers.length > 0 ? (
-              allUsers.map((u) => (
-                <option key={u.id} value={u.id}>
-                  {u.id === currentUser.id ? `👤 You (${u.name})` : `👥 ${u.name} (@${u.username})`}
-                </option>
-              ))
-            ) : (
-              <option value={currentUser.id}>👤 You ({currentUser.name})</option>
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 w-full sm:w-auto">
+          <div className="flex items-center gap-2 w-full sm:w-auto flex-1 min-w-0">
+            <span className="text-xs font-semibold text-[#A1A1AA] shrink-0">Member:</span>
+            <select
+              value={selectedUserId}
+              onChange={(e) => setSelectedUserId(e.target.value)}
+              className="flex-1 sm:w-52 md:w-60 min-h-[42px] bg-[#1B1B20] text-[#F4F4F5] font-bold text-xs border border-[#26262C] rounded-xl px-3 py-2 focus:outline-none focus:border-[#D98B4A] cursor-pointer"
+            >
+              {allUsers && allUsers.length > 0 ? (
+                allUsers.map((u) => (
+                  <option key={u.id} value={u.id}>
+                    {u.id === currentUser.id ? `👤 You (${u.name})` : `👥 ${u.name} (@${u.username})`}
+                  </option>
+                ))
+              ) : (
+                <option value={currentUser.id}>👤 You ({currentUser.name})</option>
+              )}
+            </select>
+          </div>
+
+          <div className="flex items-center gap-2 shrink-0 self-end sm:self-auto">
+            {onRefreshMembers && (
+              <button
+                type="button"
+                onClick={onRefreshMembers}
+                disabled={isRefreshingMembers}
+                title="Sync members from server"
+                className="min-h-[40px] px-3 py-2 bg-[#1B1B20] hover:bg-[#26262C] text-[#D98B4A] rounded-xl border border-[#26262C] transition cursor-pointer flex items-center gap-1.5 active:scale-95 disabled:opacity-60"
+              >
+                <RefreshCw className={`w-3.5 h-3.5 ${isRefreshingMembers ? 'animate-spin' : ''}`} />
+                <span>Sync</span>
+              </button>
             )}
-          </select>
-          {onRefreshMembers && (
-            <button
-              type="button"
-              onClick={onRefreshMembers}
-              disabled={isRefreshingMembers}
-              title="Sync members from server"
-              className="min-h-[44px] sm:min-h-[38px] px-3 py-2 bg-[#1B1B20] hover:bg-[#26262C] text-[#D98B4A] rounded-xl border border-[#26262C] transition cursor-pointer flex items-center gap-1"
-            >
-              <RefreshCw className={`w-3.5 h-3.5 ${isRefreshingMembers ? 'animate-spin' : ''}`} />
-            </button>
-          )}
-          {isViewingOther && (
-            <button
-              type="button"
-              onClick={() => setSelectedUserId(currentUser.id)}
-              className="min-h-[44px] sm:min-h-[38px] px-2.5 py-2 bg-[#D98B4A]/20 hover:bg-[#D98B4A]/30 text-[#E69A5C] text-xs font-bold rounded-xl border border-[#D98B4A]/30 transition shrink-0 cursor-pointer"
-            >
-              Reset to Me
-            </button>
-          )}
+            {isViewingOther && (
+              <button
+                type="button"
+                onClick={() => setSelectedUserId(currentUser.id)}
+                title="Return to your personal profile"
+                className="min-h-[40px] px-3 py-2 bg-[#D98B4A]/20 hover:bg-[#D98B4A]/30 text-[#E69A5C] text-xs font-bold rounded-xl border border-[#D98B4A]/40 transition shrink-0 cursor-pointer flex items-center gap-1.5 active:scale-95 shadow-sm"
+              >
+                <RotateCcw className="w-3.5 h-3.5 text-[#D98B4A]" />
+                <span>Reset to Me</span>
+              </button>
+            )}
+          </div>
         </div>
       </div>
 
