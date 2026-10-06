@@ -256,13 +256,23 @@ export function App() {
 
     if (Array.isArray(serverData.dailyLogs)) {
       setDailyLogs(prev => {
-        const map = new Map(prev.map(l => [`${l.user_id}_${l.date}`, l]));
+        const isSeedLog = (l: any) => !l || !l.user_id ||
+          l.id === 'cmuuvhlqk0005pxawp6f80dg9' ||
+          (l.steps_value === 11200 && l.points_earned === 50) ||
+          (l.user_id === 'usr_seed_rakesh' && l.steps_value === 11200);
+
+        const map = new Map(
+          prev
+            .filter(l => !isSeedLog(l))
+            .map(l => [`${l.user_id}_${l.date}`, l])
+        );
         serverData.dailyLogs.forEach((l: any) => {
+          if (isSeedLog(l)) return;
           const key = `${l.user_id}_${l.date}`;
           const existing = map.get(key);
           map.set(key, existing ? { ...existing, ...l } : l);
         });
-        return Array.from(map.values());
+        return Array.from(map.values()).filter(l => !isSeedLog(l));
       });
     }
     if (Array.isArray(serverData.workouts)) {
@@ -283,7 +293,7 @@ export function App() {
           if (!w) return false;
           const wid = String(w.id || w._id || '').trim();
           if (!wid || tombstoneSet.has(wid)) return false;
-          if (w.id === 'w_rakesh_1' || w.id === 'w_rakesh_2') return false;
+          if (w.id === 'w_rakesh_1' || w.id === 'w_rakesh_2' || w.id === 'w_seed_bench') return false;
           return true;
         }
       );

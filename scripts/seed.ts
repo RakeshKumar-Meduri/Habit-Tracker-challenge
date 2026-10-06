@@ -169,53 +169,6 @@ async function main() {
     },
   });
 
-  // 4. Seed Daily Logs
-  console.log('- Seeding daily logs...');
-  const today = new Date().toISOString().split('T')[0];
-
-  await prisma.dailyLog.upsert({
-    where: {
-      user_id_date: {
-        user_id: userRakesh.id,
-        date: today,
-      },
-    },
-    update: {},
-    create: {
-      user_id: userRakesh.id,
-      date: today,
-      gym_done: true,
-      steps_done: true,
-      steps_value: 11200,
-      steps_target: 10000,
-      sleep_done: true,
-      junk_food_avoided: true,
-      water_done: true,
-      water_intake_ml: 3000,
-      points_earned: 50.0,
-    },
-  });
-
-  // 5. Seed Workouts
-  console.log('- Seeding workouts...');
-  await prisma.workout.upsert({
-    where: { id: 'w_seed_bench' },
-    update: {},
-    create: {
-      id: 'w_seed_bench',
-      user_id: userRakesh.id,
-      group_id: devGroup.id,
-      date: today,
-      exercise_name: 'Barbell Bench Press',
-      exercise_type: 'strength',
-      sets: 4,
-      reps: 10,
-      weight: 80,
-      weight_unit: 'kg',
-      duration: 45,
-    },
-  });
-
   console.log('Seeding completed successfully!');
 }
 

@@ -67,10 +67,12 @@ function mergeDb(base, incoming) {
     memberships: Array.isArray(incoming.memberships) ? incoming.memberships : (base.memberships || []),
     invites: Array.isArray(incoming.invites) ? incoming.invites : (base.invites || []),
     sessions: Array.isArray(incoming.sessions) ? incoming.sessions : (base.sessions || []),
-    dailyLogs: Array.isArray(incoming.dailyLogs) ? incoming.dailyLogs : (base.dailyLogs || []),
+    dailyLogs: (Array.isArray(incoming.dailyLogs) ? incoming.dailyLogs : (base.dailyLogs || [])).filter(l =>
+      l && l.id !== 'cmuuvhlqk0005pxawp6f80dg9' && !(l.steps_value === 11200 && l.points_earned === 50) && !(l.user_id === 'usr_seed_rakesh' && l.steps_value === 11200)
+    ),
     workouts: (Array.isArray(incoming.workouts) ? incoming.workouts : (base.workouts || [])).filter(w =>
       w && w.id && !tombstoneSet.has(String(w.id).trim()) &&
-      w.id !== 'w_rakesh_1' && w.id !== 'w_rakesh_2'
+      w.id !== 'w_rakesh_1' && w.id !== 'w_rakesh_2' && w.id !== 'w_seed_bench'
     ),
     weightLogs: Array.isArray(incoming.weightLogs) ? incoming.weightLogs : (base.weightLogs || []),
     missedReasons: Array.isArray(incoming.missedReasons) ? incoming.missedReasons : (base.missedReasons || []),
@@ -1229,10 +1231,15 @@ app.get('/api/sync', requireAuth, async (req, res) => {
       myRole,
       invites,
       users: groupUsers,
-      dailyLogs: (db.dailyLogs || []).filter(l => memberUserIds.has(l.user_id)),
+      dailyLogs: (db.dailyLogs || []).filter(l =>
+        memberUserIds.has(l.user_id) &&
+        l.id !== 'cmuuvhlqk0005pxawp6f80dg9' &&
+        !(l.steps_value === 11200 && l.points_earned === 50) &&
+        !(l.user_id === 'usr_seed_rakesh' && l.steps_value === 11200)
+      ),
       workouts: (db.workouts || []).filter(w =>
         w && w.id && memberUserIds.has(w.user_id) && !tombstoneSet.has(String(w.id).trim()) &&
-        w.id !== 'w_rakesh_1' && w.id !== 'w_rakesh_2'
+        w.id !== 'w_rakesh_1' && w.id !== 'w_rakesh_2' && w.id !== 'w_seed_bench'
       ),
       weightLogs: (db.weightLogs || []).filter(w => memberUserIds.has(w.user_id)),
       missedReasons: (db.missedReasons || []).filter(m => memberUserIds.has(m.user_id)),

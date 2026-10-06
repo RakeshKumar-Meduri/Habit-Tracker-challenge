@@ -132,7 +132,12 @@ export function initializeStorageIfEmpty(): {
   }
 
   let dailyLogs: DailyLog[] = getStoredItemSafely<DailyLog[]>(STORAGE_KEYS.DAILY_LOGS, [])
-    .filter(l => l && l.user_id && l.user_id !== 'user_1790779706015_wepw');
+    .filter(l => {
+      if (!l || !l.user_id || l.user_id === 'user_1790779706015_wepw') return false;
+      if (l.id === 'cmuuvhlqk0005pxawp6f80dg9' || (l.steps_value === 11200 && l.points_earned === 50)) return false;
+      if (l.user_id === 'usr_seed_rakesh' && l.steps_value === 11200) return false;
+      return true;
+    });
 
   const tombstoneSet = new Set<string>();
   try {
@@ -148,7 +153,7 @@ export function initializeStorageIfEmpty(): {
       const wid = String(w.id || (w as any)._id || '').trim();
       if (!wid || tombstoneSet.has(wid)) return false;
       if (w.user_id === 'user_1790779706015_wepw') return false;
-      if (w.id === 'w_rakesh_1' || w.id === 'w_rakesh_2') return false;
+      if (w.id === 'w_rakesh_1' || w.id === 'w_rakesh_2' || w.id === 'w_seed_bench') return false;
       return true;
     });
 
