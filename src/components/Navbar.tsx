@@ -107,9 +107,11 @@ export const Navbar: React.FC<NavbarProps> = ({
             
             {/* Brand Logo & Title */}
             <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
-              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-[#D98B4A] flex items-center justify-center shadow-md shadow-[#D98B4A]/20 shrink-0">
-                <Dumbbell className="w-4 h-4 sm:w-6 sm:h-6 text-[#0B0B0D] stroke-[2.5]" />
-              </div>
+              <img 
+                src="/logo.png" 
+                alt="PULSE" 
+                className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl object-cover shrink-0 shadow-md shadow-cyan-500/10 border border-white/5" 
+              />
               <div className="min-w-0">
                 <h1 className="text-base sm:text-lg font-black tracking-tight text-[#F4F4F5] flex items-center gap-1.5 leading-none">
                   PULSE <span className="text-[#D98B4A] text-[10px] sm:text-xs px-1.5 py-0.5 rounded-full bg-[rgba(217,139,74,0.12)] border border-[#D98B4A]/30 font-bold">FITNESS</span>

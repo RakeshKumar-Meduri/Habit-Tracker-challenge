@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import type { User, Gender, InvitePreview } from '../types';
 import { authorizeCredentials, createAuthSession } from '../services/authService';
 import { loginUserOnServer, registerUserOnServer, redeemInvite } from '../services/apiService';
-import { ShieldCheck, Lock, User as UserIcon, X, Clock, AlertTriangle, UserPlus, Scale, Ruler, Calendar, Ticket } from 'lucide-react';
+import { Lock, User as UserIcon, X, Clock, AlertTriangle, Scale, Ruler, Calendar, Ticket } from 'lucide-react';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -196,13 +196,11 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         )}
 
         <div className="text-center mb-5 sm:mb-6">
-          <div className="w-12 h-12 sm:w-14 sm:h-14 mx-auto mb-3 rounded-xl bg-gradient-to-tr from-[#D98B4A] via-[#D98B4A] to-[#E69A5C] flex items-center justify-center shadow-lg shadow-[#D98B4A]/30">
-            {mode === 'login' ? (
-              <ShieldCheck className="w-6 h-6 sm:w-7 sm:h-7 text-[#1B1B20]" />
-            ) : (
-              <UserPlus className="w-6 h-6 sm:w-7 sm:h-7 text-[#1B1B20]" />
-            )}
-          </div>
+          <img 
+            src="/logo.png" 
+            alt="PULSE" 
+            className="w-14 h-14 sm:w-16 sm:h-16 mx-auto mb-3 rounded-2xl object-cover shadow-xl shadow-cyan-500/10 border border-white/10" 
+          />
           <h3 className="text-xl sm:text-2xl font-black text-[#F4F4F5]">
             {mode === 'login' ? 'Sign In to PULSE' : 'Create Account'}
           </h3>
