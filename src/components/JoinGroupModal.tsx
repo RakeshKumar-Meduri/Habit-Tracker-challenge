@@ -138,28 +138,28 @@ export const JoinGroupModal: React.FC<JoinGroupModalProps> = ({
         ) : (
           /* Valid Invite State */
           <div className="space-y-5 py-2">
-            <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-[#D98B4A] via-[#D98B4A] to-[#E69A5C] flex items-center justify-center mx-auto text-[#131316] shadow-lg shadow-[#D98B4A]/25">
+            <div className="w-16 h-16 rounded-[14px] bg-[#EFF8FF] border border-[#3157D5]/20 flex items-center justify-center mx-auto text-[#3157D5] shadow-sm">
               <Users className="w-8 h-8 stroke-[2.5]" />
             </div>
 
             <div>
-              <p className="text-xs text-[#D98B4A] font-semibold tracking-wide uppercase">
+              <p className="text-xs text-[#3157D5] font-semibold tracking-wide uppercase">
                 Group Invitation
               </p>
-              <h3 className="text-xl sm:text-2xl font-black text-[#F4F4F5] mt-1">
+              <h3 className="text-xl sm:text-2xl font-bold text-[#111827] mt-1">
                 {preview.groupName}
               </h3>
-              <p className="text-xs text-[#A1A1AA] mt-1.5">
+              <p className="text-xs text-[#667085] mt-1.5">
                 <strong>{preview.inviterName}</strong> invited you to join their fitness group.
               </p>
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#1B1B20] border border-[#26262C] text-[11px] text-[#A1A1AA] mt-3">
-                <Users className="w-3.5 h-3.5 text-[#D98B4A]" />
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#F1F3F6] border border-[#E4E7EC] text-[11px] text-[#667085] mt-3">
+                <Users className="w-3.5 h-3.5 text-[#3157D5]" />
                 <span>{preview.memberCount} member{preview.memberCount === 1 ? '' : 's'} in this group</span>
               </div>
             </div>
 
             {errorMessage && (
-              <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/25 text-rose-400 text-xs text-left flex items-start gap-2">
+              <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/25 text-rose-500 text-xs text-left flex items-start gap-2">
                 <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
                 <span>{errorMessage}</span>
               </div>
@@ -172,13 +172,13 @@ export const JoinGroupModal: React.FC<JoinGroupModalProps> = ({
                   type="button"
                   onClick={handleJoinClick}
                   disabled={isJoining}
-                  className="w-full py-3.5 px-5 min-h-[46px] bg-gradient-to-r from-[#D98B4A] to-[#B45F1E] hover:from-[#E69A5C] hover:to-[#D98B4A] text-[#131316] font-black rounded-xl text-sm transition shadow-lg shadow-[#D98B4A]/25 cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2 active:scale-95"
+                  className="w-full py-3 px-5 min-h-[46px] bg-[#3157D5] hover:bg-[#2544B8] text-white font-semibold rounded-[10px] text-sm transition shadow-sm cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2 active:scale-95"
                 >
                   <UserPlus className="w-4 h-4" />
                   <span>{isJoining ? 'Joining Group...' : 'Join Group'}</span>
                 </button>
 
-                <p className="text-[11px] text-[#A1A1AA]">
+                <p className="text-[11px] text-[#667085]">
                   Logged in as <strong>{currentUser.name}</strong> (@{currentUser.username})
                 </p>
               </div>
@@ -191,7 +191,7 @@ export const JoinGroupModal: React.FC<JoinGroupModalProps> = ({
                     handleDismiss();
                     onOpenAuth('register');
                   }}
-                  className="w-full py-3.5 px-5 min-h-[46px] bg-gradient-to-r from-[#D98B4A] to-[#B45F1E] hover:from-[#E69A5C] hover:to-[#D98B4A] text-[#131316] font-black rounded-xl text-sm transition shadow-lg shadow-[#D98B4A]/25 cursor-pointer flex items-center justify-center gap-2 active:scale-95"
+                  className="w-full py-3 px-5 min-h-[46px] bg-[#3157D5] hover:bg-[#2544B8] text-white font-semibold rounded-[10px] text-sm transition shadow-sm cursor-pointer flex items-center justify-center gap-2 active:scale-95"
                 >
                   <UserPlus className="w-4 h-4" />
                   <span>Sign Up to Join Group</span>
@@ -203,9 +203,9 @@ export const JoinGroupModal: React.FC<JoinGroupModalProps> = ({
                     handleDismiss();
                     onOpenAuth('login');
                   }}
-                  className="w-full py-2.5 px-4 min-h-[40px] bg-[#1B1B20] hover:bg-[#26262C] text-[#F4F4F5] font-semibold rounded-xl text-xs transition border border-[#26262C] cursor-pointer flex items-center justify-center gap-1.5"
+                  className="w-full py-2.5 px-4 min-h-[44px] bg-white hover:bg-[#F1F3F6] text-[#344054] font-semibold rounded-[10px] text-xs transition border border-[#D0D5DD] cursor-pointer flex items-center justify-center gap-1.5"
                 >
-                  <LogIn className="w-3.5 h-3.5 text-[#D98B4A]" />
+                  <LogIn className="w-3.5 h-3.5 text-[#3157D5]" />
                   <span>Already have an account? Sign In</span>
                 </button>
               </div>

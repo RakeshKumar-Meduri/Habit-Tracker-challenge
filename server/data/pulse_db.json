@@ -1,9 +1,159 @@
 {
-  "users": [],
-  "groups": [],
-  "memberships": [],
+  "users": [
+    {
+      "id": "user_rakesh",
+      "name": "Rakesh",
+      "username": "rakesh",
+      "password_hash": "d2beff3e265042a4998ca7fe66aebc55cc4e43e2a07b5639a6c0494304a95fbb",
+      "role": "moderator",
+      "plan": "pro",
+      "height": 178,
+      "weight_current": 74,
+      "age": 26,
+      "gender": "male",
+      "is_private": false,
+      "avatar_color": "from-[#D98B4A] to-[#B45F1E]",
+      "created_at": "2026-10-06",
+      "is_active": true,
+      "must_change_password": false
+    },
+    {
+      "id": "user_hitesh",
+      "name": "Hitesh",
+      "username": "hitesh",
+      "password_hash": "a3f0a1bef4fe0d16686f72501f5dde0cf505e6b715ca657b0ed26d5b1d29c91c",
+      "role": "moderator",
+      "plan": "pro",
+      "height": 175,
+      "weight_current": 72,
+      "age": 26,
+      "gender": "male",
+      "is_private": false,
+      "avatar_color": "from-cyan-500 to-blue-700",
+      "created_at": "2026-10-06",
+      "is_active": true,
+      "must_change_password": false
+    },
+    {
+      "id": "user_demouser1",
+      "name": "Demo User 1",
+      "username": "demouser1",
+      "password_hash": "cbcf1e7ae042bf546c70039c517ba447a64f76ecdcc423152afdd027c981dbab",
+      "role": "member",
+      "plan": "base",
+      "height": 170,
+      "weight_current": 68,
+      "age": 24,
+      "gender": "male",
+      "is_private": false,
+      "avatar_color": "from-emerald-500 to-teal-700",
+      "created_at": "2026-10-06",
+      "is_active": true,
+      "must_change_password": false
+    },
+    {
+      "id": "user_demouser2",
+      "name": "Demo User 2",
+      "username": "demouser2",
+      "password_hash": "967087bfec1a9ee521021ef58dde835e7aeec7397ed46e17afe7d08fb2689bb1",
+      "role": "member",
+      "plan": "base",
+      "height": 165,
+      "weight_current": 58,
+      "age": 25,
+      "gender": "female",
+      "is_private": false,
+      "avatar_color": "from-violet-500 to-purple-700",
+      "created_at": "2026-10-06",
+      "is_active": true,
+      "must_change_password": false
+    }
+  ],
+  "groups": [
+    {
+      "id": "grp_pulse_elite",
+      "name": "PULSE Elite Squad",
+      "owner_id": "user_rakesh",
+      "created_at": "2026-10-06T15:00:00.000Z",
+      "step_target": 10000
+    },
+    {
+      "id": "grp_pulse_demo",
+      "name": "Demo Fitness Squad",
+      "owner_id": "user_demouser1",
+      "created_at": "2026-10-06T15:00:00.000Z",
+      "step_target": 10000
+    }
+  ],
+  "memberships": [
+    {
+      "user_id": "user_rakesh",
+      "group_id": "grp_pulse_elite",
+      "role": "owner",
+      "joined_at": "2026-10-06T15:00:00.000Z"
+    },
+    {
+      "user_id": "user_hitesh",
+      "group_id": "grp_pulse_elite",
+      "role": "owner",
+      "joined_at": "2026-10-06T15:00:00.000Z"
+    },
+    {
+      "user_id": "user_demouser1",
+      "group_id": "grp_pulse_demo",
+      "role": "owner",
+      "joined_at": "2026-10-06T15:00:00.000Z"
+    },
+    {
+      "user_id": "user_demouser2",
+      "group_id": "grp_pulse_demo",
+      "role": "member",
+      "joined_at": "2026-10-06T15:00:00.000Z"
+    }
+  ],
   "invites": [],
-  "sessions": [],
+  "sessions": [
+    {
+      "token": "JaFB8xn9rz8EUEzb_q7uUj39MPRFrmGQ6i7POtg9E10",
+      "user_id": "user_rakesh",
+      "expires_at": "2026-11-05T16:50:29.361Z"
+    },
+    {
+      "token": "c7XClvJHoLr4tXuPTOHhK24DyM7XSjGwNwWTTrH1ejk",
+      "user_id": "user_hitesh",
+      "expires_at": "2026-11-05T16:50:29.369Z"
+    },
+    {
+      "token": "4Oe-UKqImgyRtneZ3mpYLAFwcB96_iXhnX9euLECKn4",
+      "user_id": "user_demouser1",
+      "expires_at": "2026-11-05T16:50:29.371Z"
+    },
+    {
+      "token": "NPPNgiL-WWFZazqaUcGKHPnhpnzPjXgJeoluP9a2tGo",
+      "user_id": "user_demouser2",
+      "expires_at": "2026-11-05T16:50:29.376Z"
+    },
+    {
+      "token": "7iaT8CXF_wP7m9J-ZcH1GqETd_lY1gizweiXyzUCAP4",
+      "user_id": "user_hitesh",
+      "expires_at": "2026-11-05T17:05:47.885Z"
+    },
+    {
+      "token": "JSjnDTdlRFdRaqILHP6aacIoL4z3lvYTRnT5PwHlBpE",
+      "user_id": "user_rakesh",
+      "expires_at": "2026-11-05T17:05:47.893Z"
+    },
+    {
+      "token": "ICjn-kBiNMvlwXFqgWmCrGtbobn9n1HVkQZCsA2sLsY",
+      "user_id": "user_demouser1",
+      "expires_at": "2026-11-05T17:05:47.896Z"
+    },
+    {
+      "token": "aUUvAfgdnzSSk3WZy2pqzkQDkfq8mybuahhGqqhtuYM",
+      "user_id": "user_demouser2",
+      "expires_at": "2026-11-05T17:05:47.898Z"
+    }
+  ],
   "dailyLogs": [],
   "workouts": [],
   "weightLogs": [],
@@ -21,6 +171,7 @@
     "sleep_max_hours": 9,
     "water_target_ml": 2500,
     "cheat_days_enabled": true,
-    "day_cutoff_hour": 0
+    "day_cutoff_hour": 0,
+    "water_min_liters": 3
   }
 }

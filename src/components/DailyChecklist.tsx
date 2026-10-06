@@ -14,6 +14,7 @@ import type {
   Group
 } from '../types';
 import { calculateSleepDuration } from '../utils/crypto';
+import { calculateGoalStreak, calculateUserPoints } from '../utils/gamification';
 import { isLogForUser, isWorkoutForUser } from '../utils/userMatcher';
 import { 
   Calendar, 
@@ -36,7 +37,8 @@ import {
   Users,
   Eye,
   RotateCcw,
-  RefreshCw
+  RefreshCw,
+  Crown
 } from 'lucide-react';
 
 interface DailyChecklistProps {
@@ -383,8 +385,6 @@ export const DailyChecklist: React.FC<DailyChecklistProps> = ({
     displayedDailyLog.water_done,
   ].filter(Boolean).length;
 
-  const completionPercent = Math.round((completedCount / 5) * 100);
-
   // Collective team goal statistics for selectedDate across all active group members
   const activeMembersList = allUsers && allUsers.length > 0 ? allUsers : [currentUser];
   const teamTotalTarget = activeMembersList.length * 5;
@@ -406,8 +406,101 @@ export const DailyChecklist: React.FC<DailyChecklistProps> = ({
     );
   };
 
+  // Section 14 & 18 Dynamic Momentum & Streak Calculations
+  const currentHour = new Date().getHours();
+  const greeting = currentHour < 12 ? 'Good morning' : currentHour < 18 ? 'Good afternoon' : 'Good evening';
+  const currentStreak = calculateGoalStreak(allDailyLogs || [], currentUser, 'gym', allUsers);
+
+  const last7Days = Array.from({ length: 7 }, (_, i) => {
+    const d = new Date();
+    d.setDate(d.getDate() - i);
+    return d.toISOString().split('T')[0];
+  });
+  const workoutsThisWeek = last7Days.filter(dateStr => {
+    const hasWorkout = allWorkouts?.some(w => isWorkoutForUser(w, currentUser, allUsers) && w.date === dateStr);
+    const log = allDailyLogs?.find(l => isLogForUser(l, currentUser, allUsers) && l.date === dateStr);
+    return hasWorkout || log?.gym_done;
+  }).length;
+
+  const totalGroupMembers = activeMembersList.length;
+  const userRankings = activeMembersList.map(u => ({
+    id: u.id,
+    points: calculateUserPoints(allDailyLogs || [], u, allUsers),
+  })).sort((a, b) => b.points - a.points);
+  const userRank = Math.max(1, userRankings.findIndex(r => r.id === currentUser.id) + 1);
+
   return (
     <div className="space-y-6 max-w-4xl mx-auto font-sans">
+
+      {/* Section 14 & 18: Hero Greeting & Key Momentum Metrics */}
+      <div className="space-y-3">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+          <div>
+            <h1 className="text-xl sm:text-2xl font-bold text-[#111827] tracking-tight">
+              {greeting}, {currentUser.name}
+            </h1>
+            <p className="text-xs sm:text-sm text-[#667085]">
+              Here is your daily momentum and consistency breakdown for today.
+            </p>
+          </div>
+        </div>
+
+        {/* 4 Restrained Overview Cards (Score, Workouts, Streak, Group Rank) */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3">
+          <div className="bg-white border border-[#E4E7EC] rounded-[14px] p-3 sm:p-3.5 shadow-[0_1px_3px_rgba(16,24,40,0.06)]">
+            <span className="text-[11px] font-semibold text-[#667085] uppercase tracking-wider block">Today's Score</span>
+            <div className="flex items-baseline gap-1 mt-1">
+              <span className="text-xl sm:text-2xl font-bold text-[#111827] tabular-nums">
+                {displayedDailyLog.points_earned !== undefined ? displayedDailyLog.points_earned : (completedCount * 10)}
+              </span>
+              <span className="text-xs text-[#98A2B3] font-semibold">/ 50</span>
+            </div>
+          </div>
+
+          <div className="bg-white border border-[#E4E7EC] rounded-[14px] p-3 sm:p-3.5 shadow-[0_1px_3px_rgba(16,24,40,0.06)]">
+            <span className="text-[11px] font-semibold text-[#667085] uppercase tracking-wider block">Workouts</span>
+            <div className="flex items-baseline gap-1 mt-1">
+              <span className="text-xl sm:text-2xl font-bold text-[#111827] tabular-nums">{workoutsThisWeek}</span>
+              <span className="text-xs text-[#98A2B3] font-semibold">/ 7</span>
+            </div>
+          </div>
+
+          <div className="bg-white border border-[#E4E7EC] rounded-[14px] p-3 sm:p-3.5 shadow-[0_1px_3px_rgba(16,24,40,0.06)]">
+            <span className="text-[11px] font-semibold text-[#667085] uppercase tracking-wider block">Streak</span>
+            <div className="flex items-center gap-1.5 mt-1">
+              <span className="text-xl sm:text-2xl font-bold text-[#111827] tabular-nums">{currentStreak}</span>
+              <span className="text-sm">🔥</span>
+            </div>
+          </div>
+
+          {isBasePlan ? (
+            <button
+              type="button"
+              onClick={() => onOpenUpgradeModal?.()}
+              className="bg-white border border-[#E4E7EC] hover:border-[#D98B4A]/50 rounded-[14px] p-3 sm:p-3.5 shadow-[0_1px_3px_rgba(16,24,40,0.06)] text-left transition cursor-pointer group"
+              title="Team Goals & Squad Ranking are exclusively available on PULSE Pro"
+            >
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-semibold text-[#667085] uppercase tracking-wider block">Team Goals</span>
+                <Crown className="w-3.5 h-3.5 text-[#D98B4A] group-hover:scale-110 transition-transform" />
+              </div>
+              <div className="flex items-center gap-1.5 mt-1">
+                <span className="text-xs font-bold text-[#D98B4A] bg-[#D98B4A]/10 border border-[#D98B4A]/25 px-2 py-0.5 rounded-full flex items-center gap-1">
+                  <Lock className="w-2.5 h-2.5" /> Pro Only
+                </span>
+              </div>
+            </button>
+          ) : (
+            <div className="bg-white border border-[#E4E7EC] rounded-[14px] p-3 sm:p-3.5 shadow-[0_1px_3px_rgba(16,24,40,0.06)]">
+              <span className="text-[11px] font-semibold text-[#667085] uppercase tracking-wider block">Group Rank</span>
+              <div className="flex items-baseline gap-1 mt-1">
+                <span className="text-xl sm:text-2xl font-bold text-[#3157D5] tabular-nums">#{userRank}</span>
+                <span className="text-xs text-[#98A2B3] font-semibold">of {totalGroupMembers}</span>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
       
       {/* Member Accountability Selector - Hidden for Base (Solo) Plan */}
       {!isBasePlan && (
@@ -588,8 +681,43 @@ export const DailyChecklist: React.FC<DailyChecklistProps> = ({
         </div>
       )}
 
-      {/* Collective Team Daily Goal Progress Bar - Only visible on Pro plan */}
-      {!isBasePlan && (
+      {/* Collective Team Daily Goal Progress Bar - Pro Exclusive */}
+      {isBasePlan ? (
+        <div className="bg-[#131316] border border-[#26262C] rounded-xl p-4 sm:p-5 shadow-sm space-y-3 relative overflow-hidden">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-lg bg-[#D98B4A]/15 border border-[#D98B4A]/30 flex items-center justify-center text-[#D98B4A] font-bold shrink-0 shadow-sm">
+                <Users className="w-4 h-4 text-[#D98B4A]" />
+              </div>
+              <div>
+                <h3 className="text-sm sm:text-base font-bold text-[#F4F4F5] flex items-center gap-2">
+                  Team Daily Goals
+                  <span className="text-[10px] px-2 py-0.5 rounded-md bg-[rgba(217,139,74,0.12)] text-[#D98B4A] font-bold border border-[#D98B4A]/25 flex items-center gap-1">
+                    <Lock className="w-2.5 h-2.5" /> PULSE Pro Exclusive
+                  </span>
+                </h3>
+                <p className="text-xs text-[#A1A1AA]">
+                  Collective squad targets, combined progress bars, and team accountability are exclusively available on PULSE Pro.
+                </p>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => onOpenUpgradeModal?.()}
+              className="self-start sm:self-auto px-4 py-2 min-h-[36px] bg-gradient-to-r from-[#D98B4A] to-[#B45F1E] hover:from-[#E69A5C] hover:to-[#D98B4A] text-[#131316] font-bold rounded-lg text-xs transition cursor-pointer shadow-sm flex items-center gap-1.5 active:scale-95 shrink-0"
+            >
+              <Crown className="w-3.5 h-3.5" />
+              <span>Unlock Team Goals</span>
+            </button>
+          </div>
+
+          {/* Locked Preview Progress Bar */}
+          <div className="w-full h-2.5 bg-[#1B1B20] rounded-full overflow-hidden border border-[#26262C] opacity-35">
+            <div className="h-full bg-[#D98B4A]/50 rounded-full" style={{ width: '60%' }} />
+          </div>
+        </div>
+      ) : (
       <div className="bg-[#131316] border border-[#26262C] rounded-xl p-4 sm:p-5 shadow-sm space-y-3">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <div className="flex items-center gap-2.5">
@@ -717,38 +845,50 @@ export const DailyChecklist: React.FC<DailyChecklistProps> = ({
           )}
         </div>
 
-        {/* Daily Completion Meter */}
-        <div className="w-full md:w-auto flex items-center gap-4 bg-[#1B1B20] border border-[#26262C] rounded-xl p-3">
-          <div className="relative w-14 h-14 flex items-center justify-center">
+        {/* Today's Score Circular Progress Indicator (Section 19 Spec) */}
+        <div className="w-full md:w-auto flex items-center gap-4 bg-white border border-[#E4E7EC] rounded-[14px] p-3.5 shadow-[0_1px_3px_rgba(16,24,40,0.06)]">
+          <div className="relative w-14 h-14 flex items-center justify-center shrink-0">
             <svg className="w-14 h-14 transform -rotate-90">
-              <circle cx="28" cy="28" r="22" stroke="currentColor" strokeWidth="4" className="text-[#26262C]" fill="transparent" />
+              <circle cx="28" cy="28" r="22" stroke="#E9EDF5" strokeWidth="4.5" fill="transparent" />
               <circle
                 cx="28"
                 cy="28"
                 r="22"
-                stroke="currentColor"
-                strokeWidth="4"
-                className="text-[#D98B4A] transition-all duration-500"
+                stroke="#3157D5"
+                strokeWidth="4.5"
                 fill="transparent"
-                strokeDasharray={138}
-                strokeDashoffset={138 - (138 * (isViewingOther && !actualMemberLog ? 0 : completionPercent)) / 100}
+                strokeDasharray={138.2}
+                strokeDashoffset={138.2 - (138.2 * (Math.min(50, displayedDailyLog.points_earned !== undefined ? displayedDailyLog.points_earned : (completedCount * 10))) / 50)}
                 strokeLinecap="round"
+                className="transition-all duration-500 ease-out"
               />
             </svg>
-            <span className="absolute text-xs font-black text-[#F4F4F5] tabular-nums">
-              {isViewingOther && !actualMemberLog ? '—' : `${completionPercent}%`}
-            </span>
+            <div className="absolute flex flex-col items-center justify-center text-center">
+              <span className="text-xs font-black text-[#111827] tabular-nums leading-none">
+                {isViewingOther && !actualMemberLog ? '—' : (displayedDailyLog.points_earned !== undefined ? displayedDailyLog.points_earned : (completedCount * 10))}
+              </span>
+              <span className="text-[8px] font-bold text-[#667085] leading-none mt-0.5">/ 50</span>
+            </div>
           </div>
           <div>
-            <h3 className="text-sm font-bold text-[#F4F4F5]">{isViewingOther ? `${targetUser.name}'s Goals` : 'Daily Goal Completion'}</h3>
-            <p className="text-xs text-[#A1A1AA] mt-0.5">
+            <div className="flex items-center gap-1.5">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-[#3157D5]">
+                Today's Score
+              </span>
+              {isSunday && (
+                <span className="text-[9px] px-1.5 py-0.2 rounded-full bg-[#ECFDF3] text-[#15803D] font-bold border border-[#15803D]/20">
+                  Healing
+                </span>
+              )}
+            </div>
+            <h3 className="text-sm font-bold text-[#111827]">
+              {isViewingOther ? `${targetUser.name}'s Progress` : `${completedCount} of 5 Habits Completed`}
+            </h3>
+            <p className="text-xs text-[#667085] mt-0.5">
               {isViewingOther && !actualMemberLog ? (
-                <span>No checklist recorded for <span className="text-[#F4F4F5]">{selectedDate}</span></span>
+                <span>No habits recorded for <span className="text-[#111827] font-semibold">{selectedDate}</span></span>
               ) : (
-                <>
-                  <strong className="text-[#F4F4F5] tabular-nums">{completedCount}</strong> of 5 core goals completed for <span className="text-[#F4F4F5]">{selectedDate}</span>
-                  {isSunday && <span className="text-[#34D399] font-semibold ml-1">(Sunday Healing)</span>}
-                </>
+                <span>Selected Date: <span className="text-[#111827] font-semibold">{selectedDate}</span></span>
               )}
             </p>
           </div>

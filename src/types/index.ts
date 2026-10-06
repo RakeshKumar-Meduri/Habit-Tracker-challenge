@@ -1,5 +1,5 @@
 export type Gender = 'male' | 'female' | 'other' | '';
-export type UserRole = 'member' | 'admin';
+export type UserRole = 'member' | 'admin' | 'moderator';
 
 export interface User {
   id: string;
@@ -20,6 +20,8 @@ export interface User {
   onboarded?: boolean;
   is_active: boolean; // soft-delete status (default true)
   must_change_password?: boolean;
+  plan?: string;
+  planTier?: 'none' | 'base' | 'pro';
 }
 
 export interface AuthSession {

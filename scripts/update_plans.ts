@@ -10,7 +10,7 @@ const PLANS = [
     id: 'plan_base_monthly',
     name: 'PULSE Base Monthly',
     description: 'Solo fitness tracking. Daily checklist, workout logs, personal weights & analytics (no groups).',
-    price: 4900, // ₹49.00
+    price: 2900, // ₹29.00
     currency: 'INR',
     duration: 'monthly',
     is_active: true,
@@ -19,7 +19,7 @@ const PLANS = [
     id: 'plan_pro_monthly',
     name: 'PULSE Pro Monthly',
     description: 'Full group formation, add unlimited members, head-to-head challenges, team progress & rankings.',
-    price: 14900, // ₹149.00
+    price: 9900, // ₹99.00
     currency: 'INR',
     duration: 'monthly',
     is_active: true,
@@ -28,7 +28,7 @@ const PLANS = [
     id: 'plan_pro_yearly',
     name: 'PULSE Pro Yearly',
     description: '1 Year of full Pro access: unlimited groups, head-to-head battles, and team leaderboards.',
-    price: 149900, // ₹1,499.00
+    price: 99900, // ₹999.00
     currency: 'INR',
     duration: 'yearly',
     is_active: true,

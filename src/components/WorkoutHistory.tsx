@@ -162,7 +162,7 @@ export const WorkoutHistory: React.FC<WorkoutHistoryProps> = ({
 
           <button
             onClick={onOpenWorkoutModal}
-            className="flex-1 sm:flex-none justify-center py-2 px-4 min-h-[38px] bg-[#D98B4A] hover:bg-[#E69A5C] text-[#0B0B0D] font-bold rounded-lg text-xs transition shadow-sm flex items-center gap-1.5 cursor-pointer active:scale-95"
+            className="flex-1 sm:flex-none justify-center py-2.5 px-5 min-h-[44px] bg-[#3157D5] hover:bg-[#2544B8] text-white font-semibold rounded-[10px] text-xs sm:text-sm transition shadow-sm flex items-center gap-2 cursor-pointer active:scale-95"
           >
             <Dumbbell className="w-4 h-4 stroke-[2.5]" />
             <span>+ Log Session</span>
@@ -243,23 +243,23 @@ export const WorkoutHistory: React.FC<WorkoutHistoryProps> = ({
 
       {/* Workout Sessions Cards Grid */}
       {visibleWorkouts.length === 0 ? (
-        <div className="bg-[#131316] border border-[#26262C] rounded-xl p-8 sm:p-12 text-center">
-          <div className="w-12 h-12 rounded-xl bg-[#1B1B20] border border-[#26262C] flex items-center justify-center mx-auto text-[#71717A]">
-            <Dumbbell className="w-6 h-6" />
+        <div className="bg-white border border-[#E4E7EC] rounded-[14px] p-8 sm:p-12 text-center shadow-[0_1px_3px_rgba(16,24,40,0.06)]">
+          <div className="w-12 h-12 rounded-[10px] bg-[#F1F3F6] border border-[#E4E7EC] flex items-center justify-center mx-auto text-[#667085]">
+            <Dumbbell className="w-6 h-6 stroke-[2]" />
           </div>
-          <h3 className="text-sm font-bold text-[#F4F4F5] mt-3">No Workout Sessions Found</h3>
-          <p className="text-xs text-[#A1A1AA] mt-1 max-w-sm mx-auto">
+          <h3 className="text-base font-bold text-[#111827] mt-3.5">No workouts yet</h3>
+          <p className="text-sm text-[#667085] mt-1 max-w-sm mx-auto">
             {searchExercise || selectedUserId !== 'all'
               ? 'No sessions match your current member or exercise filter.'
-              : 'No workouts have been recorded yet. Click "+ Log Session" to add your training details!'}
+              : 'Your first workout starts your streak.'}
           </p>
           {(!searchExercise && selectedUserId === 'all') && (
             <button
               onClick={onOpenWorkoutModal}
-              className="mt-4 px-4 py-2 bg-[#D98B4A] hover:bg-[#E69A5C] text-[#0B0B0D] font-bold rounded-lg text-xs transition inline-flex items-center gap-1.5 cursor-pointer shadow-sm"
+              className="mt-5 px-5 py-2.5 min-h-[44px] bg-[#3157D5] hover:bg-[#2544B8] text-white font-semibold rounded-[10px] text-xs sm:text-sm transition inline-flex items-center gap-2 cursor-pointer shadow-sm active:scale-95"
             >
-              <Dumbbell className="w-3.5 h-3.5 stroke-[2.5]" />
-              <span>Log Your First Workout</span>
+              <Dumbbell className="w-4 h-4 stroke-[2.5]" />
+              <span>Log workout</span>
             </button>
           )}
         </div>

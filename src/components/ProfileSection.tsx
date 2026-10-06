@@ -742,7 +742,7 @@ export const ProfileSection: React.FC<ProfileSectionProps> = ({
                       {planTier === 'pro' 
                         ? 'Unlimited group members, head-to-head battles, rankings & shared goals.'
                         : planTier === 'base'
-                        ? '₹49/month • Solo fitness tracking. Upgrade to Pro for group formation & challenges.'
+                        ? '₹29/month • Solo fitness tracking. Upgrade to Pro for group formation & challenges.'
                         : 'No active plan. Select a membership to unlock habit tracking.'}
                     </p>
                   </div>
@@ -789,7 +789,7 @@ export const ProfileSection: React.FC<ProfileSectionProps> = ({
                     <span>Group Formation & Invites are exclusive to PULSE Pro</span>
                   </div>
                   <p className="text-xs text-[#A1A1AA] leading-relaxed">
-                    You are on the Base Solo plan (₹49/mo). Upgrade to PULSE Pro to form groups, invite teammates of any group size, and unlock head-to-head battles and team leaderboards. (Note: all joining teammates must also have an active Pro plan).
+                    You are on the Base Solo plan (₹29/mo). Upgrade to PULSE Pro to form groups, invite teammates of any group size, and unlock head-to-head battles and team leaderboards. (Note: all joining teammates must also have an active Pro plan).
                   </p>
                   {onOpenUpgradeModal && (
                     <button
@@ -798,7 +798,7 @@ export const ProfileSection: React.FC<ProfileSectionProps> = ({
                       className="mt-1 px-3.5 py-1.5 bg-[#D98B4A] hover:bg-[#B45F1E] text-[#0B0B0D] font-extrabold rounded-lg text-xs transition cursor-pointer flex items-center gap-1.5"
                     >
                       <Crown className="w-3.5 h-3.5" />
-                      <span>Upgrade to Pro (from ₹149/mo)</span>
+                      <span>Upgrade to Pro (from ₹99/mo)</span>
                     </button>
                   )}
                 </div>
@@ -842,11 +842,22 @@ export const ProfileSection: React.FC<ProfileSectionProps> = ({
                   {onOpenInviteModal && (
                     <button
                       type="button"
-                      onClick={onOpenInviteModal}
+                      onClick={() => {
+                        if (planTier !== 'pro') {
+                          onOpenUpgradeModal?.(true);
+                        } else {
+                          onOpenInviteModal();
+                        }
+                      }}
                       className="flex-1 min-w-[120px] px-3 py-2 bg-[#D98B4A]/15 hover:bg-[#D98B4A]/25 text-[#D98B4A] border border-[#D98B4A]/30 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition cursor-pointer"
                     >
                       <UserPlus className="w-3.5 h-3.5" />
                       <span>Invite Friends</span>
+                      {planTier !== 'pro' && (
+                        <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-[#D98B4A]/20 text-[#D98B4A] font-bold border border-[#D98B4A]/30 flex items-center gap-0.5 ml-1">
+                          <Lock className="w-2.5 h-2.5" /> PRO
+                        </span>
+                      )}
                     </button>
                   )}
                 </div>
@@ -1022,8 +1033,8 @@ export const ProfileSection: React.FC<ProfileSectionProps> = ({
                 </div>
               </div>
 
-              {/* Active Invites for Owner */}
-              {myRole === 'owner' && (invites || []).filter(i => !i.revoked).length > 0 && (
+              {/* Active Invites */}
+              {(invites || []).filter(i => !i.revoked).length > 0 && (
                 <div className="space-y-2 pt-2">
                   <h4 className="text-xs font-bold text-[#A1A1AA] uppercase tracking-wider">
                     Active Invites ({(invites || []).filter(i => !i.revoked).length})

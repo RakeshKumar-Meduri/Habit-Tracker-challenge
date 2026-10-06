@@ -31,7 +31,7 @@ export async function ensureDefaultPlans() {
       id: 'plan_base_monthly',
       name: 'PULSE Base Monthly',
       description: 'Solo fitness tracking. Daily checklist, workout logs, personal weights & analytics (no groups).',
-      price: 4900, // ₹49.00
+      price: 2900, // ₹29.00
       currency: 'INR',
       duration: 'monthly',
       is_active: true,
@@ -40,7 +40,7 @@ export async function ensureDefaultPlans() {
       id: 'plan_pro_monthly',
       name: 'PULSE Pro Monthly',
       description: 'Full group formation, add unlimited members, head-to-head challenges, team progress & rankings.',
-      price: 14900, // ₹149.00
+      price: 9900, // ₹99.00
       currency: 'INR',
       duration: 'monthly',
       is_active: true,
@@ -49,7 +49,7 @@ export async function ensureDefaultPlans() {
       id: 'plan_pro_yearly',
       name: 'PULSE Pro Yearly',
       description: '1 Year of full Pro access: unlimited groups, head-to-head battles, and team leaderboards.',
-      price: 149900, // ₹1,499.00
+      price: 99900, // ₹999.00
       currency: 'INR',
       duration: 'yearly',
       is_active: true,
@@ -76,6 +76,7 @@ export const VIP_FREE_USERNAMES = new Set([
   'rakesh',
   'rakeshmeduri',
   'rakesh_meduri',
+  'hitesh',
   'friend',
   'enumulahitesh',
 ]);
@@ -83,11 +84,11 @@ export const VIP_FREE_USERNAMES = new Set([
 /**
  * Determine a user's current subscription tier:
  * - 'none': No active subscription (requires paywall checkout)
- * - 'base': Active on Base Plan (₹49/mo - solo only, no groups)
- * - 'pro': Active on Pro Plan (₹149/mo or ₹1,499/yr - full groups & head-to-head)
+ * - 'base': Active on Base Plan (₹29/mo - solo only, no groups)
+ * - 'pro': Active on Pro Plan (₹99/mo or ₹999/yr - full groups & head-to-head)
  */
 export async function getUserPlanTier(userId: string): Promise<'none' | 'base' | 'pro'> {
-  // 1. Check if user is VIP / exempt account (Rakesh & Friend free accounts)
+  // 1. Check if user is VIP / exempt account (Rakesh & Hitesh moderator accounts)
   try {
     const user = await prisma.user.findUnique({
       where: { id: userId },
@@ -97,7 +98,10 @@ export async function getUserPlanTier(userId: string): Promise<'none' | 'base' |
       const clean = user.username.replace(/^@+/, '').toLowerCase();
       if (
         user.role === 'admin' ||
+        user.role === 'moderator' ||
         VIP_FREE_USERNAMES.has(clean) ||
+        clean === 'rakesh' ||
+        clean === 'hitesh' ||
         clean.startsWith('rakesh') ||
         clean === 'friend' ||
         clean === 'enumulahitesh'

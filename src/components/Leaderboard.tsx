@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import type { User, DailyLog } from '../types';
 import { calculateUserPoints } from '../utils/gamification';
-import { Trophy, Flame, Zap, Crown, Lock } from 'lucide-react';
+import { Trophy, Crown, Lock } from 'lucide-react';
 
 interface LeaderboardProps {
   users: User[];
@@ -44,7 +44,7 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({
               className="px-6 py-3 bg-gradient-to-r from-[#D98B4A] to-[#B45F1E] hover:from-[#B45F1E] hover:to-[#8E4410] text-[#0B0B0D] font-extrabold text-xs sm:text-sm rounded-xl shadow-lg shadow-[#D98B4A]/25 transition cursor-pointer flex items-center gap-2 mx-auto active:scale-95"
             >
               <Crown className="w-4 h-4" />
-              <span>Upgrade to Pro (from ₹149/mo)</span>
+              <span>Upgrade to Pro (from ₹99/mo)</span>
             </button>
           </div>
         )}
@@ -90,41 +90,46 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({
   }).sort((a, b) => b.points - a.points);
 
   const getRankBadge = (rank: number) => {
-    if (rank === 0) return { title: '1st Place', icon: '🥇', bg: 'from-[#D98B4A]/30 to-[#D98B4A]/20 border-[#D98B4A]' };
-    if (rank === 1) return { title: '2nd Place', icon: '🥈', bg: 'from-[#131316] to-[#131316] border-[#26262C]' };
-    if (rank === 2) return { title: '3rd Place', icon: '🥉', bg: 'from-[#131316] to-[#131316] border-[#26262C]' };
-    return { title: `${rank + 1}th Place`, icon: `#${rank + 1}`, bg: 'from-[#131316] to-[#131316] border-[#26262C]' };
+    if (rank === 0) return { icon: '🥇', label: '1' };
+    if (rank === 1) return { icon: '🥈', label: '2' };
+    if (rank === 2) return { icon: '🥉', label: '3' };
+    return { icon: null, label: `${rank + 1}` };
   };
 
   return (
-    <div className="space-y-5 sm:space-y-6 max-w-4xl mx-auto font-sans">
+    <div className="space-y-4 max-w-4xl mx-auto font-sans">
       
-      {/* Header */}
-      <div className="bg-[#131316] border border-[#26262C] rounded-xl p-4 sm:p-6 shadow-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+      {/* Header Card */}
+      <div className="bg-white border border-[#E4E7EC] rounded-[14px] p-5 sm:p-6 shadow-[0_1px_3px_rgba(16,24,40,0.06)] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-xl font-black text-[#F4F4F5] flex items-center gap-2">
-            <Trophy className="w-6 h-6 text-[#D98B4A]" />
-            Group Fitness Leaderboard
+          <div className="flex items-center gap-2">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-[#3157D5] bg-[#EFF8FF] px-2 py-0.5 rounded-full border border-[#3157D5]/20">
+              Rankings
+            </span>
+            <span className="text-xs text-[#667085]">{rankings.length} Members</span>
+          </div>
+          <h2 className="text-xl font-bold text-[#111827] mt-1">
+            Group Leaderboard
           </h2>
-          <p className="text-xs text-[#A1A1AA] mt-1">
-            Earn 10 points per completed goal (up to 50 points per day) + Sunday Healing recovery!
+          <p className="text-xs text-[#667085] mt-0.5">
+            10 points per habit completed daily • Up to 50 daily accountability points
           </p>
         </div>
 
         {/* Timeframe selector */}
-        <div className="w-full sm:w-auto grid grid-cols-2 sm:flex items-center gap-1 bg-[#1B1B20] p-1 rounded-xl border border-[#26262C]">
+        <div className="w-full sm:w-auto grid grid-cols-2 sm:flex items-center gap-1 bg-[#F1F3F6] p-1 rounded-xl border border-[#E4E7EC]">
           <button
             onClick={() => setTimeframe('weekly')}
-            className={`py-1.5 px-3 text-center rounded-lg text-xs font-bold transition cursor-pointer ${
-              timeframe === 'weekly' ? 'bg-[#D98B4A] text-[#1B1B20] shadow-md' : 'text-[#A1A1AA] hover:text-[#F4F4F5]'
+            className={`py-1.5 px-3.5 text-center rounded-lg text-xs font-semibold transition cursor-pointer ${
+              timeframe === 'weekly' ? 'bg-white text-[#111827] shadow-sm font-bold' : 'text-[#667085] hover:text-[#111827]'
             }`}
           >
             Past 7 Days
           </button>
           <button
             onClick={() => setTimeframe('all')}
-            className={`py-1.5 px-3 text-center rounded-lg text-xs font-bold transition cursor-pointer ${
-              timeframe === 'all' ? 'bg-[#D98B4A] text-[#1B1B20] shadow-md' : 'text-[#A1A1AA] hover:text-[#F4F4F5]'
+            className={`py-1.5 px-3.5 text-center rounded-lg text-xs font-semibold transition cursor-pointer ${
+              timeframe === 'all' ? 'bg-white text-[#111827] shadow-sm font-bold' : 'text-[#667085] hover:text-[#111827]'
             }`}
           >
             All-Time
@@ -133,7 +138,7 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({
       </div>
 
       {/* Leaderboard Cards List */}
-      <div className="space-y-2.5 sm:space-y-3">
+      <div className="space-y-2">
         {rankings.map((item, index) => {
           const badge = getRankBadge(index);
           const isCurrent = item.user.id === currentUser.id;
@@ -141,45 +146,50 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({
           return (
             <div
               key={item.user.id}
-              className={`relative bg-gradient-to-r ${badge.bg} border rounded-xl p-3.5 sm:p-5 transition-all shadow-lg flex items-center justify-between gap-3 sm:gap-4 ${
-                isCurrent ? 'ring-2 ring-[#D98B4A] shadow-[#D98B4A]/20' : ''
+              className={`rounded-[12px] p-3.5 sm:p-4 transition-all flex items-center justify-between gap-3 sm:gap-4 border ${
+                isCurrent 
+                  ? 'bg-[#EFF4FF] border-[#3157D5]/35 shadow-[0_1px_3px_rgba(49,87,213,0.08)]' 
+                  : 'bg-white border-[#E4E7EC] hover:border-[#D0D5DD] shadow-[0_1px_3px_rgba(16,24,40,0.04)]'
               }`}
             >
-              {/* Rank Icon & Avatar & Info */}
-              <div className="flex items-center gap-2.5 sm:gap-4 min-w-0">
-                <div className="text-base sm:text-2xl font-black min-w-[28px] sm:min-w-[36px] text-center text-[#E69A5C] shrink-0">
-                  {badge.icon}
+              {/* Rank & User Info */}
+              <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+                <div className="w-8 text-center shrink-0">
+                  {badge.icon ? (
+                    <span className="text-xl sm:text-2xl">{badge.icon}</span>
+                  ) : (
+                    <span className="text-sm font-bold text-[#667085] font-mono">{badge.label}</span>
+                  )}
                 </div>
 
-                <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-xl bg-gradient-to-tr ${item.user.avatar_color || 'from-[#D98B4A] to-[#B45F1E]'} text-sm sm:text-base font-black text-[#F4F4F5] flex items-center justify-center shadow-md shrink-0`}>
+                <div className="w-10 h-10 rounded-xl bg-[#F1F3F6] border border-[#E4E7EC] text-sm font-bold text-[#111827] flex items-center justify-center shrink-0">
                   {item.user.name.charAt(0).toUpperCase()}
                 </div>
 
                 <div className="min-w-0">
-                  <h3 className="text-sm sm:text-base font-black text-[#F4F4F5] flex items-center gap-1.5 sm:gap-2 truncate">
-                    <span className="truncate">{item.user.name}</span>
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-sm font-bold text-[#111827] truncate">
+                      {item.user.name}
+                    </h3>
                     {isCurrent && (
-                      <span className="text-[9px] sm:text-[10px] px-1.5 py-0.5 rounded-full bg-[#D98B4A]/20 text-[#E69A5C] font-bold border border-[#D98B4A]/30 shrink-0">
+                      <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-[#3157D5] text-white font-bold shrink-0">
                         YOU
                       </span>
                     )}
-                  </h3>
-                  <div className="flex flex-wrap items-center gap-x-2.5 gap-y-0.5 text-[11px] sm:text-xs text-[#A1A1AA] mt-0.5">
-                    <span className="flex items-center gap-1">
-                      <Zap className="w-3.5 h-3.5 text-[#E69A5C]" /> {item.totalCompletedGoals} goals
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <Flame className="w-3.5 h-3.5 text-[#D98B4A]" /> {item.cleanSweeps} clean sweeps
-                    </span>
+                  </div>
+                  <div className="flex items-center gap-3 text-xs text-[#667085] mt-0.5">
+                    <span>{item.totalCompletedGoals} goals</span>
+                    <span>•</span>
+                    <span>{item.cleanSweeps} clean sweeps</span>
                   </div>
                 </div>
               </div>
 
-              {/* Total Points Score */}
+              {/* Score */}
               <div className="text-right shrink-0 pl-2">
-                <span className="text-[10px] sm:text-[11px] uppercase tracking-wider text-[#A1A1AA] font-bold block">Score</span>
-                <strong className="text-xl sm:text-3xl font-black text-[#E69A5C] font-mono leading-none">
-                  {item.points} <span className="text-[10px] sm:text-xs text-[#A1A1AA] font-sans font-normal">pts</span>
+                <span className="text-[10px] uppercase tracking-wider text-[#667085] font-semibold block">Score</span>
+                <strong className={`text-xl sm:text-2xl font-extrabold font-mono leading-none ${isCurrent ? 'text-[#3157D5]' : 'text-[#111827]'}`}>
+                  {item.points} <span className="text-xs text-[#667085] font-sans font-normal">pts</span>
                 </strong>
               </div>
             </div>

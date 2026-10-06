@@ -277,7 +277,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             <button
               type="submit"
               disabled={isSubmitting || lockoutTimer > 0}
-              className="w-full py-3 bg-gradient-to-r from-[#D98B4A] to-[#D98B4A] hover:from-[#D98B4A] hover:to-[#B45F1E] text-[#1B1B20] font-black rounded-xl text-sm transition shadow-lg shadow-[#D98B4A]/20 disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed mt-2"
+              className="w-full py-3 min-h-[46px] bg-[#3157D5] hover:bg-[#2544B8] text-white font-semibold rounded-[10px] text-sm transition shadow-sm disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed mt-2"
             >
               {isSubmitting ? 'Signing in...' : (lockoutTimer > 0 ? `Locked Out (${lockoutTimer}s)` : 'Sign In')}
             </button>
@@ -399,20 +399,20 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full py-3 min-h-[44px] mt-2 bg-gradient-to-r from-[#D98B4A] to-[#D98B4A] hover:from-[#D98B4A] hover:to-[#B45F1E] text-[#1B1B20] font-black rounded-xl text-sm transition shadow-lg shadow-[#D98B4A]/20 disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed flex items-center justify-center"
+              className="w-full py-3 min-h-[46px] mt-2 bg-[#3157D5] hover:bg-[#2544B8] text-white font-semibold rounded-[10px] text-sm transition shadow-sm disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed flex items-center justify-center"
             >
               {isSubmitting ? 'Registering...' : 'Complete Registration'}
             </button>
           </form>
         )}
 
-        <div className="mt-5 text-center pt-3 border-t border-[#26262C]/60">
+        <div className="mt-5 text-center pt-3 border-t border-[#E4E7EC]">
           <button
             onClick={() => {
               setError('');
               setMode(mode === 'login' ? 'register' : 'login');
             }}
-            className="text-xs text-[#E69A5C] hover:underline font-semibold cursor-pointer"
+            className="text-xs text-[#3157D5] hover:text-[#2544B8] hover:underline font-semibold cursor-pointer"
           >
             {mode === 'login' ? "Don't have an account? Sign Up" : 'Already registered? Sign In'}
           </button>

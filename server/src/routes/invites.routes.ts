@@ -263,8 +263,13 @@ router.delete('/api/invites/:token', requireAuth, async (req, res, next) => {
       },
     });
 
-    if (!membership || membership.role !== 'owner') {
-      throw new AppError('Forbidden: Only group owners can revoke invite links.', 403, 'FORBIDDEN');
+    const isCreator = invite.created_by === req.user!.id;
+    const isOwner = membership && membership.role === 'owner';
+    const group = await prisma.group.findUnique({ where: { id: invite.group_id } });
+    const isMember = !!membership;
+
+    if (!isCreator && !isOwner && !isGroupOwner && !isMember && req.user!.role !== 'admin') {
+      throw new AppError('Forbidden: Only group members or invite creators can revoke invite links.', 403, 'FORBIDDEN');
     }
 
     await prisma.invite.update({

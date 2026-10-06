@@ -249,18 +249,18 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
               <AreaChart data={weightChartData}>
                 <defs>
                   <linearGradient id="weightGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#D98B4A" stopOpacity={0.4}/>
-                    <stop offset="95%" stopColor="#D98B4A" stopOpacity={0.0}/>
+                    <stop offset="5%" stopColor="#3157D5" stopOpacity={0.25}/>
+                    <stop offset="95%" stopColor="#3157D5" stopOpacity={0.0}/>
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="#26262C" />
-                <XAxis dataKey="date" stroke="#A1A1AA" fontSize={11} />
-                <YAxis domain={['dataMin - 1', 'dataMax + 1']} stroke="#A1A1AA" fontSize={11} />
+                <CartesianGrid strokeDasharray="3 3" stroke="#E4E7EC" />
+                <XAxis dataKey="date" stroke="#98A2B3" fontSize={11} />
+                <YAxis domain={['dataMin - 1', 'dataMax + 1']} stroke="#98A2B3" fontSize={11} />
                 <Tooltip
-                  contentStyle={{ backgroundColor: '#1B1B20', borderColor: '#26262C', borderRadius: '12px', color: '#F4F4F5' }}
-                  labelStyle={{ color: '#E69A5C', fontWeight: 'bold' }}
+                  contentStyle={{ backgroundColor: '#FFFFFF', borderColor: '#E4E7EC', borderRadius: '10px', color: '#111827', boxShadow: '0 4px 12px rgba(16,24,40,0.08)' }}
+                  labelStyle={{ color: '#3157D5', fontWeight: 'bold' }}
                 />
-                <Area type="monotone" dataKey="weight" stroke="#D98B4A" strokeWidth={3} fillOpacity={1} fill="url(#weightGrad)" />
+                <Area type="monotone" dataKey="weight" stroke="#3157D5" strokeWidth={2.5} fillOpacity={1} fill="url(#weightGrad)" />
               </AreaChart>
             </ResponsiveContainer>
           </div>
@@ -271,26 +271,26 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
           <div className="flex items-center justify-between mb-4">
             <div>
               <h3 className="text-sm sm:text-base font-bold text-[#F4F4F5] flex items-center gap-2">
-                <Moon className="w-4 h-4 sm:w-5 sm:h-5 text-[#D98B4A]" />
+                <Moon className="w-4 h-4 sm:w-5 sm:h-5 text-[#3157D5]" />
                 Nightly Sleep Duration (7–8h Target)
               </h3>
-              <p className="text-xs text-[#A1A1AA]">Beige = target hit (7-8.5 hrs)</p>
+              <p className="text-xs text-[#A1A1AA]">Blue = target met (7–8.5 hrs)</p>
             </div>
           </div>
 
           <div className="h-60 sm:h-64 w-full min-w-0">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={sleepChartData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#26262C" />
-                <XAxis dataKey="date" stroke="#A1A1AA" fontSize={11} />
-                <YAxis domain={[0, 10]} stroke="#A1A1AA" fontSize={11} />
+                <CartesianGrid strokeDasharray="3 3" stroke="#E4E7EC" />
+                <XAxis dataKey="date" stroke="#98A2B3" fontSize={11} />
+                <YAxis domain={[0, 10]} stroke="#98A2B3" fontSize={11} />
                 <Tooltip
-                  contentStyle={{ backgroundColor: '#1B1B20', borderColor: '#26262C', borderRadius: '12px', color: '#F4F4F5' }}
-                  labelStyle={{ color: '#E69A5C', fontWeight: 'bold' }}
+                  contentStyle={{ backgroundColor: '#FFFFFF', borderColor: '#E4E7EC', borderRadius: '10px', color: '#111827', boxShadow: '0 4px 12px rgba(16,24,40,0.08)' }}
+                  labelStyle={{ color: '#3157D5', fontWeight: 'bold' }}
                 />
                 <Bar dataKey="duration" radius={[6, 6, 0, 0]}>
                   {sleepChartData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.hitTarget ? '#D98B4A' : '#26262C'} />
+                    <Cell key={`cell-${index}`} fill={entry.hitTarget ? '#3157D5' : '#E4E7EC'} />
                   ))}
                 </Bar>
               </BarChart>
@@ -306,14 +306,14 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
           <div className="h-52 sm:h-56 w-full min-w-0">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={weeklyBarData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#26262C" />
-                <XAxis dataKey="date" stroke="#A1A1AA" fontSize={11} />
-                <YAxis domain={[0, 100]} stroke="#A1A1AA" fontSize={11} />
+                <CartesianGrid strokeDasharray="3 3" stroke="#E4E7EC" />
+                <XAxis dataKey="date" stroke="#98A2B3" fontSize={11} />
+                <YAxis domain={[0, 100]} stroke="#98A2B3" fontSize={11} />
                 <Tooltip
-                  contentStyle={{ backgroundColor: '#1B1B20', borderColor: '#26262C', borderRadius: '12px', color: '#F4F4F5' }}
-                  labelStyle={{ color: '#E69A5C', fontWeight: 'bold' }}
+                  contentStyle={{ backgroundColor: '#FFFFFF', borderColor: '#E4E7EC', borderRadius: '10px', color: '#111827', boxShadow: '0 4px 12px rgba(16,24,40,0.08)' }}
+                  labelStyle={{ color: '#3157D5', fontWeight: 'bold' }}
                 />
-                <Bar dataKey="percent" fill="#E69A5C" radius={[6, 6, 0, 0]} />
+                <Bar dataKey="percent" fill="#3157D5" radius={[6, 6, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>

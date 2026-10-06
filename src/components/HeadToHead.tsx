@@ -52,7 +52,7 @@ export const HeadToHead: React.FC<HeadToHeadProps> = ({
               className="px-6 py-3 bg-gradient-to-r from-[#D98B4A] to-[#B45F1E] hover:from-[#B45F1E] hover:to-[#8E4410] text-[#0B0B0D] font-extrabold text-xs sm:text-sm rounded-xl shadow-lg shadow-[#D98B4A]/25 transition cursor-pointer flex items-center gap-2 mx-auto active:scale-95"
             >
               <Crown className="w-4 h-4" />
-              <span>Upgrade to Pro (from ₹149/mo)</span>
+              <span>Upgrade to Pro (from ₹99/mo)</span>
             </button>
           </div>
         )}

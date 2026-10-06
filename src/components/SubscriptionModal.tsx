@@ -101,7 +101,7 @@ export const SubscriptionModal: React.FC<SubscriptionModalProps> = ({
   const basePlan = plans.find(p => p.id === 'plan_base_monthly') || {
     id: 'plan_base_monthly',
     name: 'PULSE Base Monthly',
-    price: 4900,
+    price: 2900,
     currency: 'INR',
     duration: 'monthly',
   };
@@ -109,7 +109,7 @@ export const SubscriptionModal: React.FC<SubscriptionModalProps> = ({
   const proMonthly = plans.find(p => p.id === 'plan_pro_monthly') || {
     id: 'plan_pro_monthly',
     name: 'PULSE Pro Monthly',
-    price: 14900,
+    price: 9900,
     currency: 'INR',
     duration: 'monthly',
   };
@@ -117,7 +117,7 @@ export const SubscriptionModal: React.FC<SubscriptionModalProps> = ({
   const proYearly = plans.find(p => p.id === 'plan_pro_yearly') || {
     id: 'plan_pro_yearly',
     name: 'PULSE Pro Yearly',
-    price: 149900,
+    price: 99900,
     currency: 'INR',
     duration: 'yearly',
   };
@@ -154,7 +154,7 @@ export const SubscriptionModal: React.FC<SubscriptionModalProps> = ({
           </h2>
           <p className="text-xs sm:text-sm text-[#A1A1AA]">
             {forcePaywall 
-              ? 'Start solo tracking from ₹49/month, or unlock team groups and head-to-head challenges with Pro.'
+              ? 'Start solo tracking from ₹29/month, or unlock team groups and head-to-head challenges with Pro.'
               : 'Seamless UPI, Cards, and NetBanking via Razorpay. Cancel anytime.'}
           </p>
         </div>
@@ -303,7 +303,15 @@ export const SubscriptionModal: React.FC<SubscriptionModalProps> = ({
                       </div>
                       <div className="flex items-center gap-2 text-[#E4E4E7]">
                         <Check className="w-4 h-4 text-emerald-400 shrink-0" />
-                        <span>Add Members (Any Group Size)</span>
+                        <span>Invite Friends & Add Members</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-[#E4E4E7]">
+                        <Check className="w-4 h-4 text-emerald-400 shrink-0" />
+                        <span>Badges & Milestone Achievements</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-[#E4E4E7]">
+                        <Check className="w-4 h-4 text-emerald-400 shrink-0" />
+                        <span>Team Daily Goals & Progress Bars</span>
                       </div>
                       <div className="flex items-center gap-2 text-[#E4E4E7]">
                         <Check className="w-4 h-4 text-emerald-400 shrink-0" />
@@ -312,10 +320,6 @@ export const SubscriptionModal: React.FC<SubscriptionModalProps> = ({
                       <div className="flex items-center gap-2 text-[#E4E4E7]">
                         <Check className="w-4 h-4 text-emerald-400 shrink-0" />
                         <span>Team Rankings & Leaderboard</span>
-                      </div>
-                      <div className="flex items-center gap-2 text-[#E4E4E7]">
-                        <Check className="w-4 h-4 text-emerald-400 shrink-0" />
-                        <span>Team Progress Bar & Goals</span>
                       </div>
                       <div className="flex items-center gap-2 text-[#E4E4E7]">
                         <Check className="w-4 h-4 text-emerald-400 shrink-0" />
@@ -365,7 +369,7 @@ export const SubscriptionModal: React.FC<SubscriptionModalProps> = ({
 
                     <div className="flex items-baseline gap-1 mb-5">
                       <span className="text-3xl font-extrabold text-[#FBBF24]">₹{proYearly.price / 100}</span>
-                      <span className="text-xs text-[#71717A]">/ year (~₹125/mo)</span>
+                      <span className="text-xs text-[#71717A]">/ year (~₹83/mo)</span>
                     </div>
 
                     <div className="space-y-2.5 text-xs border-t border-[#26262C] pt-4 mb-4">
@@ -379,11 +383,15 @@ export const SubscriptionModal: React.FC<SubscriptionModalProps> = ({
                       </div>
                       <div className="flex items-center gap-2 text-[#E4E4E7]">
                         <Check className="w-4 h-4 text-emerald-400 shrink-0" />
-                        <span>Unlimited Groups of Any Size</span>
+                        <span>Unlimited Groups & Invites</span>
                       </div>
                       <div className="flex items-center gap-2 text-[#E4E4E7]">
                         <Check className="w-4 h-4 text-emerald-400 shrink-0" />
-                        <span>Head-to-Head & Leaderboards</span>
+                        <span>Badges, Milestones & Team Challenges</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-[#E4E4E7]">
+                        <Check className="w-4 h-4 text-emerald-400 shrink-0" />
+                        <span>Team Goals, Head-to-Head & Leaderboard</span>
                       </div>
                       <div className="flex items-center gap-2 text-[#E4E4E7]">
                         <Check className="w-4 h-4 text-emerald-400 shrink-0" />
@@ -393,7 +401,7 @@ export const SubscriptionModal: React.FC<SubscriptionModalProps> = ({
                   </div>
 
                   <div className="text-[11px] font-semibold text-center text-[#FBBF24] bg-[#FBBF24]/10 border border-[#FBBF24]/20 py-1.5 rounded-lg">
-                    Save ₹289 vs Monthly Billing
+                    Save ₹189 vs Monthly Billing
                   </div>
                 </div>
 
@@ -419,7 +427,7 @@ export const SubscriptionModal: React.FC<SubscriptionModalProps> = ({
                     <button
                       onClick={handleCheckout}
                       disabled={isProcessing || isLoadingPlans}
-                      className="w-full sm:w-auto px-7 py-3 bg-gradient-to-r from-[#D98B4A] to-[#B45F1E] hover:from-[#B45F1E] hover:to-[#8E4410] disabled:opacity-50 text-[#0B0B0D] font-extrabold text-sm rounded-xl transition shadow-lg shadow-[#D98B4A]/25 flex items-center justify-center gap-2 cursor-pointer active:scale-95"
+                      className="w-full sm:w-auto px-7 py-3 min-h-[46px] bg-[#3157D5] hover:bg-[#2544B8] disabled:opacity-50 text-white font-semibold text-sm rounded-[10px] transition shadow-sm flex items-center justify-center gap-2 cursor-pointer active:scale-95"
                     >
                       {isProcessing ? (
                         <>
@@ -430,10 +438,10 @@ export const SubscriptionModal: React.FC<SubscriptionModalProps> = ({
                         <>
                           <span>
                             {selectedPlanId === 'plan_base_monthly'
-                              ? 'Start Solo Tracking (₹49/mo)'
+                              ? 'Start Solo Tracking (₹29/mo)'
                               : selectedPlanId === 'plan_pro_monthly'
-                              ? (isBaseCurrent ? 'Upgrade to Pro Monthly (₹149/mo)' : 'Unlock Pro Groups (₹149/mo)')
-                              : (isBaseCurrent ? 'Upgrade to Pro Yearly (₹1,499/yr)' : 'Activate Pro Yearly (₹1,499/yr)')}
+                              ? (isBaseCurrent ? 'Upgrade to Pro Monthly (₹99/mo)' : 'Unlock Pro Groups (₹99/mo)')
+                              : (isBaseCurrent ? 'Upgrade to Pro Yearly (₹999/yr)' : 'Activate Pro Yearly (₹999/yr)')}
                           </span>
                           <ArrowRight className="w-4 h-4" />
                         </>

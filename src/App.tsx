@@ -152,7 +152,7 @@ export function App() {
       const saved = localStorage.getItem('pulse_fitness_theme');
       if (saved) return saved === 'dark';
     } catch {}
-    return true;
+    return false;
   });
 
   useEffect(() => {
@@ -160,14 +160,14 @@ export function App() {
       localStorage.setItem('pulse_fitness_theme', isDarkMode ? 'dark' : 'light');
     } catch {}
     if (isDarkMode) {
-      document.documentElement.classList.remove('light-theme');
+      document.documentElement.classList.add('dark-theme');
       document.documentElement.setAttribute('data-theme', 'dark');
-      document.body.classList.remove('light-theme');
+      document.body.classList.add('dark-theme');
       document.body.setAttribute('data-theme', 'dark');
     } else {
-      document.documentElement.classList.add('light-theme');
+      document.documentElement.classList.remove('dark-theme');
       document.documentElement.setAttribute('data-theme', 'light');
-      document.body.classList.add('light-theme');
+      document.body.classList.remove('dark-theme');
       document.body.setAttribute('data-theme', 'light');
     }
   }, [isDarkMode]);
@@ -844,6 +844,13 @@ export function App() {
 
   const currentUser = users.find(u => u.id === currentUserId && u.is_active !== false) || null;
   const activeUsers = users.filter(u => u.is_active !== false);
+  const isModeratorOrVip = !!currentUser && (
+    currentUser.role === 'admin' ||
+    currentUser.role === 'moderator' ||
+    currentUser.username?.toLowerCase() === 'rakesh' ||
+    currentUser.username?.toLowerCase() === 'hitesh'
+  );
+  const effectivePlanTier: 'none' | 'base' | 'pro' = isModeratorOrVip ? 'pro' : planTier;
 
   // Toggle Dark/Light Theme
   const handleToggleTheme = () => {
@@ -1029,6 +1036,11 @@ export function App() {
 
   // Group Management Handlers
   const handleCreateInvite = async (options: { expiresInDays?: number; maxUses?: number }) => {
+    if (effectivePlanTier !== 'pro') {
+      setHighlightProInModal(true);
+      setIsSubscriptionModalOpen(true);
+      return { success: false, error: 'Group invitations are exclusively available on the PULSE Pro Plan.' };
+    }
     if (!currentGroup) return { success: false, error: 'No active group found' };
     const res = await createGroupInvite(currentGroup.id, options);
     if (res.success) {
@@ -1042,9 +1054,15 @@ export function App() {
     const res = await revokeInvite(token);
     if (res.success) {
       setGroupInvites(prev => prev.filter(i => i.token !== token));
+      try {
+        const data = await fetchServerSync();
+        if (data) applyServerDataRef.current(data);
+      } catch {}
       return true;
+    } else {
+      alert(res.error || 'Failed to revoke invite link');
+      return false;
     }
-    return false;
   };
 
   const handleLeaveGroup = async () => {
@@ -1258,13 +1276,20 @@ export function App() {
         onExportCSV={handleExportCSV}
         onOpenAuth={() => handleOpenAuth('login')}
         onLogout={handleLogout}
-        onOpenInviteModal={() => setIsInviteModalOpen(true)}
+        onOpenInviteModal={() => {
+          if (effectivePlanTier !== 'pro') {
+            setHighlightProInModal(true);
+            setIsSubscriptionModalOpen(true);
+          } else {
+            setIsInviteModalOpen(true);
+          }
+        }}
         realtimeStatus={realtimeStatus}
         onRefreshMembers={handleRefreshMembers}
         isRefreshingMembers={isRefreshingMembers}
-        planTier={planTier}
+        planTier={effectivePlanTier}
         onOpenUpgradeModal={() => {
-          setHighlightProInModal(planTier === 'base');
+          setHighlightProInModal(effectivePlanTier === 'base');
           setIsSubscriptionModalOpen(true);
         }}
       />
@@ -1304,7 +1329,7 @@ export function App() {
             onOpenCalendar={() => setActiveTab('calendar')}
             onRefreshMembers={handleRefreshMembers}
             isRefreshingMembers={isRefreshingMembers}
-            isBasePlan={planTier === 'base'}
+            isBasePlan={effectivePlanTier !== 'pro'}
             onOpenUpgradeModal={() => {
               setHighlightProInModal(true);
               setIsSubscriptionModalOpen(true);
@@ -1410,14 +1435,14 @@ export function App() {
               users={activeUsers}
               dailyLogs={dailyLogs}
               currentUser={currentUser}
-              isBasePlan={planTier === 'base'}
+              isBasePlan={effectivePlanTier !== 'pro'}
               onOpenUpgradeModal={() => {
                 setHighlightProInModal(true);
                 setIsSubscriptionModalOpen(true);
               }}
             />
 
-            {planTier !== 'base' && (
+            {effectivePlanTier === 'pro' && (
               <>
                 <ActivityFeed
                   users={activeUsers}
@@ -1448,7 +1473,7 @@ export function App() {
             weightLogs={weightLogs}
             onRefreshMembers={handleRefreshMembers}
             isRefreshingMembers={isRefreshingMembers}
-            isBasePlan={planTier === 'base'}
+            isBasePlan={effectivePlanTier !== 'pro'}
             onOpenUpgradeModal={() => {
               setHighlightProInModal(true);
               setIsSubscriptionModalOpen(true);
@@ -1463,6 +1488,11 @@ export function App() {
             badges={badges}
             challenge={challenge}
             dailyLogs={dailyLogs}
+            isBasePlan={effectivePlanTier !== 'pro'}
+            onOpenUpgradeModal={() => {
+              setHighlightProInModal(true);
+              setIsSubscriptionModalOpen(true);
+            }}
           />
         )}
 
@@ -1480,7 +1510,7 @@ export function App() {
             onRefreshMembers={handleRefreshMembers}
             isRefreshingMembers={isRefreshingMembers}
             onOpenInviteModal={() => {
-              if (planTier === 'base') {
+              if (effectivePlanTier !== 'pro') {
                 setHighlightProInModal(true);
                 setIsSubscriptionModalOpen(true);
               } else {
@@ -1491,7 +1521,7 @@ export function App() {
             onRemoveGroupMember={handleRemoveGroupMember}
             onRevokeInvite={handleRevokeInvite}
             onUpdateGroup={handleUpdateGroup}
-            planTier={planTier}
+            planTier={effectivePlanTier}
             activeSubscription={activeSubscription}
             onOpenUpgradeModal={(highlightPro) => {
               setHighlightProInModal(!!highlightPro);
@@ -1538,6 +1568,12 @@ export function App() {
           invites={groupInvites}
           onCreateInvite={handleCreateInvite}
           onRevokeInvite={handleRevokeInvite}
+          isBasePlan={effectivePlanTier !== 'pro'}
+          onOpenUpgradeModal={() => {
+            setIsInviteModalOpen(false);
+            setHighlightProInModal(true);
+            setIsSubscriptionModalOpen(true);
+          }}
         />
       )}
 

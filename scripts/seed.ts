@@ -9,13 +9,27 @@ async function main() {
   // 1. Seed Plans
   console.log('- Seeding plans...');
   await prisma.plan.upsert({
+    where: { id: 'plan_base_monthly' },
+    update: { price: 2900 },
+    create: {
+      id: 'plan_base_monthly',
+      name: 'PULSE Base Monthly',
+      description: 'Core daily habit tracking, hydration & activity logging.',
+      price: 2900, // ₹29.00
+      currency: 'INR',
+      duration: 'monthly',
+      is_active: true,
+    },
+  });
+
+  await prisma.plan.upsert({
     where: { id: 'plan_pro_monthly' },
-    update: {},
+    update: { price: 9900 },
     create: {
       id: 'plan_pro_monthly',
       name: 'PULSE Pro Monthly',
-      description: 'Unlimited groups, detailed body shape analytics, and priority badges.',
-      price: 49900, // ₹499.00
+      description: 'Unlimited groups, team goals, head-to-head battles, and badges.',
+      price: 9900, // ₹99.00
       currency: 'INR',
       duration: 'monthly',
       is_active: true,
@@ -24,32 +38,31 @@ async function main() {
 
   await prisma.plan.upsert({
     where: { id: 'plan_pro_yearly' },
-    update: {},
+    update: { price: 99900 },
     create: {
       id: 'plan_pro_yearly',
       name: 'PULSE Pro Yearly',
-      description: 'Annual full access with 2 months free and team challenges.',
-      price: 399900, // ₹3,999.00
+      description: 'Annual full access with VIP status and team challenges.',
+      price: 99900, // ₹999.00
       currency: 'INR',
       duration: 'yearly',
       is_active: true,
     },
   });
 
-  // 2. Seed Test Users
-  console.log('- Seeding test users...');
+  // 2. Seed Default Users
+  console.log('- Seeding default users (rakesh, hitesh, demouser1, demouser2)...');
   const salt = await bcrypt.genSalt(10);
-  const passwordHash = await bcrypt.hash('pulse123', salt);
 
   const userRakesh = await prisma.user.upsert({
     where: { username: 'rakesh' },
-    update: {},
+    update: { role: 'moderator' },
     create: {
       id: 'usr_seed_rakesh',
       username: 'rakesh',
-      name: 'Rakesh Kumar',
-      password_hash: passwordHash,
-      role: 'admin',
+      name: 'Rakesh (Moderator)',
+      password_hash: await bcrypt.hash('rakesh', salt),
+      role: 'moderator',
       height: 178,
       weight_current: 74.5,
       age: 26,
@@ -59,20 +72,56 @@ async function main() {
     },
   });
 
-  const userSarah = await prisma.user.upsert({
-    where: { username: 'sarah' },
-    update: {},
+  const userHitesh = await prisma.user.upsert({
+    where: { username: 'hitesh' },
+    update: { role: 'moderator' },
     create: {
-      id: 'usr_seed_sarah',
-      username: 'sarah',
-      name: 'Sarah Connor',
-      password_hash: passwordHash,
+      id: 'usr_seed_hitesh',
+      username: 'hitesh',
+      name: 'Hitesh (Moderator)',
+      password_hash: await bcrypt.hash('hitesh', salt),
+      role: 'moderator',
+      height: 175,
+      weight_current: 72.0,
+      age: 26,
+      gender: 'male',
+      avatar_color: 'from-blue-600 to-indigo-800',
+      is_active: true,
+    },
+  });
+
+  const userDemo1 = await prisma.user.upsert({
+    where: { username: 'demouser1' },
+    update: { role: 'member' },
+    create: {
+      id: 'usr_seed_demo1',
+      username: 'demouser1',
+      name: 'Demo Tester 1',
+      password_hash: await bcrypt.hash('demouser1', salt),
+      role: 'member',
+      height: 170,
+      weight_current: 68.0,
+      age: 25,
+      gender: 'male',
+      avatar_color: 'from-emerald-500 to-teal-700',
+      is_active: true,
+    },
+  });
+
+  const userDemo2 = await prisma.user.upsert({
+    where: { username: 'demouser2' },
+    update: { role: 'member' },
+    create: {
+      id: 'usr_seed_demo2',
+      username: 'demouser2',
+      name: 'Demo Tester 2',
+      password_hash: await bcrypt.hash('demouser2', salt),
       role: 'member',
       height: 165,
-      weight_current: 58.0,
-      age: 28,
+      weight_current: 60.0,
+      age: 24,
       gender: 'female',
-      avatar_color: 'from-emerald-500 to-teal-700',
+      avatar_color: 'from-purple-500 to-pink-600',
       is_active: true,
     },
   });

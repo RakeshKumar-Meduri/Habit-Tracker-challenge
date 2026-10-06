@@ -9,7 +9,8 @@ import {
   Trash2, 
   Clock, 
   Users, 
-  AlertCircle
+  AlertCircle,
+  Crown
 } from 'lucide-react';
 
 interface InviteModalProps {
@@ -20,6 +21,8 @@ interface InviteModalProps {
   invites: Invite[];
   onCreateInvite: (options: { expiresInDays?: number; maxUses?: number }) => Promise<{ success: boolean; token?: string; url?: string; error?: string }>;
   onRevokeInvite: (token: string) => Promise<boolean>;
+  isBasePlan?: boolean;
+  onOpenUpgradeModal?: () => void;
 }
 
 export const InviteModal: React.FC<InviteModalProps> = ({
@@ -30,6 +33,8 @@ export const InviteModal: React.FC<InviteModalProps> = ({
   invites,
   onCreateInvite,
   onRevokeInvite,
+  isBasePlan = false,
+  onOpenUpgradeModal,
 }) => {
   const [expiresInDays, setExpiresInDays] = useState<number>(7);
   const [maxUses, setMaxUses] = useState<number>(10);
@@ -45,6 +50,11 @@ export const InviteModal: React.FC<InviteModalProps> = ({
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isBasePlan) {
+      onClose();
+      onOpenUpgradeModal?.();
+      return;
+    }
     setErrorMsg(null);
     setIsCreating(true);
     try {
@@ -105,8 +115,14 @@ export const InviteModal: React.FC<InviteModalProps> = ({
       return;
     }
     setRevokingToken(token);
+    setErrorMsg(null);
     try {
-      await onRevokeInvite(token);
+      const ok = await onRevokeInvite(token);
+      if (!ok) {
+        setErrorMsg('Failed to revoke invite link');
+      }
+    } catch (err: any) {
+      setErrorMsg(err.message || 'Error revoking invite');
     } finally {
       setRevokingToken(null);
     }
@@ -146,11 +162,40 @@ export const InviteModal: React.FC<InviteModalProps> = ({
           </div>
         )}
 
-        {/* Create Link Section */}
-        <form onSubmit={handleCreate} className="bg-[#1B1B20] border border-[#26262C] rounded-xl p-4 mb-5 space-y-3">
-          <h4 className="text-xs font-bold text-[#F4F4F5] uppercase tracking-wider text-[#D98B4A]">
-            Create New Invite Link
-          </h4>
+        {/* Create Link Section / Pro Paywall */}
+        {isBasePlan ? (
+          <div className="bg-gradient-to-br from-[#1C1A17] to-[#18181C] border border-[#D98B4A]/40 rounded-xl p-5 mb-5 text-center space-y-3">
+            <div className="w-12 h-12 rounded-xl bg-[#D98B4A]/15 border border-[#D98B4A]/30 flex items-center justify-center text-[#D98B4A] mx-auto shadow-sm">
+              <Crown className="w-6 h-6 text-[#FBBF24]" />
+            </div>
+            <div>
+              <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-[#D98B4A]/20 text-[#D98B4A] border border-[#D98B4A]/30">
+                PULSE Pro Exclusive
+              </span>
+              <h4 className="text-sm font-bold text-[#F4F4F5] mt-2">
+                Group Invites Require PULSE Pro
+              </h4>
+              <p className="text-xs text-[#A1A1AA] mt-1 max-w-sm mx-auto">
+                Inviting friends, generating links, and squad accountability are exclusively available on PULSE Pro. Upgrade to invite unlimited friends.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                onClose();
+                onOpenUpgradeModal?.();
+              }}
+              className="px-5 py-2.5 min-h-[38px] bg-gradient-to-r from-[#D98B4A] to-[#B45F1E] hover:from-[#E69A5C] hover:to-[#D98B4A] text-[#131316] font-extrabold rounded-lg text-xs transition cursor-pointer shadow-md inline-flex items-center gap-1.5 active:scale-95"
+            >
+              <Crown className="w-3.5 h-3.5" />
+              <span>Upgrade to PULSE Pro</span>
+            </button>
+          </div>
+        ) : (
+          <form onSubmit={handleCreate} className="bg-[#1B1B20] border border-[#26262C] rounded-xl p-4 mb-5 space-y-3">
+            <h4 className="text-xs font-bold text-[#F4F4F5] uppercase tracking-wider text-[#D98B4A]">
+              Create New Invite Link
+            </h4>
 
             <div className="grid grid-cols-2 gap-3">
               <div>
@@ -197,6 +242,7 @@ export const InviteModal: React.FC<InviteModalProps> = ({
               <span>{isCreating ? 'Creating Link...' : 'Generate Invite Link'}</span>
             </button>
           </form>
+        )}
 
         {/* Active Invites List */}
         <div>
@@ -208,9 +254,11 @@ export const InviteModal: React.FC<InviteModalProps> = ({
             <div className="bg-[#1B1B20]/60 border border-[#26262C] rounded-xl p-5 text-center space-y-1.5">
               <p className="text-xs text-[#F4F4F5] font-medium">No active invite links</p>
               <p className="text-[11px] text-[#A1A1AA]">
-                {isOwner 
-                  ? 'Generate a link above to invite friends to your group.' 
-                  : 'Ask the group owner to generate an invite link.'}
+                {isBasePlan
+                  ? 'Upgrade to PULSE Pro to generate and share group invite links.'
+                  : isOwner 
+                    ? 'Generate a link above to invite friends to your group.' 
+                    : 'Ask the group owner to generate an invite link.'}
               </p>
             </div>
           ) : (
@@ -236,18 +284,16 @@ export const InviteModal: React.FC<InviteModalProps> = ({
                         </span>
                       </div>
 
-                      {isOwner && (
-                        <button
-                          type="button"
-                          onClick={() => handleRevoke(inv.token)}
-                          disabled={revokingToken === inv.token}
-                          className="text-[10px] text-rose-400 hover:text-rose-300 hover:underline flex items-center gap-0.5 cursor-pointer disabled:opacity-50"
-                          title="Revoke this invite link immediately"
-                        >
-                          <Trash2 className="w-3 h-3" />
-                          <span>Revoke</span>
-                        </button>
-                      )}
+                      <button
+                        type="button"
+                        onClick={() => handleRevoke(inv.token)}
+                        disabled={revokingToken === inv.token}
+                        className="px-2 py-0.5 rounded-md text-[11px] font-semibold text-rose-400 hover:text-rose-300 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/25 flex items-center gap-1 cursor-pointer disabled:opacity-50 transition"
+                        title="Revoke this invite link immediately"
+                      >
+                        <Trash2 className="w-3 h-3" />
+                        <span>{revokingToken === inv.token ? 'Revoking...' : 'Revoke'}</span>
+                      </button>
                     </div>
 
                     <div className="flex items-center gap-2">

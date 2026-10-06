@@ -18,7 +18,8 @@ import {
   X,
   RefreshCw,
   UserPlus,
-  Crown
+  Crown,
+  Lock
 } from 'lucide-react';
 
 interface NavbarProps {
@@ -89,13 +90,12 @@ export const Navbar: React.FC<NavbarProps> = ({
     { id: 'profile', label: 'Profile', icon: UserIcon },
   ];
 
-  // Primary tabs for mobile bottom navigation bar
+  // Primary tabs for mobile bottom navigation bar (5 core actions per UX spec)
   const bottomNavItems = [
-    { id: 'checklist', label: 'Checklist', icon: CheckSquare },
-    { id: 'calendar', label: 'Calendar', icon: Calendar },
+    { id: 'checklist', label: 'Today', icon: CheckSquare },
     { id: 'workouts', label: 'Workouts', icon: Dumbbell },
-    { id: 'analytics', label: 'Analytics', icon: BarChart3 },
-    { id: 'leaderboard', label: 'Rankings', icon: Trophy },
+    { id: 'leaderboard', label: 'Groups', icon: Trophy },
+    { id: 'analytics', label: 'Progress', icon: BarChart3 },
     { id: 'profile', label: 'Profile', icon: UserIcon },
   ];
 
@@ -194,15 +194,26 @@ export const Navbar: React.FC<NavbarProps> = ({
               )}
 
               {/* Invite Friends Trigger */}
-              {currentUser && onOpenInviteModal && (
+              {currentUser && (onOpenInviteModal || onOpenUpgradeModal) && (
                 <button
                   type="button"
-                  onClick={onOpenInviteModal}
-                  title="Invite Friends to Group"
-                  className="p-2 sm:px-3 rounded-lg bg-[#D98B4A]/15 hover:bg-[#D98B4A]/25 text-[#D98B4A] border border-[#D98B4A]/30 transition flex items-center gap-1.5 text-xs font-semibold cursor-pointer active:scale-95"
+                  onClick={() => {
+                    if (planTier !== 'pro') {
+                      onOpenUpgradeModal?.();
+                    } else {
+                      onOpenInviteModal?.();
+                    }
+                  }}
+                  title={planTier !== 'pro' ? 'Invite Friends (PULSE Pro Exclusive)' : 'Invite Friends to Group'}
+                  className="p-2 sm:px-3 rounded-[10px] bg-[#EFF8FF] hover:bg-[#DCEBFE] text-[#3157D5] border border-[#3157D5]/25 transition flex items-center gap-1.5 text-xs font-semibold cursor-pointer active:scale-95"
                 >
-                  <UserPlus className="w-4 h-4 text-[#D98B4A]" />
+                  <UserPlus className="w-4 h-4 text-[#3157D5]" />
                   <span className="hidden md:inline">Invite Friends</span>
+                  {planTier !== 'pro' && (
+                    <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-[#3157D5]/10 text-[#3157D5] font-bold border border-[#3157D5]/20 flex items-center gap-0.5">
+                      <Lock className="w-2.5 h-2.5" /> PRO
+                    </span>
+                  )}
                 </button>
               )}
 
@@ -258,15 +269,26 @@ export const Navbar: React.FC<NavbarProps> = ({
             {/* Mobile Header Actions (Compact, Clean, Touch-Friendly) */}
             <div className="flex sm:hidden items-center gap-1.5">
               {/* Invite Friends Button (Mobile) */}
-              {currentUser && onOpenInviteModal && (
+              {currentUser && (onOpenInviteModal || onOpenUpgradeModal) && (
                 <button
                   type="button"
-                  onClick={onOpenInviteModal}
+                  onClick={() => {
+                    if (planTier !== 'pro') {
+                      onOpenUpgradeModal?.();
+                    } else {
+                      onOpenInviteModal?.();
+                    }
+                  }}
                   aria-label="Invite Friends"
-                  title="Invite Friends to Group"
-                  className="w-9 h-9 rounded-lg bg-[#D98B4A]/15 text-[#D98B4A] border border-[#D98B4A]/30 flex items-center justify-center transition cursor-pointer active:scale-95"
+                  title={planTier !== 'pro' ? 'Invite Friends (PULSE Pro Exclusive)' : 'Invite Friends to Group'}
+                  className="w-9 h-9 rounded-[10px] bg-[#EFF8FF] text-[#3157D5] border border-[#3157D5]/25 flex items-center justify-center transition cursor-pointer active:scale-95 relative"
                 >
-                  <UserPlus className="w-4 h-4 text-[#D98B4A]" />
+                  <UserPlus className="w-4 h-4 text-[#3157D5]" />
+                  {planTier !== 'pro' && (
+                    <span className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-[#3157D5] text-white flex items-center justify-center text-[8px]">
+                      <Lock className="w-2 h-2" />
+                    </span>
+                  )}
                 </button>
               )}
 
@@ -384,10 +406,17 @@ export const Navbar: React.FC<NavbarProps> = ({
                         setIsMobileMenuOpen(false);
                         setActiveTab('badges');
                       }}
-                      className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold text-[#F4F4F5] hover:bg-[#1B1B20] transition cursor-pointer"
+                      className="w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-semibold text-[#F4F4F5] hover:bg-[#1B1B20] transition cursor-pointer"
                     >
-                      <Award className="w-4 h-4 text-[#FBBF24]" />
-                      Badges & Challenges
+                      <div className="flex items-center gap-2.5">
+                        <Award className="w-4 h-4 text-[#FBBF24]" />
+                        <span>Badges & Challenges</span>
+                      </div>
+                      {planTier !== 'pro' && (
+                        <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-[#D98B4A]/20 text-[#D98B4A] font-bold border border-[#D98B4A]/30 flex items-center gap-0.5">
+                          <Lock className="w-2.5 h-2.5" /> PRO
+                        </span>
+                      )}
                     </button>
 
                     <div className="pt-1 border-t border-[#26262C]">
@@ -432,12 +461,17 @@ export const Navbar: React.FC<NavbarProps> = ({
                   onClick={() => setActiveTab(item.id)}
                   className={`flex items-center gap-1.5 sm:gap-2 px-3 py-1.5 sm:py-2 rounded-lg text-xs font-semibold whitespace-nowrap transition-all cursor-pointer shrink-0 ${
                     isActive
-                      ? 'bg-[rgba(217,139,74,0.12)] text-[#D98B4A] border border-[#D98B4A]/30 shadow-sm'
-                      : 'text-[#A1A1AA] hover:text-[#F4F4F5] hover:bg-[#1B1B20]'
+                      ? 'bg-[#EFF8FF] text-[#3157D5] border border-[#3157D5]/20 font-bold'
+                      : 'text-[#667085] hover:text-[#111827] hover:bg-[#F1F3F6]'
                   }`}
                 >
-                  <Icon className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${isActive ? 'text-[#D98B4A]' : 'text-[#A1A1AA]'}`} />
-                  {item.label}
+                  <Icon className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${isActive ? 'text-[#3157D5]' : 'text-[#667085]'}`} />
+                  <span>{item.label}</span>
+                  {(item.id === 'badges' || item.id === 'comparison') && planTier !== 'pro' && (
+                    <span className="text-[9px] px-1.5 py-0.2 rounded-full bg-[#D98B4A]/15 text-[#D98B4A] font-bold border border-[#D98B4A]/25 flex items-center gap-0.5 leading-none">
+                      <Lock className="w-2 h-2" /> PRO
+                    </span>
+                  )}
                 </button>
               );
             })}
@@ -450,7 +484,7 @@ export const Navbar: React.FC<NavbarProps> = ({
         aria-label="Mobile Navigation"
         className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#131316]/95 border-t border-[#26262C] backdrop-blur-lg px-2 pt-1.5 pb-[calc(0.5rem+env(safe-area-inset-bottom,0px))] shadow-2xl"
       >
-        <div className="grid grid-cols-6 gap-0.5 sm:gap-1 max-w-md mx-auto">
+        <div className="grid grid-cols-5 gap-1 max-w-md mx-auto">
           {bottomNavItems.map((item) => {
             const Icon = item.icon;
             const isActive = activeTab === item.id || (item.id === 'leaderboard' && (activeTab === 'comparison' || activeTab === 'badges'));
@@ -458,20 +492,20 @@ export const Navbar: React.FC<NavbarProps> = ({
               <button
                 key={item.id}
                 onClick={() => setActiveTab(item.id)}
-                className={`flex flex-col items-center justify-center py-1 rounded-lg transition-all cursor-pointer select-none active:scale-95 ${
+                className={`flex flex-col items-center justify-center py-1.5 min-h-[48px] rounded-lg transition-all cursor-pointer select-none active:scale-95 ${
                   isActive
-                    ? 'text-[#D98B4A] font-bold'
-                    : 'text-[#A1A1AA] hover:text-[#F4F4F5]'
+                    ? 'text-[#3157D5] font-bold'
+                    : 'text-[#667085] hover:text-[#111827]'
                 }`}
               >
                 <div className={`p-1 rounded-lg transition ${
-                  isActive ? 'bg-[rgba(217,139,74,0.12)] text-[#D98B4A]' : ''
+                  isActive ? 'bg-[#EFF8FF] text-[#3157D5]' : ''
                 }`}>
                   <Icon className={`w-5 h-5 ${isActive ? 'stroke-[2.5]' : 'stroke-2'}`} />
                 </div>
                 <span className="text-[10px] mt-0.5 tracking-tight leading-none">{item.label}</span>
                 {isActive && (
-                  <span className="w-1 h-1 rounded-full bg-[#D98B4A] mt-0.5 animate-pulse" />
+                  <span className="w-1 h-1 rounded-full bg-[#3157D5] mt-0.5" />
                 )}
               </button>
             );
