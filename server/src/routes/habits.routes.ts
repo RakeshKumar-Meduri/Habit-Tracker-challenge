@@ -177,15 +177,54 @@ router.post('/api/supplements', requireAuth, async (req, res, next) => {
 
     for (const s of rawItems) {
       if (!s || !s.name) continue;
-      const supp = await prisma.supplement.create({
-        data: {
-          ...(s.id ? { id: s.id } : {}),
-          user_id: userId,
-          name: s.name,
-          dosage: s.dosage || null,
-          timing: s.timing || null,
-        },
-      });
+
+      let supp;
+      if (s.id) {
+        const existing = await prisma.supplement.findUnique({
+          where: { id: s.id },
+        });
+
+        if (existing) {
+          if (existing.user_id === userId) {
+            supp = await prisma.supplement.update({
+              where: { id: s.id },
+              data: {
+                name: s.name,
+                dosage: s.dosage || null,
+                timing: s.timing || null,
+              },
+            });
+          } else {
+            supp = await prisma.supplement.create({
+              data: {
+                user_id: userId,
+                name: s.name,
+                dosage: s.dosage || null,
+                timing: s.timing || null,
+              },
+            });
+          }
+        } else {
+          supp = await prisma.supplement.create({
+            data: {
+              id: s.id,
+              user_id: userId,
+              name: s.name,
+              dosage: s.dosage || null,
+              timing: s.timing || null,
+            },
+          });
+        }
+      } else {
+        supp = await prisma.supplement.create({
+          data: {
+            user_id: userId,
+            name: s.name,
+            dosage: s.dosage || null,
+            timing: s.timing || null,
+          },
+        });
+      }
       saved.push(supp);
     }
 
@@ -250,15 +289,54 @@ router.post('/api/custom-habits', requireAuth, async (req, res, next) => {
 
     for (const h of rawItems) {
       if (!h || !h.title) continue;
-      const habit = await prisma.customHabit.create({
-        data: {
-          ...(h.id ? { id: h.id } : {}),
-          user_id: userId,
-          title: h.title,
-          description: h.description || null,
-          is_private: h.is_private ?? true,
-        },
-      });
+
+      let habit;
+      if (h.id) {
+        const existing = await prisma.customHabit.findUnique({
+          where: { id: h.id },
+        });
+
+        if (existing) {
+          if (existing.user_id === userId) {
+            habit = await prisma.customHabit.update({
+              where: { id: h.id },
+              data: {
+                title: h.title,
+                description: h.description || null,
+                is_private: h.is_private ?? true,
+              },
+            });
+          } else {
+            habit = await prisma.customHabit.create({
+              data: {
+                user_id: userId,
+                title: h.title,
+                description: h.description || null,
+                is_private: h.is_private ?? true,
+              },
+            });
+          }
+        } else {
+          habit = await prisma.customHabit.create({
+            data: {
+              id: h.id,
+              user_id: userId,
+              title: h.title,
+              description: h.description || null,
+              is_private: h.is_private ?? true,
+            },
+          });
+        }
+      } else {
+        habit = await prisma.customHabit.create({
+          data: {
+            user_id: userId,
+            title: h.title,
+            description: h.description || null,
+            is_private: h.is_private ?? true,
+          },
+        });
+      }
       saved.push(habit);
     }
 

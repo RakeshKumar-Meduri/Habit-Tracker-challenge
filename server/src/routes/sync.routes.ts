@@ -51,11 +51,27 @@ router.get('/api/sync', requireAuth, async (req, res, next) => {
 
     if (!groupId || userTier === 'base') {
       // User has no group membership or is on Base (Solo) plan, return solo data
-      const user = await prisma.user.findUnique({ where: { id: userId } });
-      const dailyLogs = await prisma.dailyLog.findMany({ where: { user_id: userId } });
-      const workouts = await prisma.workout.findMany({ where: { user_id: userId, deleted_at: null } });
-      const weightLogs = await prisma.weightLog.findMany({ where: { user_id: userId } });
-      const badges = await prisma.badge.findMany({ where: { user_id: userId } });
+      const [
+        user,
+        dailyLogs,
+        workouts,
+        weightLogs,
+        badges,
+        supplements,
+        supplementLogs,
+        customHabits,
+        customHabitLogs,
+      ] = await Promise.all([
+        prisma.user.findUnique({ where: { id: userId } }),
+        prisma.dailyLog.findMany({ where: { user_id: userId }, orderBy: { date: 'desc' } }),
+        prisma.workout.findMany({ where: { user_id: userId, deleted_at: null }, orderBy: { date: 'desc' } }),
+        prisma.weightLog.findMany({ where: { user_id: userId }, orderBy: { date: 'desc' } }),
+        prisma.badge.findMany({ where: { user_id: userId } }),
+        prisma.supplement.findMany({ where: { user_id: userId } }),
+        prisma.supplementLog.findMany({ where: { user_id: userId } }),
+        prisma.customHabit.findMany({ where: { user_id: userId } }),
+        prisma.customHabitLog.findMany({ where: { user_id: userId } }),
+      ]);
 
       return res.json({
         success: true,
@@ -67,10 +83,10 @@ router.get('/api/sync', requireAuth, async (req, res, next) => {
           missedReasons: [],
           reactions: [],
           badges,
-          supplements: [],
-          supplementLogs: [],
-          customHabits: [],
-          customHabitLogs: [],
+          supplements,
+          supplementLogs,
+          customHabits,
+          customHabitLogs,
           deletedWorkoutIds: [],
           group: null,
           myRole: null,

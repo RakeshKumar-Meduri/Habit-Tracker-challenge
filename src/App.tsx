@@ -135,6 +135,13 @@ export function App() {
     return [];
   });
 
+  const supplementsRef = useRef<Supplement[]>([]);
+  supplementsRef.current = supplements;
+  const customHabitsRef = useRef<CustomHabit[]>([]);
+  customHabitsRef.current = customHabits;
+  const pushedSupplementIdsRef = useRef<Set<string>>(new Set());
+  const pushedHabitIdsRef = useRef<Set<string>>(new Set());
+
   const [activeTab, setActiveTab] = useState<string>('checklist');
   const [planTier, setPlanTier] = useState<'none' | 'base' | 'pro'>('base');
   const [activeSubscription, setActiveSubscription] = useState<any>(null);
@@ -311,18 +318,22 @@ export function App() {
     }
     if (Array.isArray(serverData.supplements)) {
       setSupplements(prev => {
-        const serverSuppMap = new Map(serverData.supplements.map((s: any) => [s.id, s]));
-        // Two-way synchronization: If local storage has supplements not yet on the server, push them to the server
-        const unSyncedLocal = prev.filter(s => s && s.id && !serverSuppMap.has(s.id));
-        if (unSyncedLocal.length > 0) {
-          pushSupplementToServer(unSyncedLocal);
-        }
         const mergedMap = new Map(prev.map(s => [s.id, s]));
         serverData.supplements.forEach((s: any) => {
           mergedMap.set(s.id, s);
         });
         return Array.from(mergedMap.values());
       });
+
+      // Two-way synchronization: If local storage has supplements not yet on the server, push them safely OUTSIDE state updater
+      const serverSuppMap = new Map(serverData.supplements.map((s: any) => [s.id, s]));
+      const unSyncedLocal = supplementsRef.current.filter(
+        s => s && s.id && !serverSuppMap.has(s.id) && !pushedSupplementIdsRef.current.has(s.id)
+      );
+      if (unSyncedLocal.length > 0) {
+        unSyncedLocal.forEach(s => pushedSupplementIdsRef.current.add(s.id));
+        pushSupplementToServer(unSyncedLocal).catch(() => {});
+      }
     }
     if (Array.isArray(serverData.supplementLogs)) {
       setSupplementLogs(prev => {
@@ -335,17 +346,21 @@ export function App() {
     }
     if (Array.isArray(serverData.customHabits)) {
       setCustomHabits(prev => {
-        const serverHabitMap = new Map(serverData.customHabits.map((h: any) => [h.id, h]));
-        const unSyncedHabits = prev.filter(h => h && h.id && !serverHabitMap.has(h.id));
-        if (unSyncedHabits.length > 0) {
-          pushCustomHabitToServer(unSyncedHabits);
-        }
         const mergedMap = new Map(prev.map(h => [h.id, h]));
         serverData.customHabits.forEach((h: any) => {
           mergedMap.set(h.id, h);
         });
         return Array.from(mergedMap.values());
       });
+
+      const serverHabitMap = new Map(serverData.customHabits.map((h: any) => [h.id, h]));
+      const unSyncedHabits = customHabitsRef.current.filter(
+        h => h && h.id && !serverHabitMap.has(h.id) && !pushedHabitIdsRef.current.has(h.id)
+      );
+      if (unSyncedHabits.length > 0) {
+        unSyncedHabits.forEach(h => pushedHabitIdsRef.current.add(h.id));
+        pushCustomHabitToServer(unSyncedHabits).catch(() => {});
+      }
     }
     if (Array.isArray(serverData.customHabitLogs)) {
       setCustomHabitLogs(prev => {
@@ -1161,60 +1176,60 @@ export function App() {
 
   // Supplement Handlers
   const handleAddSupplement = (newSupp: Supplement) => {
+    pushedSupplementIdsRef.current.add(newSupp.id);
     setSupplements(prev => [...prev.filter(s => s.id !== newSupp.id), newSupp]);
     pushSupplementToServer(newSupp);
   };
 
   const handleDeleteSupplement = (suppId: string) => {
+    pushedSupplementIdsRef.current.delete(suppId);
     setSupplements(prev => prev.filter(s => s.id !== suppId));
     setSupplementLogs(prev => prev.filter(l => l.supplement_id !== suppId));
     deleteSupplementOnServer(suppId);
   };
 
   const handleToggleSupplementLog = (suppId: string, date: string, taken: boolean) => {
-    setSupplementLogs(prev => {
-      const existing = prev.find(l => l.supplement_id === suppId && l.date === date && l.user_id === currentUserId);
-      const updatedLog: SupplementLog = existing 
-        ? { ...existing, taken }
-        : {
-            id: `slog_${suppId}_${date}_${Date.now()}`,
-            user_id: currentUserId,
-            supplement_id: suppId,
-            date,
-            taken,
-          };
-      pushSupplementLogToServer(updatedLog);
-      return [...prev.filter(l => l.id !== updatedLog.id), updatedLog];
-    });
+    const existing = supplementLogs.find(l => l.supplement_id === suppId && l.date === date && l.user_id === currentUserId);
+    const updatedLog: SupplementLog = existing 
+      ? { ...existing, taken }
+      : {
+          id: `slog_${suppId}_${date}_${Date.now()}`,
+          user_id: currentUserId,
+          supplement_id: suppId,
+          date,
+          taken,
+        };
+    setSupplementLogs(prev => [...prev.filter(l => l.id !== updatedLog.id), updatedLog]);
+    pushSupplementLogToServer(updatedLog);
   };
 
   // Custom Habit Handlers
   const handleAddCustomHabit = (newHabit: CustomHabit) => {
+    pushedHabitIdsRef.current.add(newHabit.id);
     setCustomHabits(prev => [...prev.filter(h => h.id !== newHabit.id), newHabit]);
     pushCustomHabitToServer(newHabit);
   };
 
   const handleDeleteCustomHabit = (habitId: string) => {
+    pushedHabitIdsRef.current.delete(habitId);
     setCustomHabits(prev => prev.filter(h => h.id !== habitId));
     setCustomHabitLogs(prev => prev.filter(l => l.habit_id !== habitId));
     deleteCustomHabitOnServer(habitId);
   };
 
   const handleToggleCustomHabitLog = (habitId: string, date: string, completed: boolean) => {
-    setCustomHabitLogs(prev => {
-      const existing = prev.find(l => l.habit_id === habitId && l.date === date && l.user_id === currentUserId);
-      const updatedLog: CustomHabitLog = existing
-        ? { ...existing, completed }
-        : {
-            id: `hlog_${habitId}_${date}_${Date.now()}`,
-            user_id: currentUserId,
-            habit_id: habitId,
-            date,
-            completed,
-          };
-      pushCustomHabitLogToServer(updatedLog);
-      return [...prev.filter(l => l.id !== updatedLog.id), updatedLog];
-    });
+    const existing = customHabitLogs.find(l => l.habit_id === habitId && l.date === date && l.user_id === currentUserId);
+    const updatedLog: CustomHabitLog = existing
+      ? { ...existing, completed }
+      : {
+          id: `hlog_${habitId}_${date}_${Date.now()}`,
+          user_id: currentUserId,
+          habit_id: habitId,
+          date,
+          completed,
+        };
+    setCustomHabitLogs(prev => [...prev.filter(l => l.id !== updatedLog.id), updatedLog]);
+    pushCustomHabitLogToServer(updatedLog);
   };
 
   // Export CSV
