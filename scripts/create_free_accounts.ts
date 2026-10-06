@@ -1,5 +1,10 @@
-import { prisma } from '../server/src/db/prisma';
+import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
+import dotenv from 'dotenv';
+
+dotenv.config();
+
+const prisma = new PrismaClient();
 
 async function main() {
   console.log('Ensuring 4 Default Users: rakesh, hitesh (moderators) & demouser1, demouser2 (demo testers)...');
@@ -95,7 +100,65 @@ async function main() {
     }
   }
 
-  console.log('✅ All 4 default users configured successfully!');
+  // Ensure default groups in Supabase
+  const userRakesh = await prisma.user.findUnique({ where: { username: 'rakesh' } });
+  const userHitesh = await prisma.user.findUnique({ where: { username: 'hitesh' } });
+  const userDemo1 = await prisma.user.findUnique({ where: { username: 'demouser1' } });
+  const userDemo2 = await prisma.user.findUnique({ where: { username: 'demouser2' } });
+
+  if (userRakesh && userHitesh) {
+    const eliteGroup = await prisma.group.upsert({
+      where: { id: 'grp_pulse_elite' },
+      update: { name: 'PULSE Elite Squad', owner_id: userRakesh.id },
+      create: {
+        id: 'grp_pulse_elite',
+        name: 'PULSE Elite Squad',
+        owner_id: userRakesh.id,
+        step_target: 10000,
+      },
+    });
+
+    await prisma.membership.upsert({
+      where: { user_id_group_id: { user_id: userRakesh.id, group_id: eliteGroup.id } },
+      update: { role: 'owner' },
+      create: { user_id: userRakesh.id, group_id: eliteGroup.id, role: 'owner' },
+    });
+
+    await prisma.membership.upsert({
+      where: { user_id_group_id: { user_id: userHitesh.id, group_id: eliteGroup.id } },
+      update: { role: 'member' },
+      create: { user_id: userHitesh.id, group_id: eliteGroup.id, role: 'member' },
+    });
+    console.log('✓ Group "PULSE Elite Squad" linked with @rakesh and @hitesh');
+  }
+
+  if (userDemo1 && userDemo2) {
+    const demoGroup = await prisma.group.upsert({
+      where: { id: 'grp_pulse_demo' },
+      update: { name: 'Demo Testing Squad', owner_id: userDemo1.id },
+      create: {
+        id: 'grp_pulse_demo',
+        name: 'Demo Testing Squad',
+        owner_id: userDemo1.id,
+        step_target: 8000,
+      },
+    });
+
+    await prisma.membership.upsert({
+      where: { user_id_group_id: { user_id: userDemo1.id, group_id: demoGroup.id } },
+      update: { role: 'owner' },
+      create: { user_id: userDemo1.id, group_id: demoGroup.id, role: 'owner' },
+    });
+
+    await prisma.membership.upsert({
+      where: { user_id_group_id: { user_id: userDemo2.id, group_id: demoGroup.id } },
+      update: { role: 'member' },
+      create: { user_id: userDemo2.id, group_id: demoGroup.id, role: 'member' },
+    });
+    console.log('✓ Group "Demo Testing Squad" linked with @demouser1 and @demouser2');
+  }
+
+  console.log('✅ All 4 default users and squads configured successfully in Supabase!');
 }
 
 main().catch(console.error).finally(() => prisma.$disconnect());
