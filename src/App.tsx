@@ -142,6 +142,39 @@ export function App() {
   const pushedSupplementIdsRef = useRef<Set<string>>(new Set());
   const pushedHabitIdsRef = useRef<Set<string>>(new Set());
 
+  // Tombstones for deleted supplements and habits to permanently prevent resurrection
+  const [deletedSupplementIds, setDeletedSupplementIds] = useState<Set<string>>(() => {
+    try {
+      const stored = localStorage.getItem('pulse_deleted_supplement_ids');
+      if (stored) return new Set(JSON.parse(stored));
+    } catch {}
+    return new Set();
+  });
+  const deletedSupplementIdsRef = useRef<Set<string>>(deletedSupplementIds);
+  deletedSupplementIdsRef.current = deletedSupplementIds;
+
+  const [deletedHabitIds, setDeletedHabitIds] = useState<Set<string>>(() => {
+    try {
+      const stored = localStorage.getItem('pulse_deleted_habit_ids');
+      if (stored) return new Set(JSON.parse(stored));
+    } catch {}
+    return new Set();
+  });
+  const deletedHabitIdsRef = useRef<Set<string>>(deletedHabitIds);
+  deletedHabitIdsRef.current = deletedHabitIds;
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('pulse_deleted_supplement_ids', JSON.stringify(Array.from(deletedSupplementIds)));
+    } catch {}
+  }, [deletedSupplementIds]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('pulse_deleted_habit_ids', JSON.stringify(Array.from(deletedHabitIds)));
+    } catch {}
+  }, [deletedHabitIds]);
+
   const [activeTab, setActiveTab] = useState<string>('checklist');
   const [planTier, setPlanTier] = useState<'none' | 'base' | 'pro'>('base');
   const [activeSubscription, setActiveSubscription] = useState<any>(null);
@@ -328,55 +361,48 @@ export function App() {
     }
     if (Array.isArray(serverData.supplements)) {
       setSupplements(prev => {
-        const mergedMap = new Map(prev.map(s => [s.id, s]));
-        serverData.supplements.forEach((s: any) => {
-          mergedMap.set(s.id, s);
-        });
-        return Array.from(mergedMap.values());
-      });
+        const tombstones = deletedSupplementIdsRef.current;
+        const validServerSupps = serverData.supplements.filter((s: any) => s && s.id && !tombstones.has(s.id));
+        const pendingOptimistic = prev.filter(p => pushedSupplementIdsRef.current.has(p.id) && !tombstones.has(p.id));
 
-      // Two-way synchronization: If local storage has supplements not yet on the server, push them safely OUTSIDE state updater
-      const serverSuppMap = new Map(serverData.supplements.map((s: any) => [s.id, s]));
-      const unSyncedLocal = supplementsRef.current.filter(
-        s => s && s.id && !serverSuppMap.has(s.id) && !pushedSupplementIdsRef.current.has(s.id)
-      );
-      if (unSyncedLocal.length > 0) {
-        unSyncedLocal.forEach(s => pushedSupplementIdsRef.current.add(s.id));
-        pushSupplementToServer(unSyncedLocal).catch(() => {});
-      }
+        const map = new Map<string, Supplement>();
+        validServerSupps.forEach((s: any) => map.set(s.id, s));
+        pendingOptimistic.forEach((s: any) => { if (!map.has(s.id)) map.set(s.id, s); });
+        return Array.from(map.values());
+      });
     }
     if (Array.isArray(serverData.supplementLogs)) {
       setSupplementLogs(prev => {
-        const map = new Map(prev.map(s => [s.id, s]));
+        const tombstones = deletedSupplementIdsRef.current;
+        const map = new Map(prev.filter(l => !tombstones.has(l.supplement_id)).map(l => [l.id, l]));
         serverData.supplementLogs.forEach((s: any) => {
-          map.set(s.id, s);
+          if (!tombstones.has(s.supplement_id)) {
+            map.set(s.id, s);
+          }
         });
         return Array.from(map.values());
       });
     }
     if (Array.isArray(serverData.customHabits)) {
       setCustomHabits(prev => {
-        const mergedMap = new Map(prev.map(h => [h.id, h]));
-        serverData.customHabits.forEach((h: any) => {
-          mergedMap.set(h.id, h);
-        });
-        return Array.from(mergedMap.values());
-      });
+        const tombstones = deletedHabitIdsRef.current;
+        const validServerHabits = serverData.customHabits.filter((h: any) => h && h.id && !tombstones.has(h.id));
+        const pendingOptimistic = prev.filter(p => pushedHabitIdsRef.current.has(p.id) && !tombstones.has(p.id));
 
-      const serverHabitMap = new Map(serverData.customHabits.map((h: any) => [h.id, h]));
-      const unSyncedHabits = customHabitsRef.current.filter(
-        h => h && h.id && !serverHabitMap.has(h.id) && !pushedHabitIdsRef.current.has(h.id)
-      );
-      if (unSyncedHabits.length > 0) {
-        unSyncedHabits.forEach(h => pushedHabitIdsRef.current.add(h.id));
-        pushCustomHabitToServer(unSyncedHabits).catch(() => {});
-      }
+        const map = new Map<string, CustomHabit>();
+        validServerHabits.forEach((h: any) => map.set(h.id, h));
+        pendingOptimistic.forEach((h: any) => { if (!map.has(h.id)) map.set(h.id, h); });
+        return Array.from(map.values());
+      });
     }
     if (Array.isArray(serverData.customHabitLogs)) {
       setCustomHabitLogs(prev => {
-        const map = new Map(prev.map(l => [l.id, l]));
+        const tombstones = deletedHabitIdsRef.current;
+        const map = new Map(prev.filter(l => !tombstones.has(l.habit_id)).map(l => [l.id, l]));
         serverData.customHabitLogs.forEach((l: any) => {
-          map.set(l.id, l);
+          if (!tombstones.has(l.habit_id)) {
+            map.set(l.id, l);
+          }
         });
         return Array.from(map.values());
       });
@@ -626,6 +652,8 @@ export function App() {
         case 'SUPPLEMENT_DELETED': {
           const { id } = msg.payload || {};
           if (id) {
+            deletedSupplementIdsRef.current.add(id);
+            setDeletedSupplementIds(prev => new Set([...prev, id]));
             setSupplements(prev => prev.filter(x => x.id !== id));
             setSupplementLogs(prev => prev.filter(l => l.supplement_id !== id));
           }
@@ -646,7 +674,7 @@ export function App() {
 
         case 'CUSTOM_HABIT_ADDED': {
           const h = msg.payload as CustomHabit;
-          if (h && h.id) {
+          if (h && h.id && !deletedHabitIdsRef.current.has(h.id)) {
             setCustomHabits(prev => [...prev.filter(x => x.id !== h.id), h]);
           }
           break;
@@ -655,6 +683,8 @@ export function App() {
         case 'CUSTOM_HABIT_DELETED': {
           const { id } = msg.payload || {};
           if (id) {
+            deletedHabitIdsRef.current.add(id);
+            setDeletedHabitIds(prev => new Set([...prev, id]));
             setCustomHabits(prev => prev.filter(x => x.id !== id));
             setCustomHabitLogs(prev => prev.filter(l => l.habit_id !== id));
           }
@@ -1210,9 +1240,33 @@ export function App() {
   };
 
   const handleDeleteSupplement = (suppId: string) => {
-    pushedSupplementIdsRef.current.delete(suppId);
-    setSupplements(prev => prev.filter(s => s.id !== suppId));
-    setSupplementLogs(prev => prev.filter(l => l.supplement_id !== suppId));
+    // Locate target supplement to identify its name and user
+    const target = supplements.find(s => s.id === suppId);
+    const targetName = target ? target.name.trim().toLowerCase() : null;
+    const targetUserId = target ? target.user_id : currentUserId;
+
+    // Collect all matching IDs (target ID + any duplicate clones with the same name for this user)
+    const removedIds = new Set<string>([suppId]);
+    if (targetName) {
+      supplements.forEach(s => {
+        if (s.user_id === targetUserId && s.name.trim().toLowerCase() === targetName) {
+          removedIds.add(s.id);
+        }
+      });
+    }
+
+    // Record into tombstones so neither periodic sync nor local storage can ever resurrect them
+    removedIds.forEach(id => {
+      deletedSupplementIdsRef.current.add(id);
+      pushedSupplementIdsRef.current.delete(id);
+    });
+    setDeletedSupplementIds(prev => new Set([...prev, ...removedIds]));
+
+    // Clean state immediately
+    setSupplements(prev => prev.filter(s => !removedIds.has(s.id)));
+    setSupplementLogs(prev => prev.filter(l => !removedIds.has(l.supplement_id)));
+
+    // Send delete request to server
     deleteSupplementOnServer(suppId);
   };
 
@@ -1239,9 +1293,28 @@ export function App() {
   };
 
   const handleDeleteCustomHabit = (habitId: string) => {
-    pushedHabitIdsRef.current.delete(habitId);
-    setCustomHabits(prev => prev.filter(h => h.id !== habitId));
-    setCustomHabitLogs(prev => prev.filter(l => l.habit_id !== habitId));
+    const target = customHabits.find(h => h.id === habitId);
+    const targetTitle = target ? target.title.trim().toLowerCase() : null;
+    const targetUserId = target ? target.user_id : currentUserId;
+
+    const removedIds = new Set<string>([habitId]);
+    if (targetTitle) {
+      customHabits.forEach(h => {
+        if (h.user_id === targetUserId && h.title.trim().toLowerCase() === targetTitle) {
+          removedIds.add(h.id);
+        }
+      });
+    }
+
+    removedIds.forEach(id => {
+      deletedHabitIdsRef.current.add(id);
+      pushedHabitIdsRef.current.delete(id);
+    });
+    setDeletedHabitIds(prev => new Set([...prev, ...removedIds]));
+
+    setCustomHabits(prev => prev.filter(h => !removedIds.has(h.id)));
+    setCustomHabitLogs(prev => prev.filter(l => !removedIds.has(l.habit_id)));
+
     deleteCustomHabitOnServer(habitId);
   };
 

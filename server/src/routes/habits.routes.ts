@@ -173,10 +173,16 @@ router.post('/api/supplements', requireAuth, async (req, res, next) => {
   try {
     const rawItems = Array.isArray(req.body) ? req.body : [req.body];
     const userId = req.user!.id;
+    const groupId = req.user!.groupId;
     const saved = [];
 
     for (const s of rawItems) {
-      if (!s || !s.name) continue;
+      if (!s || !s.name || typeof s.name !== 'string') continue;
+      const cleanName = s.name.trim();
+      if (!cleanName) continue;
+
+      // Strict ownership: incoming user_id must not claim another user
+      if (s.user_id && s.user_id !== userId) continue;
 
       let supp;
       if (s.id) {
@@ -186,46 +192,91 @@ router.post('/api/supplements', requireAuth, async (req, res, next) => {
 
         if (existing) {
           if (existing.user_id === userId) {
+            // Update the user's existing supplement
             supp = await prisma.supplement.update({
               where: { id: s.id },
               data: {
-                name: s.name,
+                name: cleanName,
                 dosage: s.dosage || null,
                 timing: s.timing || null,
               },
             });
           } else {
+            // NEVER auto-clone another user's supplement into current user's account!
+            continue;
+          }
+        } else {
+          // Check if this user already has a supplement with the same name to prevent duplicates
+          const duplicate = await prisma.supplement.findFirst({
+            where: {
+              user_id: userId,
+              name: { equals: cleanName, mode: 'insensitive' },
+            },
+          });
+
+          if (duplicate) {
+            supp = await prisma.supplement.update({
+              where: { id: duplicate.id },
+              data: {
+                dosage: s.dosage || duplicate.dosage,
+                timing: s.timing || duplicate.timing,
+              },
+            });
+          } else {
             supp = await prisma.supplement.create({
               data: {
+                id: s.id,
                 user_id: userId,
-                name: s.name,
+                name: cleanName,
                 dosage: s.dosage || null,
                 timing: s.timing || null,
               },
             });
           }
+        }
+      } else {
+        // No ID provided, check for existing by name
+        const duplicate = await prisma.supplement.findFirst({
+          where: {
+            user_id: userId,
+            name: { equals: cleanName, mode: 'insensitive' },
+          },
+        });
+
+        if (duplicate) {
+          supp = await prisma.supplement.update({
+            where: { id: duplicate.id },
+            data: {
+              dosage: s.dosage || duplicate.dosage,
+              timing: s.timing || duplicate.timing,
+            },
+          });
         } else {
           supp = await prisma.supplement.create({
             data: {
-              id: s.id,
               user_id: userId,
-              name: s.name,
+              name: cleanName,
               dosage: s.dosage || null,
               timing: s.timing || null,
             },
           });
         }
-      } else {
-        supp = await prisma.supplement.create({
-          data: {
-            user_id: userId,
-            name: s.name,
-            dosage: s.dosage || null,
-            timing: s.timing || null,
-          },
-        });
       }
-      saved.push(supp);
+
+      if (supp) {
+        saved.push(supp);
+      }
+    }
+
+    if (groupId) {
+      await invalidateGroupSync(groupId);
+    }
+
+    for (const supp of saved) {
+      broadcast({
+        type: WS_EVENTS.SUPPLEMENT_ADDED,
+        payload: supp,
+      }, null, groupId);
     }
 
     res.json({ success: true, supplements: saved });
@@ -238,9 +289,45 @@ router.delete('/api/supplements/:id', requireAuth, async (req, res, next) => {
   try {
     const id = req.params.id as string;
     const userId = req.user!.id;
-    await prisma.supplement.deleteMany({
-      where: { id, user_id: userId },
+    const groupId = req.user!.groupId;
+
+    // Find target supplement to identify its name
+    const target = await prisma.supplement.findFirst({
+      where: {
+        OR: [
+          { id, user_id: userId },
+          { id },
+        ],
+      },
     });
+
+    if (target && target.user_id === userId) {
+      // Delete any duplicates with the same name as well as this specific id
+      await prisma.supplement.deleteMany({
+        where: {
+          user_id: userId,
+          OR: [
+            { id: target.id },
+            { id },
+            { name: { equals: target.name.trim(), mode: 'insensitive' } },
+          ],
+        },
+      });
+    } else {
+      await prisma.supplement.deleteMany({
+        where: { id, user_id: userId },
+      });
+    }
+
+    if (groupId) {
+      await invalidateGroupSync(groupId);
+    }
+
+    broadcast({
+      type: WS_EVENTS.SUPPLEMENT_DELETED,
+      payload: { id },
+    }, null, groupId);
+
     res.json({ success: true, id });
   } catch (err) {
     next(err);
@@ -251,6 +338,7 @@ router.post('/api/supplement-logs', requireAuth, async (req, res, next) => {
   try {
     const raw = req.body;
     const userId = req.user!.id;
+    const groupId = req.user!.groupId;
 
     const saved = await prisma.supplementLog.upsert({
       where: {
@@ -272,6 +360,15 @@ router.post('/api/supplement-logs', requireAuth, async (req, res, next) => {
       },
     });
 
+    if (groupId) {
+      await invalidateGroupSync(groupId);
+    }
+
+    broadcast({
+      type: WS_EVENTS.SUPPLEMENT_LOG_UPDATED,
+      payload: saved,
+    }, null, groupId);
+
     res.json({ success: true, log: saved });
   } catch (err) {
     next(err);
@@ -285,10 +382,15 @@ router.post('/api/custom-habits', requireAuth, async (req, res, next) => {
   try {
     const rawItems = Array.isArray(req.body) ? req.body : [req.body];
     const userId = req.user!.id;
+    const groupId = req.user!.groupId;
     const saved = [];
 
     for (const h of rawItems) {
-      if (!h || !h.title) continue;
+      if (!h || !h.title || typeof h.title !== 'string') continue;
+      const cleanTitle = h.title.trim();
+      if (!cleanTitle) continue;
+
+      if (h.user_id && h.user_id !== userId) continue;
 
       let habit;
       if (h.id) {
@@ -301,43 +403,86 @@ router.post('/api/custom-habits', requireAuth, async (req, res, next) => {
             habit = await prisma.customHabit.update({
               where: { id: h.id },
               data: {
-                title: h.title,
+                title: cleanTitle,
                 description: h.description || null,
                 is_private: h.is_private ?? true,
               },
             });
           } else {
+            // NEVER auto-clone another user's habit into current user's account!
+            continue;
+          }
+        } else {
+          // Check for existing duplicate by title
+          const duplicate = await prisma.customHabit.findFirst({
+            where: {
+              user_id: userId,
+              title: { equals: cleanTitle, mode: 'insensitive' },
+            },
+          });
+
+          if (duplicate) {
+            habit = await prisma.customHabit.update({
+              where: { id: duplicate.id },
+              data: {
+                description: h.description || duplicate.description,
+                is_private: h.is_private ?? duplicate.is_private,
+              },
+            });
+          } else {
             habit = await prisma.customHabit.create({
               data: {
+                id: h.id,
                 user_id: userId,
-                title: h.title,
+                title: cleanTitle,
                 description: h.description || null,
                 is_private: h.is_private ?? true,
               },
             });
           }
+        }
+      } else {
+        const duplicate = await prisma.customHabit.findFirst({
+          where: {
+            user_id: userId,
+            title: { equals: cleanTitle, mode: 'insensitive' },
+          },
+        });
+
+        if (duplicate) {
+          habit = await prisma.customHabit.update({
+            where: { id: duplicate.id },
+            data: {
+              description: h.description || duplicate.description,
+              is_private: h.is_private ?? duplicate.is_private,
+            },
+          });
         } else {
           habit = await prisma.customHabit.create({
             data: {
-              id: h.id,
               user_id: userId,
-              title: h.title,
+              title: cleanTitle,
               description: h.description || null,
               is_private: h.is_private ?? true,
             },
           });
         }
-      } else {
-        habit = await prisma.customHabit.create({
-          data: {
-            user_id: userId,
-            title: h.title,
-            description: h.description || null,
-            is_private: h.is_private ?? true,
-          },
-        });
       }
-      saved.push(habit);
+
+      if (habit) {
+        saved.push(habit);
+      }
+    }
+
+    if (groupId) {
+      await invalidateGroupSync(groupId);
+    }
+
+    for (const habit of saved) {
+      broadcast({
+        type: WS_EVENTS.CUSTOM_HABIT_ADDED,
+        payload: habit,
+      }, null, groupId);
     }
 
     res.json({ success: true, habits: saved });
@@ -350,9 +495,43 @@ router.delete('/api/custom-habits/:id', requireAuth, async (req, res, next) => {
   try {
     const id = req.params.id as string;
     const userId = req.user!.id;
-    await prisma.customHabit.deleteMany({
-      where: { id, user_id: userId },
+    const groupId = req.user!.groupId;
+
+    const target = await prisma.customHabit.findFirst({
+      where: {
+        OR: [
+          { id, user_id: userId },
+          { id },
+        ],
+      },
     });
+
+    if (target && target.user_id === userId) {
+      await prisma.customHabit.deleteMany({
+        where: {
+          user_id: userId,
+          OR: [
+            { id: target.id },
+            { id },
+            { title: { equals: target.title.trim(), mode: 'insensitive' } },
+          ],
+        },
+      });
+    } else {
+      await prisma.customHabit.deleteMany({
+        where: { id, user_id: userId },
+      });
+    }
+
+    if (groupId) {
+      await invalidateGroupSync(groupId);
+    }
+
+    broadcast({
+      type: WS_EVENTS.CUSTOM_HABIT_DELETED,
+      payload: { id },
+    }, null, groupId);
+
     res.json({ success: true, id });
   } catch (err) {
     next(err);
@@ -363,6 +542,7 @@ router.post('/api/custom-habit-logs', requireAuth, async (req, res, next) => {
   try {
     const raw = req.body;
     const userId = req.user!.id;
+    const groupId = req.user!.groupId;
 
     const saved = await prisma.customHabitLog.upsert({
       where: {
@@ -383,6 +563,15 @@ router.post('/api/custom-habit-logs', requireAuth, async (req, res, next) => {
         completed: raw.completed ?? false,
       },
     });
+
+    if (groupId) {
+      await invalidateGroupSync(groupId);
+    }
+
+    broadcast({
+      type: WS_EVENTS.CUSTOM_HABIT_LOG_UPDATED,
+      payload: saved,
+    }, null, groupId);
 
     res.json({ success: true, log: saved });
   } catch (err) {

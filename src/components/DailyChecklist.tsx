@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import type { 
   User, 
   DailyLog, 
@@ -356,8 +356,29 @@ export const DailyChecklist: React.FC<DailyChecklistProps> = ({
     setInlineHabitDesc('');
   };
 
-  const userSupplements = supplements.filter(s => s.user_id === targetUser.id);
-  const userHabits = customHabits.filter(h => h.user_id === targetUser.id);
+  const userSupplements = useMemo(() => {
+    const list = supplements.filter(s => s && s.user_id === targetUser.id);
+    const map = new Map<string, Supplement>();
+    for (const s of list) {
+      const key = (s.name || '').trim().toLowerCase();
+      if (!map.has(key)) {
+        map.set(key, s);
+      }
+    }
+    return Array.from(map.values());
+  }, [supplements, targetUser.id]);
+
+  const userHabits = useMemo(() => {
+    const list = customHabits.filter(h => h && h.user_id === targetUser.id);
+    const map = new Map<string, CustomHabit>();
+    for (const h of list) {
+      const key = (h.title || '').trim().toLowerCase();
+      if (!map.has(key)) {
+        map.set(key, h);
+      }
+    }
+    return Array.from(map.values());
+  }, [customHabits, targetUser.id]);
 
   // Supplements Tracking Stats for targetUser on selectedDate
   const supplementsTakenCount = userSupplements.filter(s => {

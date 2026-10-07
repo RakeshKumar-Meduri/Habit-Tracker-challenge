@@ -234,14 +234,24 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
       : calculatedPoints;
 
     // Supplements stats
-    const userSupps = supplements.filter(s => s.user_id === targetUser.id);
+    const userSuppsMap = new Map<string, Supplement>();
+    supplements.filter(s => s && s.user_id === targetUser.id).forEach(s => {
+      const k = (s.name || '').trim().toLowerCase();
+      if (!userSuppsMap.has(k)) userSuppsMap.set(k, s);
+    });
+    const userSupps = Array.from(userSuppsMap.values());
     const suppsTaken = userSupps.filter(s => {
       const sl = supplementLogs.find(l => l.supplement_id === s.id && l.date === dateStr);
       return !!sl?.taken;
     }).length;
 
     // Custom habits stats
-    const userHabits = customHabits.filter(h => h.user_id === targetUser.id);
+    const userHabitsMap = new Map<string, CustomHabit>();
+    customHabits.filter(h => h && h.user_id === targetUser.id).forEach(h => {
+      const k = (h.title || '').trim().toLowerCase();
+      if (!userHabitsMap.has(k)) userHabitsMap.set(k, h);
+    });
+    const userHabits = Array.from(userHabitsMap.values());
     const habitsDone = userHabits.filter(h => {
       const hl = customHabitLogs.find(l => l.habit_id === h.id && l.date === dateStr);
       return !!hl?.completed;
@@ -309,6 +319,24 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
   const selectedDateObj = new Date(selectedY, selectedM - 1, selectedD);
   const isSelectedDateSunday = selectedDateObj.getDay() === 0;
   const selectedStats = getDayStats(selectedDate, isSelectedDateSunday);
+
+  const userDeduplicatedSupps = useMemo(() => {
+    const map = new Map<string, Supplement>();
+    supplements.filter(s => s && s.user_id === targetUser.id).forEach(s => {
+      const k = (s.name || '').trim().toLowerCase();
+      if (!map.has(k)) map.set(k, s);
+    });
+    return Array.from(map.values());
+  }, [supplements, targetUser.id]);
+
+  const userDeduplicatedHabits = useMemo(() => {
+    const map = new Map<string, CustomHabit>();
+    customHabits.filter(h => h && h.user_id === targetUser.id).forEach(h => {
+      const k = (h.title || '').trim().toLowerCase();
+      if (!map.has(k)) map.set(k, h);
+    });
+    return Array.from(map.values());
+  }, [customHabits, targetUser.id]);
 
   // Formatted date string for header
   const formattedSelectedDate = useMemo(() => {
@@ -1078,7 +1106,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
                   </span>
                 </div>
                 <div className="space-y-1">
-                  {supplements.filter(s => s.user_id === targetUser.id).map(s => {
+                  {userDeduplicatedSupps.map(s => {
                     const isTaken = !!supplementLogs.find(l => l.supplement_id === s.id && l.date === selectedDate)?.taken;
                     return (
                       <div key={s.id} className="flex items-center justify-between text-xs py-1 px-2 rounded-lg bg-[#131316]">
@@ -1117,7 +1145,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
                 </div>
                 {isViewingSelf ? (
                   <div className="space-y-1">
-                    {customHabits.filter(h => h.user_id === targetUser.id).map(h => {
+                    {userDeduplicatedHabits.map(h => {
                       const isDone = !!customHabitLogs.find(l => l.habit_id === h.id && l.date === selectedDate)?.completed;
                       return (
                         <div key={h.id} className="flex items-center justify-between text-xs py-1 px-2 rounded-lg bg-[#131316]">

@@ -1675,32 +1675,75 @@ app.post('/api/supplements', requireAuth, async (req, res) => {
   const incoming = req.body;
   if (!incoming) return res.status(400).json({ error: 'Invalid supplement data' });
 
-  const items = (Array.isArray(incoming) ? incoming : [incoming])
-    .filter(s => s && s.id)
-    .map(s => ({ ...s, user_id: req.user.id }));
+  const rawItems = Array.isArray(incoming) ? incoming : [incoming];
+  const userId = req.user.id;
 
-  if (items.length === 0) return res.status(400).json({ error: 'No valid supplements provided' });
+  const validItems = [];
+  for (const s of rawItems) {
+    if (!s || !s.name || typeof s.name !== 'string') continue;
+    const cleanName = s.name.trim();
+    if (!cleanName) continue;
+    // Strict ownership: do not accept supplements tagged with another user_id
+    if (s.user_id && s.user_id !== userId) continue;
+    validItems.push({
+      ...s,
+      name: cleanName,
+      user_id: userId,
+    });
+  }
 
+  if (validItems.length === 0) return res.status(400).json({ error: 'No valid supplements provided' });
+
+  let savedItems = [];
   await mutate(d => {
-    const map = new Map((d.supplements || []).map(s => [s.id, s]));
-    items.forEach(s => map.set(s.id, s));
-    d.supplements = Array.from(map.values());
+    d.supplements = d.supplements || [];
+    for (const item of validItems) {
+      // Check existing by id
+      const existingIdx = d.supplements.findIndex(s => s.id === item.id);
+      if (existingIdx !== -1) {
+        if (d.supplements[existingIdx].user_id === userId) {
+          d.supplements[existingIdx] = { ...d.supplements[existingIdx], ...item, user_id: userId };
+          savedItems.push(d.supplements[existingIdx]);
+        }
+        // If it belongs to another user, ignore
+        continue;
+      }
+
+      // Check existing duplicate by name for this user
+      const dupIdx = d.supplements.findIndex(s => s.user_id === userId && s.name.toLowerCase() === item.name.toLowerCase());
+      if (dupIdx !== -1) {
+        d.supplements[dupIdx] = { ...d.supplements[dupIdx], ...item, user_id: userId };
+        savedItems.push(d.supplements[dupIdx]);
+      } else {
+        d.supplements.push(item);
+        savedItems.push(item);
+      }
+    }
   });
 
-  items.forEach(supp => {
+  savedItems.forEach(supp => {
     broadcast({
       type: 'SUPPLEMENT_ADDED',
       payload: supp,
     }, null, req.user.groupId);
   });
 
-  res.json({ success: true, count: items.length, supplements: items });
+  res.json({ success: true, count: savedItems.length, supplements: savedItems });
 });
 
 app.delete('/api/supplements/:id', requireAuth, async (req, res) => {
   const { id } = req.params;
+  const userId = req.user.id;
+
   await mutate(d => {
-    d.supplements = (d.supplements || []).filter(s => s.id !== id);
+    const target = (d.supplements || []).find(s => s.id === id);
+    const targetName = (target && target.user_id === userId) ? target.name.toLowerCase() : null;
+
+    d.supplements = (d.supplements || []).filter(s => {
+      if (s.id === id && s.user_id === userId) return false;
+      if (targetName && s.user_id === userId && s.name.toLowerCase() === targetName) return false;
+      return true;
+    });
     d.supplementLogs = (d.supplementLogs || []).filter(l => l.supplement_id !== id);
   });
 
@@ -1737,32 +1780,71 @@ app.post('/api/custom-habits', requireAuth, async (req, res) => {
   const incoming = req.body;
   if (!incoming) return res.status(400).json({ error: 'Invalid habit data' });
 
-  const items = (Array.isArray(incoming) ? incoming : [incoming])
-    .filter(h => h && h.id)
-    .map(h => ({ ...h, user_id: req.user.id }));
+  const rawItems = Array.isArray(incoming) ? incoming : [incoming];
+  const userId = req.user.id;
 
-  if (items.length === 0) return res.status(400).json({ error: 'No valid habits provided' });
+  const validItems = [];
+  for (const h of rawItems) {
+    if (!h || !h.title || typeof h.title !== 'string') continue;
+    const cleanTitle = h.title.trim();
+    if (!cleanTitle) continue;
+    if (h.user_id && h.user_id !== userId) continue;
+    validItems.push({
+      ...h,
+      title: cleanTitle,
+      user_id: userId,
+    });
+  }
 
+  if (validItems.length === 0) return res.status(400).json({ error: 'No valid habits provided' });
+
+  let savedItems = [];
   await mutate(d => {
-    const map = new Map((d.customHabits || []).map(h => [h.id, h]));
-    items.forEach(h => map.set(h.id, h));
-    d.customHabits = Array.from(map.values());
+    d.customHabits = d.customHabits || [];
+    for (const item of validItems) {
+      const existingIdx = d.customHabits.findIndex(h => h.id === item.id);
+      if (existingIdx !== -1) {
+        if (d.customHabits[existingIdx].user_id === userId) {
+          d.customHabits[existingIdx] = { ...d.customHabits[existingIdx], ...item, user_id: userId };
+          savedItems.push(d.customHabits[existingIdx]);
+        }
+        continue;
+      }
+
+      const dupIdx = d.customHabits.findIndex(h => h.user_id === userId && h.title.toLowerCase() === item.title.toLowerCase());
+      if (dupIdx !== -1) {
+        d.customHabits[dupIdx] = { ...d.customHabits[dupIdx], ...item, user_id: userId };
+        savedItems.push(d.customHabits[dupIdx]);
+      } else {
+        d.customHabits.push(item);
+        savedItems.push(item);
+      }
+    }
   });
 
-  items.forEach(habit => {
+  savedItems.forEach(habit => {
     broadcast({
       type: 'CUSTOM_HABIT_ADDED',
       payload: habit,
     }, null, req.user.groupId);
   });
 
-  res.json({ success: true, count: items.length, habits: items });
+  res.json({ success: true, count: savedItems.length, habits: savedItems });
 });
 
 app.delete('/api/custom-habits/:id', requireAuth, async (req, res) => {
   const { id } = req.params;
+  const userId = req.user.id;
+
   await mutate(d => {
-    d.customHabits = (d.customHabits || []).filter(h => h.id !== id);
+    const target = (d.customHabits || []).find(h => h.id === id);
+    const targetTitle = (target && target.user_id === userId) ? target.title.toLowerCase() : null;
+
+    d.customHabits = (d.customHabits || []).filter(h => {
+      if (h.id === id && h.user_id === userId) return false;
+      if (targetTitle && h.user_id === userId && h.title.toLowerCase() === targetTitle) return false;
+      return true;
+    });
     d.customHabitLogs = (d.customHabitLogs || []).filter(l => l.habit_id !== id);
   });
 
