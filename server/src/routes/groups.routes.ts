@@ -14,7 +14,7 @@ const router = Router();
 // ----------------------------------------------------
 router.patch('/api/groups/:id', requireAuth, async (req, res, next) => {
   try {
-    const { id } = req.params;
+    const id = req.params.id as string;
     const validated = groupUpdateSchema.parse(req.body);
 
     const membership = await prisma.membership.findUnique({
@@ -59,7 +59,7 @@ router.patch('/api/groups/:id', requireAuth, async (req, res, next) => {
 // ----------------------------------------------------
 router.post('/api/groups/:id/leave', requireAuth, async (req, res, next) => {
   try {
-    const { id } = req.params;
+    const id = req.params.id as string;
     const userId = req.user!.id;
 
     const membership = await prisma.membership.findUnique({
@@ -143,7 +143,8 @@ router.post('/api/groups/:id/leave', requireAuth, async (req, res, next) => {
 // ----------------------------------------------------
 router.delete('/api/groups/:id/members/:userId', requireAuth, async (req, res, next) => {
   try {
-    const { id, userId: targetUserId } = req.params;
+    const id = req.params.id as string;
+    const targetUserId = req.params.userId as string;
     const callerId = req.user!.id;
 
     if (callerId === targetUserId) {

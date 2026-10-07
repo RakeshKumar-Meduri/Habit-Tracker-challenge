@@ -1,15 +1,35 @@
 import type { DailyLog, Workout, WeightLog, Badge, User } from '../types';
 import { isLogForUser, isWorkoutForUser, isWeightForUser, isUserMatch } from './userMatcher';
 
+function resolveTargetUser(userIdOrUser: string | User, allUsers?: User[]): User {
+  if (typeof userIdOrUser === 'object' && userIdOrUser !== null) {
+    return userIdOrUser;
+  }
+  const idStr = String(userIdOrUser);
+  const found = allUsers?.find(u => isUserMatch(idStr, u, allUsers));
+  if (found) return found;
+  return {
+    id: idStr,
+    username: idStr,
+    name: idStr,
+    role: 'member',
+    height: 175,
+    weight_current: 70,
+    age: 25,
+    gender: 'other',
+    is_private: false,
+    created_at: new Date().toISOString().split('T')[0],
+    is_active: true,
+  };
+}
+
 export function calculateUserPoints(
   dailyLogs: DailyLog[], 
   userIdOrUser: string | User, 
   allUsers?: User[],
   groupStepTarget: number = 10000
 ): number {
-  const targetUser: User | null = typeof userIdOrUser === 'object' && userIdOrUser !== null
-    ? userIdOrUser
-    : (allUsers?.find(u => isUserMatch(userIdOrUser, u, allUsers)) || { id: String(userIdOrUser), username: String(userIdOrUser), name: String(userIdOrUser) } as User);
+  const targetUser = resolveTargetUser(userIdOrUser, allUsers);
 
   const total = dailyLogs
     .filter(log => isLogForUser(log, targetUser, allUsers))
@@ -58,9 +78,7 @@ export function calculateGoalStreak(
   goalType: 'gym' | 'steps' | 'sleep' | 'junk_food' | 'water',
   allUsers?: User[]
 ): number {
-  const targetUser: User | null = typeof userIdOrUser === 'object' && userIdOrUser !== null
-    ? userIdOrUser
-    : (allUsers?.find(u => isUserMatch(userIdOrUser, u, allUsers)) || { id: String(userIdOrUser), username: String(userIdOrUser), name: String(userIdOrUser) } as User);
+  const targetUser = resolveTargetUser(userIdOrUser, allUsers);
 
   const userLogs = dailyLogs
     .filter(log => isLogForUser(log, targetUser, allUsers))

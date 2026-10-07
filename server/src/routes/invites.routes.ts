@@ -19,7 +19,7 @@ const router = Router();
 // ----------------------------------------------------
 router.post('/api/groups/:id/invites', requireAuth, inviteLimiter, async (req, res, next) => {
   try {
-    const { id: groupId } = req.params;
+    const groupId = req.params.id as string;
     const validated = createInviteSchema.parse(req.body);
 
     const tier = await getUserPlanTier(req.user!.id);
@@ -144,7 +144,7 @@ router.get('/api/invites/:token', async (req, res) => {
 // ----------------------------------------------------
 router.post('/api/invites/:token/redeem', requireAuth, inviteLimiter, async (req, res, next) => {
   try {
-    const { token } = req.params;
+    const token = req.params.token as string;
     const userId = req.user!.id;
     const tokenHash = hashToken(token);
 
@@ -238,7 +238,7 @@ router.post('/api/invites/:token/redeem', requireAuth, inviteLimiter, async (req
 // ----------------------------------------------------
 router.delete('/api/invites/:token', requireAuth, async (req, res, next) => {
   try {
-    const { token } = req.params;
+    const token = req.params.token as string;
     const tokenHash = hashToken(token);
 
     const invite = await prisma.invite.findFirst({
@@ -267,6 +267,7 @@ router.delete('/api/invites/:token', requireAuth, async (req, res, next) => {
     const isOwner = membership && membership.role === 'owner';
     const group = await prisma.group.findUnique({ where: { id: invite.group_id } });
     const isMember = !!membership;
+    const isGroupOwner = group?.owner_id === req.user!.id;
 
     if (!isCreator && !isOwner && !isGroupOwner && !isMember && req.user!.role !== 'admin') {
       throw new AppError('Forbidden: Only group members or invite creators can revoke invite links.', 403, 'FORBIDDEN');

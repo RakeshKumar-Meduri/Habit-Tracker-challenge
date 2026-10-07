@@ -66,7 +66,7 @@ router.post('/api/missed-reasons/delete', requireAuth, async (req, res, next) =>
 
 router.delete('/api/missed-reasons/:id', requireAuth, async (req, res, next) => {
   try {
-    const { id } = req.params;
+    const id = req.params.id as string;
     const userId = req.user!.id;
     const groupId = req.user!.groupId;
 
@@ -236,7 +236,7 @@ router.post('/api/supplements', requireAuth, async (req, res, next) => {
 
 router.delete('/api/supplements/:id', requireAuth, async (req, res, next) => {
   try {
-    const { id } = req.params;
+    const id = req.params.id as string;
     const userId = req.user!.id;
     await prisma.supplement.deleteMany({
       where: { id, user_id: userId },
@@ -348,7 +348,7 @@ router.post('/api/custom-habits', requireAuth, async (req, res, next) => {
 
 router.delete('/api/custom-habits/:id', requireAuth, async (req, res, next) => {
   try {
-    const { id } = req.params;
+    const id = req.params.id as string;
     const userId = req.user!.id;
     await prisma.customHabit.deleteMany({
       where: { id, user_id: userId },

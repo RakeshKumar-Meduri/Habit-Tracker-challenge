@@ -47,7 +47,7 @@ router.get('/api/users', requireAuth, async (req, res, next) => {
 // ----------------------------------------------------
 router.get('/api/users/:id', requireAuth, async (req, res, next) => {
   try {
-    const { id } = req.params;
+    const id = req.params.id as string;
     const clean = id.trim().replace(/^@+/, '').toLowerCase();
 
     const user = await prisma.user.findFirst({

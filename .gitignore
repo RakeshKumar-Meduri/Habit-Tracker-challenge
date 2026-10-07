@@ -29,3 +29,4 @@ dist-ssr
 
 # Local debug & audit docs
 WORKOUT_DEBUG_AUDIT.md
+*.tsbuildinfo

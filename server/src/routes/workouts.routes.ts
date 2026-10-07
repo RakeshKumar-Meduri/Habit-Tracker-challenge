@@ -122,7 +122,7 @@ async function deleteWorkoutInternal(id: string, userId: string, groupId: string
 // DELETE /api/workouts/:id
 router.delete('/api/workouts/:id', requireAuth, async (req, res, next) => {
   try {
-    const { id } = req.params;
+    const id = req.params.id as string;
     const result = await deleteWorkoutInternal(id, req.user!.id, req.user!.groupId);
     res.json(result);
   } catch (err) {
