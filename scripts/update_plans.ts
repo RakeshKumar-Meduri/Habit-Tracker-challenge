@@ -8,9 +8,9 @@ const prisma = new PrismaClient();
 const PLANS = [
   {
     id: 'plan_base_monthly',
-    name: 'PULSE Base Monthly',
+    name: 'PULSE Base (Free)',
     description: 'Solo fitness tracking. Daily checklist, workout logs, personal weights & analytics (no groups).',
-    price: 2900, // ₹29.00
+    price: 0, // Free (₹0)
     currency: 'INR',
     duration: 'monthly',
     is_active: true,

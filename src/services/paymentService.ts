@@ -104,6 +104,11 @@ export async function initiateSubscriptionCheckout(
       return onError(orderData.error?.message || orderData.error || 'Failed to create payment order');
     }
 
+    // Direct return for free plan activation without Razorpay modal
+    if (orderData.freeActivated && orderData.subscription) {
+      return onSuccess(orderData.subscription);
+    }
+
     // 2. Load Razorpay SDK
     const isLoaded = await loadRazorpayScript();
     if (!isLoaded) {

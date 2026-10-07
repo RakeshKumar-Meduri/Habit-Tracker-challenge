@@ -67,6 +67,23 @@
       "created_at": "2026-10-06",
       "is_active": true,
       "must_change_password": false
+    },
+    {
+      "id": "user_adithya",
+      "name": "Adithya",
+      "username": "adithya",
+      "password_hash": "5f4b3091fbbacbfe2e89f7c721b3432a315af741a66993dc886b0c17c779d9eb",
+      "role": "member",
+      "plan": "pro",
+      "height": 175,
+      "weight_current": 70,
+      "age": 25,
+      "gender": "male",
+      "is_private": false,
+      "avatar_color": "from-cyan-500 to-blue-700",
+      "created_at": "2026-10-07",
+      "is_active": true,
+      "must_change_password": false
     }
   ],
   "groups": [
@@ -82,6 +99,13 @@
       "name": "Demo Fitness Squad",
       "owner_id": "user_demouser1",
       "created_at": "2026-10-06T15:00:00.000Z",
+      "step_target": 10000
+    },
+    {
+      "id": "grp_pulse_adithya",
+      "name": "Adithya's Squad",
+      "owner_id": "user_adithya",
+      "created_at": "2026-10-07T07:27:00.000Z",
       "step_target": 10000
     }
   ],
@@ -109,6 +133,12 @@
       "group_id": "grp_pulse_demo",
       "role": "member",
       "joined_at": "2026-10-06T15:00:00.000Z"
+    },
+    {
+      "user_id": "user_adithya",
+      "group_id": "grp_pulse_adithya",
+      "role": "owner",
+      "joined_at": "2026-10-07T07:27:00.000Z"
     }
   ],
   "invites": [],

@@ -29,9 +29,9 @@ export async function ensureDefaultPlans() {
   const plans = [
     {
       id: 'plan_base_monthly',
-      name: 'PULSE Base Monthly',
+      name: 'PULSE Base (Free)',
       description: 'Solo fitness tracking. Daily checklist, workout logs, personal weights & analytics (no groups).',
-      price: 2900, // ₹29.00
+      price: 0, // Free (₹0)
       currency: 'INR',
       duration: 'monthly',
       is_active: true,
@@ -83,8 +83,7 @@ export const VIP_FREE_USERNAMES = new Set([
 
 /**
  * Determine a user's current subscription tier:
- * - 'none': No active subscription (requires paywall checkout)
- * - 'base': Active on Base Plan (₹29/mo - solo only, no groups)
+ * - 'base': Active on Base Plan (Free - solo only, no groups)
  * - 'pro': Active on Pro Plan (₹99/mo or ₹999/yr - full groups & head-to-head)
  */
 export async function getUserPlanTier(userId: string): Promise<'none' | 'base' | 'pro'> {
@@ -123,9 +122,9 @@ export async function getUserPlanTier(userId: string): Promise<'none' | 'base' |
     orderBy: { created_at: 'desc' },
   });
 
-  if (!subscription) return 'none';
+  if (!subscription) return 'base';
   if (subscription.expires_at && new Date(subscription.expires_at) <= new Date()) {
-    return 'none';
+    return 'base';
   }
 
   if (subscription.plan_id.includes('pro')) {
@@ -146,6 +145,38 @@ export async function createPaymentOrder(userId: string, planId: string) {
 
   if (!plan || !plan.is_active) {
     throw new AppError('Invalid or inactive subscription plan', 400, 'INVALID_PLAN');
+  }
+
+  // Handle free plan directly without Razorpay
+  if (plan.price <= 0) {
+    const expiresAt = new Date(Date.now() + 10 * 365 * 24 * 60 * 60 * 1000); // 10 years / free forever
+    const subscription = await prisma.subscription.create({
+      data: {
+        user_id: userId,
+        plan_id: plan.id,
+        status: 'active',
+        starts_at: new Date(),
+        expires_at: expiresAt,
+      },
+      include: { plan: true },
+    });
+
+    return {
+      orderId: `free_${Date.now()}`,
+      amount: 0,
+      currency: plan.currency,
+      keyId: ENV.RAZORPAY_KEY_ID || 'free',
+      plan: {
+        id: plan.id,
+        name: plan.name,
+        description: plan.description,
+        price: 0,
+        currency: plan.currency,
+      },
+      paymentId: `free_pay_${Date.now()}`,
+      freeActivated: true,
+      subscription,
+    };
   }
 
   let razorpayOrderId: string;

@@ -100,8 +100,8 @@ export const SubscriptionModal: React.FC<SubscriptionModalProps> = ({
 
   const basePlan = plans.find(p => p.id === 'plan_base_monthly') || {
     id: 'plan_base_monthly',
-    name: 'PULSE Base Monthly',
-    price: 2900,
+    name: 'PULSE Base (Free)',
+    price: 0,
     currency: 'INR',
     duration: 'monthly',
   };
@@ -154,8 +154,8 @@ export const SubscriptionModal: React.FC<SubscriptionModalProps> = ({
           </h2>
           <p className="text-xs sm:text-sm text-[#A1A1AA]">
             {forcePaywall 
-              ? 'Start solo tracking from ₹29/month, or unlock team groups and head-to-head challenges with Pro.'
-              : 'Seamless UPI, Cards, and NetBanking via Razorpay. Cancel anytime.'}
+              ? 'Solo tracking is 100% Free forever. Unlock team groups and head-to-head challenges with Pro.'
+              : 'Solo tracking is 100% Free forever. Upgrade to Pro for team groups & head-to-head battles.'}
           </p>
         </div>
 
@@ -209,12 +209,12 @@ export const SubscriptionModal: React.FC<SubscriptionModalProps> = ({
                       </div>
                     </div>
 
-                    <h3 className="text-lg font-bold text-[#F4F4F5] mb-1">Base Monthly</h3>
+                    <h3 className="text-lg font-bold text-[#F4F4F5] mb-1">Base Plan</h3>
                     <p className="text-xs text-[#71717A] mb-4">Dedicated personal fitness & habit tracking for solo users.</p>
 
                     <div className="flex items-baseline gap-1 mb-5">
-                      <span className="text-3xl font-extrabold text-[#F4F4F5]">₹{basePlan.price / 100}</span>
-                      <span className="text-xs text-[#71717A]">/ month</span>
+                      <span className="text-3xl font-extrabold text-[#F4F4F5]">Free</span>
+                      <span className="text-xs text-[#71717A]">/ forever (₹0)</span>
                     </div>
 
                     <div className="space-y-2.5 text-xs border-t border-[#26262C] pt-4 mb-4">
@@ -252,11 +252,11 @@ export const SubscriptionModal: React.FC<SubscriptionModalProps> = ({
                   {isBaseCurrent ? (
                     <div className="text-[11px] font-bold text-center text-emerald-400 bg-emerald-500/10 border border-emerald-500/25 py-1.5 rounded-lg flex items-center justify-center gap-1.5">
                       <Check className="w-3.5 h-3.5" />
-                      <span>Your Current Plan</span>
+                      <span>Your Current Plan (Free)</span>
                     </div>
                   ) : (
-                    <div className="text-[11px] font-semibold text-center text-[#71717A] bg-[#1B1B20] py-1.5 rounded-lg">
-                      Solo User Only
+                    <div className="text-[11px] font-semibold text-center text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 py-1.5 rounded-lg">
+                      Free Forever
                     </div>
                   )}
                 </div>
@@ -438,7 +438,7 @@ export const SubscriptionModal: React.FC<SubscriptionModalProps> = ({
                         <>
                           <span>
                             {selectedPlanId === 'plan_base_monthly'
-                              ? 'Start Solo Tracking (₹29/mo)'
+                              ? 'Start Free Solo Tracking'
                               : selectedPlanId === 'plan_pro_monthly'
                               ? (isBaseCurrent ? 'Upgrade to Pro Monthly (₹99/mo)' : 'Unlock Pro Groups (₹99/mo)')
                               : (isBaseCurrent ? 'Upgrade to Pro Yearly (₹999/yr)' : 'Activate Pro Yearly (₹999/yr)')}

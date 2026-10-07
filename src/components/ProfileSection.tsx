@@ -732,18 +732,18 @@ export const ProfileSection: React.FC<ProfileSectionProps> = ({
                         planTier === 'pro'
                           ? 'bg-gradient-to-r from-[#D98B4A] to-[#F59E0B] text-[#0B0B0D]'
                           : planTier === 'base'
-                          ? 'bg-[rgba(217,139,74,0.15)] text-[#D98B4A] border border-[#D98B4A]/30'
-                          : 'bg-rose-500/20 text-rose-300 border border-rose-500/30'
+                          ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30'
+                          : 'bg-zinc-800 text-zinc-400 border border-zinc-700'
                       }`}>
-                        {planTier === 'pro' ? '★ PRO MEMBER' : planTier === 'base' ? 'BASE (SOLO)' : 'INACTIVE'}
+                        {planTier === 'pro' ? '★ PRO MEMBER' : planTier === 'base' ? 'BASE (FREE)' : 'FREE'}
                       </span>
                     </div>
                     <p className="text-xs text-[#A1A1AA] mt-1 break-words">
                       {planTier === 'pro' 
                         ? 'Unlimited group members, head-to-head battles, rankings & shared goals.'
                         : planTier === 'base'
-                        ? '₹29/month • Solo fitness tracking. Upgrade to Pro for group formation & challenges.'
-                        : 'No active plan. Select a membership to unlock habit tracking.'}
+                        ? 'Free Forever • Solo fitness tracking. Upgrade to Pro for group formation & challenges.'
+                        : 'Free Forever • Solo fitness tracking.'}
                     </p>
                   </div>
                 </div>
@@ -760,7 +760,7 @@ export const ProfileSection: React.FC<ProfileSectionProps> = ({
                       }`}
                     >
                       <Crown className="w-4 h-4" />
-                      <span>{planTier === 'pro' ? 'Manage Plan' : planTier === 'base' ? 'Upgrade to Pro' : 'Activate Membership'}</span>
+                      <span>{planTier === 'pro' ? 'Manage Plan' : 'Upgrade to Pro'}</span>
                     </button>
                   </div>
                 )}
@@ -768,7 +768,7 @@ export const ProfileSection: React.FC<ProfileSectionProps> = ({
 
               {activeSubscription && (
                 <div className="flex flex-wrap items-center justify-between text-xs text-[#A1A1AA] pt-1">
-                  <span>Current Plan: <strong className="text-[#F4F4F5]">{activeSubscription.plan?.name || (planTier === 'pro' ? 'PULSE Pro' : 'PULSE Base')}</strong></span>
+                  <span>Current Plan: <strong className="text-[#F4F4F5]">{activeSubscription.plan?.name || (planTier === 'pro' ? 'PULSE Pro' : 'PULSE Base (Free)')}</strong></span>
                   {activeSubscription.expires_at && (
                     <span>Valid until: <strong className="text-[#F4F4F5] font-mono">{new Date(activeSubscription.expires_at).toLocaleDateString()}</strong></span>
                   )}
@@ -789,7 +789,7 @@ export const ProfileSection: React.FC<ProfileSectionProps> = ({
                     <span>Group Formation & Invites are exclusive to PULSE Pro</span>
                   </div>
                   <p className="text-xs text-[#A1A1AA] leading-relaxed">
-                    You are on the Base Solo plan (₹29/mo). Upgrade to PULSE Pro to form groups, invite teammates of any group size, and unlock head-to-head battles and team leaderboards. (Note: all joining teammates must also have an active Pro plan).
+                    You are on the Base Solo plan (Free). Upgrade to PULSE Pro to form groups, invite teammates of any group size, and unlock head-to-head battles and team leaderboards. (Note: all joining teammates must also have an active Pro plan).
                   </p>
                   {onOpenUpgradeModal && (
                     <button

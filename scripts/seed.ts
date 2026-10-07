@@ -10,12 +10,12 @@ async function main() {
   console.log('- Seeding plans...');
   await prisma.plan.upsert({
     where: { id: 'plan_base_monthly' },
-    update: { price: 2900 },
+    update: { price: 0, name: 'PULSE Base (Free)' },
     create: {
       id: 'plan_base_monthly',
-      name: 'PULSE Base Monthly',
+      name: 'PULSE Base (Free)',
       description: 'Core daily habit tracking, hydration & activity logging.',
-      price: 2900, // ₹29.00
+      price: 0, // Free (₹0)
       currency: 'INR',
       duration: 'monthly',
       is_active: true,

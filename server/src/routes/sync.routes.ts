@@ -22,7 +22,8 @@ router.get('/api/sync', requireAuth, async (req, res, next) => {
       orderBy: { created_at: 'desc' },
     });
 
-    let activeSub = subscription;
+    const isSubActive = subscription && (!subscription.expires_at || new Date(subscription.expires_at) > new Date());
+    let activeSub = isSubActive ? subscription : null;
     if (userTier === 'pro' && !activeSub) {
       activeSub = {
         id: `sub_vip_${userId}`,
@@ -42,6 +43,30 @@ router.get('/api/sync', requireAuth, async (req, res, next) => {
           price: 0,
           currency: 'INR',
           duration: 'yearly',
+          is_active: true,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        },
+      } as any;
+    } else if (userTier === 'base' && !activeSub) {
+      activeSub = {
+        id: `sub_base_free_${userId}`,
+        user_id: userId,
+        plan_id: 'plan_base_monthly',
+        status: 'active',
+        razorpay_subscription_id: null,
+        starts_at: new Date().toISOString(),
+        expires_at: null,
+        cancelled_at: null,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        plan: {
+          id: 'plan_base_monthly',
+          name: 'PULSE Base (Free)',
+          description: 'Solo fitness tracking. Daily checklist, workout logs, personal weights & analytics.',
+          price: 0,
+          currency: 'INR',
+          duration: 'monthly',
           is_active: true,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
@@ -106,7 +131,7 @@ router.get('/api/sync', requireAuth, async (req, res, next) => {
           ...cached,
           myRole: req.user!.groupRole,
           planTier: userTier,
-          subscription: subscription || null,
+          subscription: activeSub || null,
         },
       });
     }
