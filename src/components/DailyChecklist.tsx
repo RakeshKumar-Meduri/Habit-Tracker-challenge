@@ -993,7 +993,7 @@ export const DailyChecklist: React.FC<DailyChecklistProps> = ({
                 <span>{displayedDailyLog.gym_done ? 'Completed' : !hasLoggedForDate ? 'Not Logged Yet' : 'Not Done'}</span>
               </span>
             ) : (
-              <div className="flex items-center gap-2 w-full xl:w-auto shrink-0">
+              <div className="flex items-center gap-2 shrink-0">
                 {displayedDailyLog.gym_done ? (
                   <button
                     onClick={() => handleToggleGoal('gym', true)}
@@ -1316,9 +1316,11 @@ export const DailyChecklist: React.FC<DailyChecklistProps> = ({
                             step="500"
                             min="0"
                             max="100000"
-                            value={dailyLog.steps_value || 0}
+                            placeholder="0"
+                            value={dailyLog.steps_value === 0 || !dailyLog.steps_value ? '' : dailyLog.steps_value}
                             onChange={(e) => {
-                              const num = Math.max(0, parseInt(e.target.value) || 0);
+                              const valStr = e.target.value;
+                              const num = valStr === '' ? 0 : Math.max(0, parseInt(valStr) || 0);
                               onUpdateDailyLog({
                                 ...dailyLog,
                                 steps_value: num,
@@ -1564,19 +1566,19 @@ export const DailyChecklist: React.FC<DailyChecklistProps> = ({
         {/* Goal 4: Junk Food Tracker */}
         <div className={`relative bg-[#131316] border rounded-xl p-4 sm:p-5 transition-all overflow-hidden ${displayedDailyLog.junk_food_avoided ? 'border-[#34D399]/40 bg-[#34D399]/5' : 'border-[#26262C]'}`}>
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 min-w-0 flex-1">
               <div className={`p-2.5 sm:p-3 rounded-lg shrink-0 ${displayedDailyLog.junk_food_avoided ? 'bg-[#34D399]/15 text-[#34D399]' : 'bg-[#1B1B20] text-[#A1A1AA]'}`}>
                 <UtensilsCrossed className="w-5 h-5 sm:w-6 sm:h-6" />
               </div>
-              <div>
+              <div className="min-w-0">
                 <h4 className="font-bold text-[#F4F4F5] text-sm sm:text-base whitespace-nowrap">4. Junk Food Control</h4>
-                <p className="text-xs text-[#A1A1AA]">Avoid processed sweets & junk meals</p>
+                <p className="text-xs text-[#A1A1AA] truncate">Avoid processed sweets & junk meals</p>
               </div>
             </div>
 
             {/* Action Buttons: Mark Done and Failed */}
             {isViewingOther ? (
-              <span className={`w-full xl:w-auto justify-center px-3 py-2.5 rounded-xl text-xs font-bold flex items-center gap-1.5 whitespace-nowrap shrink-0 ${
+              <span className={`w-full sm:w-auto justify-center px-3 py-2.5 rounded-xl text-xs font-bold flex items-center gap-1.5 whitespace-nowrap shrink-0 ${
                 displayedDailyLog.junk_food_avoided
                   ? 'bg-[#34D399]/15 text-[#34D399] border border-[#34D399]/30'
                   : 'bg-[#1B1B20] text-[#A1A1AA] border border-[#26262C]'
@@ -1591,21 +1593,21 @@ export const DailyChecklist: React.FC<DailyChecklistProps> = ({
                 <span>{displayedDailyLog.junk_food_avoided ? 'Clean Nutrition' : !hasLoggedForDate ? 'Pending' : 'Had Junk Food'}</span>
               </span>
             ) : (
-              <div className="flex items-center gap-2 w-full xl:w-auto shrink-0">
+              <div className="flex items-center gap-2 shrink-0">
                 {displayedDailyLog.junk_food_avoided ? (
                   <button
                     onClick={() => handleToggleGoal('junk_food', true)}
-                    className="w-full xl:w-auto flex-1 xl:flex-initial px-4 py-2.5 rounded-xl bg-[#34D399]/15 border border-[#34D399]/30 hover:bg-[#34D399]/25 text-[#34D399] font-bold text-xs flex items-center justify-center gap-1.5 transition cursor-pointer min-h-[42px] whitespace-nowrap shrink-0 active:scale-[0.98]"
+                    className="px-4 py-2.5 rounded-xl bg-[#34D399]/15 border border-[#34D399]/30 hover:bg-[#34D399]/25 text-[#34D399] font-bold text-xs flex items-center justify-center gap-1.5 transition cursor-pointer min-h-[42px] whitespace-nowrap shrink-0 active:scale-[0.98]"
                     title="Click to unmark"
                   >
                     <CheckCircle2 className="w-4 h-4" />
                     <span>Avoided</span>
                   </button>
                 ) : (
-                  <div className="flex items-center gap-2 w-full sm:w-auto shrink-0">
+                  <div className="flex items-center gap-2 shrink-0">
                     <button
                       onClick={() => handleToggleGoal('junk_food', false)}
-                      className="flex-1 sm:flex-initial px-4 py-2.5 rounded-xl bg-[#D98B4A] hover:bg-[#E69A5C] text-[#0B0B0D] font-bold text-xs flex items-center justify-center gap-1.5 transition cursor-pointer min-h-[42px] whitespace-nowrap shadow-sm active:scale-[0.98]"
+                      className="px-4 py-2.5 rounded-xl bg-[#D98B4A] hover:bg-[#E69A5C] text-[#0B0B0D] font-bold text-xs flex items-center justify-center gap-1.5 transition cursor-pointer min-h-[42px] whitespace-nowrap shadow-sm active:scale-[0.98]"
                     >
                       <CheckCircle2 className="w-4 h-4" />
                       <span>Mark Done</span>

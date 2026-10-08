@@ -132,12 +132,20 @@ html, body {
 
 /* Light Mode Overrides for Legacy Dark Tokens */
 :root:not([data-theme="dark"]):not(.dark-theme) .bg-\[\#131316\],
+:root:not([data-theme="dark"]):not(.dark-theme) .bg-\[\#131316\]\/95,
+:root:not([data-theme="dark"]):not(.dark-theme) .bg-\[\#131316\]\/90,
+:root:not([data-theme="dark"]):not(.dark-theme) .bg-\[\#131316\]\/80,
 html:not([data-theme="dark"]):not(.dark-theme) .bg-\[\#131316\],
 body:not([data-theme="dark"]):not(.dark-theme) .bg-\[\#131316\] {
   background-color: #FFFFFF !important;
 }
 
 :root:not([data-theme="dark"]):not(.dark-theme) .bg-\[\#1B1B20\],
+:root:not([data-theme="dark"]):not(.dark-theme) .bg-\[\#1B1B20\]\/50,
+:root:not([data-theme="dark"]):not(.dark-theme) .bg-\[\#1B1B20\]\/60,
+:root:not([data-theme="dark"]):not(.dark-theme) .bg-\[\#1B1B20\]\/70,
+:root:not([data-theme="dark"]):not(.dark-theme) .bg-\[\#1B1B20\]\/80,
+:root:not([data-theme="dark"]):not(.dark-theme) .bg-\[\#18181C\]\/60,
 html:not([data-theme="dark"]):not(.dark-theme) .bg-\[\#1B1B20\],
 body:not([data-theme="dark"]):not(.dark-theme) .bg-\[\#1B1B20\] {
   background-color: #F1F3F6 !important;
@@ -152,6 +160,26 @@ body:not([data-theme="dark"]):not(.dark-theme) .bg-\[\#0B0B0D\] {
 :root:not([data-theme="dark"]):not(.dark-theme) .bg-\[\#16161A\],
 :root:not([data-theme="dark"]):not(.dark-theme) .bg-\[\#18181C\] {
   background-color: #FFFFFF !important;
+}
+
+:root:not([data-theme="dark"]):not(.dark-theme) .bg-\[\#26262C\] {
+  background-color: #F1F3F6 !important;
+}
+
+:root:not([data-theme="dark"]):not(.dark-theme) .hover\:bg-\[\#26262C\]:hover,
+:root:not([data-theme="dark"]):not(.dark-theme) .hover\:bg-\[\#32323A\]:hover {
+  background-color: #E4E7EC !important;
+}
+
+:root:not([data-theme="dark"]):not(.dark-theme) .from-\[\#131316\],
+:root:not([data-theme="dark"]):not(.dark-theme) .from-\[\#1C1A17\] {
+  --tw-gradient-from: #FFFFFF !important;
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to) !important;
+}
+
+:root:not([data-theme="dark"]):not(.dark-theme) .to-\[\#1B1B20\],
+:root:not([data-theme="dark"]):not(.dark-theme) .to-\[\#18181C\] {
+  --tw-gradient-to: #F1F3F6 !important;
 }
 
 :root:not([data-theme="dark"]):not(.dark-theme) .border-\[\#26262C\],

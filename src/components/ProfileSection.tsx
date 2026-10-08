@@ -460,15 +460,15 @@ export const ProfileSection: React.FC<ProfileSectionProps> = ({
                 </div>
 
                 {/* Age & Date of Birth Section */}
-                <div className="space-y-3 p-3.5 sm:p-4 bg-[#1B1B20]/60 rounded-xl border border-[#26262C]">
+                <div className="space-y-3 p-3.5 sm:p-4 bg-slate-50 dark:bg-[#1B1B20]/60 rounded-xl border border-slate-200 dark:border-[#26262C]">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                     {/* Age Input */}
                     <div className="min-w-0 w-full">
-                      <label className="block text-xs font-semibold text-[#A1A1AA] mb-1 flex items-center justify-between">
+                      <label className="block text-xs font-semibold text-slate-700 dark:text-[#A1A1AA] mb-1 flex items-center justify-between">
                         <span className="flex items-center gap-1.5">
-                          <Cake className="w-3.5 h-3.5 text-[#D98B4A]" /> Age (Years)
+                          <Cake className="w-3.5 h-3.5 text-[#3157D5] dark:text-[#D98B4A]" /> Age (Years)
                         </span>
-                        <span className="text-[10px] text-[#71717A]">Auto-syncs with DOB</span>
+                        <span className="text-[10px] text-slate-500 dark:text-[#71717A]">Auto-syncs with DOB</span>
                       </label>
                       <input
                         type="number"
@@ -478,35 +478,35 @@ export const ProfileSection: React.FC<ProfileSectionProps> = ({
                         value={age}
                         onChange={(e) => handleAgeChange(e.target.value)}
                         placeholder="e.g. 21"
-                        className="w-full max-w-full min-w-0 box-border block px-3.5 py-2.5 bg-[#1B1B20] border border-[#26262C] rounded-xl text-[#F4F4F5] font-bold text-sm focus:outline-none focus:border-[#D98B4A] transition"
+                        className="w-full max-w-full min-w-0 box-border block px-3.5 py-2.5 bg-white dark:bg-[#1B1B20] border border-slate-200 dark:border-[#26262C] rounded-xl text-slate-900 dark:text-[#F4F4F5] font-bold text-sm focus:outline-none focus:border-[#3157D5] dark:focus:border-[#D98B4A] transition"
                       />
                     </div>
 
                     {/* Quick Native Calendar Picker */}
                     <div className="min-w-0 w-full">
-                      <label className="block text-xs font-semibold text-[#A1A1AA] mb-1 flex items-center justify-between">
+                      <label className="block text-xs font-semibold text-slate-700 dark:text-[#A1A1AA] mb-1 flex items-center justify-between">
                         <span className="flex items-center gap-1.5">
-                          <Calendar className="w-3.5 h-3.5 text-[#D98B4A]" /> Calendar Picker
+                          <Calendar className="w-3.5 h-3.5 text-[#3157D5] dark:text-[#D98B4A]" /> Calendar Picker
                         </span>
-                        <span className="text-[10px] text-[#71717A] truncate">Native mobile/PC</span>
+                        <span className="text-[10px] text-slate-500 dark:text-[#71717A] truncate">Native mobile/PC</span>
                       </label>
                       <input
                         type="date"
                         value={birthday}
                         onChange={(e) => handleBirthdayChange(e.target.value)}
-                        className="w-full max-w-full min-w-0 box-border block px-3.5 py-2 bg-[#1B1B20] border border-[#26262C] rounded-xl text-[#F4F4F5] text-sm focus:outline-none focus:border-[#D98B4A] transition cursor-pointer"
+                        className="w-full max-w-full min-w-0 box-border block px-3.5 py-2 bg-white dark:bg-[#1B1B20] border border-slate-200 dark:border-[#26262C] rounded-xl text-slate-900 dark:text-[#F4F4F5] text-sm focus:outline-none focus:border-[#3157D5] dark:focus:border-[#D98B4A] transition cursor-pointer"
                       />
                     </div>
                   </div>
 
                   {/* 3-Dropdown Robust DOB Selector (Immune to Mobile Datepicker Bugs & Margin Overflow) */}
-                  <div className="pt-2 border-t border-[#26262C]/60">
+                  <div className="pt-2 border-t border-slate-200 dark:border-[#26262C]/60">
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-xs font-bold text-[#F4F4F5] flex items-center gap-1.5">
-                        <Calendar className="w-3.5 h-3.5 text-[#D98B4A]" /> Date of Birth (DOB)
+                      <span className="text-xs font-bold text-slate-900 dark:text-[#F4F4F5] flex items-center gap-1.5">
+                        <Calendar className="w-3.5 h-3.5 text-[#3157D5] dark:text-[#D98B4A]" /> Date of Birth (DOB)
                       </span>
                       {birthday && (
-                        <span className="text-[11px] font-bold text-[#D98B4A]">
+                        <span className="text-[11px] font-bold text-[#3157D5] dark:text-[#D98B4A]">
                           {parsedDay} {MONTH_NAMES[parseInt(parsedMonth) - 1] || parsedMonth} {parsedYear}
                         </span>
                       )}
@@ -515,42 +515,42 @@ export const ProfileSection: React.FC<ProfileSectionProps> = ({
                     <div className="grid grid-cols-3 gap-2">
                       {/* Day Select */}
                       <div className="min-w-0">
-                        <label className="block text-[10px] text-[#71717A] mb-1 font-medium">Day</label>
+                        <label className="block text-[10px] text-slate-500 dark:text-[#71717A] mb-1 font-medium">Day</label>
                         <select
                           value={parsedDay}
                           onChange={(e) => handleDatePartChange('day', e.target.value)}
-                          className="w-full max-w-full min-w-0 box-border block bg-[#131316] text-[#F4F4F5] text-xs font-semibold border border-[#26262C] rounded-lg px-2.5 py-2 focus:outline-none focus:border-[#D98B4A] cursor-pointer"
+                          className="w-full max-w-full min-w-0 box-border block bg-white dark:bg-[#131316] text-slate-900 dark:text-[#F4F4F5] text-xs font-semibold border border-slate-200 dark:border-[#26262C] rounded-lg px-2.5 py-2 focus:outline-none focus:border-[#3157D5] dark:focus:border-[#D98B4A] cursor-pointer"
                         >
                           {Array.from({ length: 31 }, (_, i) => String(i + 1).padStart(2, '0')).map(d => (
-                            <option key={d} value={d} className="bg-[#1B1B20] text-[#F4F4F5]">{d}</option>
+                            <option key={d} value={d} className="bg-white text-slate-900 dark:bg-[#1B1B20] dark:text-[#F4F4F5]">{d}</option>
                           ))}
                         </select>
                       </div>
 
                       {/* Month Select */}
                       <div className="min-w-0">
-                        <label className="block text-[10px] text-[#71717A] mb-1 font-medium">Month</label>
+                        <label className="block text-[10px] text-slate-500 dark:text-[#71717A] mb-1 font-medium">Month</label>
                         <select
                           value={parsedMonth}
                           onChange={(e) => handleDatePartChange('month', e.target.value)}
-                          className="w-full max-w-full min-w-0 box-border block bg-[#131316] text-[#F4F4F5] text-xs font-semibold border border-[#26262C] rounded-lg px-2.5 py-2 focus:outline-none focus:border-[#D98B4A] cursor-pointer"
+                          className="w-full max-w-full min-w-0 box-border block bg-white dark:bg-[#131316] text-slate-900 dark:text-[#F4F4F5] text-xs font-semibold border border-slate-200 dark:border-[#26262C] rounded-lg px-2.5 py-2 focus:outline-none focus:border-[#3157D5] dark:focus:border-[#D98B4A] cursor-pointer"
                         >
                           {MONTHS.map(m => (
-                            <option key={m.num} value={m.num} className="bg-[#1B1B20] text-[#F4F4F5]">{m.name}</option>
+                            <option key={m.num} value={m.num} className="bg-white text-slate-900 dark:bg-[#1B1B20] dark:text-[#F4F4F5]">{m.name}</option>
                           ))}
                         </select>
                       </div>
 
                       {/* Year Select */}
                       <div className="min-w-0">
-                        <label className="block text-[10px] text-[#71717A] mb-1 font-medium">Year</label>
+                        <label className="block text-[10px] text-slate-500 dark:text-[#71717A] mb-1 font-medium">Year</label>
                         <select
                           value={parsedYear}
                           onChange={(e) => handleDatePartChange('year', e.target.value)}
-                          className="w-full max-w-full min-w-0 box-border block bg-[#131316] text-[#F4F4F5] text-xs font-semibold border border-[#26262C] rounded-lg px-2.5 py-2 focus:outline-none focus:border-[#D98B4A] cursor-pointer"
+                          className="w-full max-w-full min-w-0 box-border block bg-white dark:bg-[#131316] text-slate-900 dark:text-[#F4F4F5] text-xs font-semibold border border-slate-200 dark:border-[#26262C] rounded-lg px-2.5 py-2 focus:outline-none focus:border-[#3157D5] dark:focus:border-[#D98B4A] cursor-pointer"
                         >
                           {YEARS.map(y => (
-                            <option key={y} value={String(y)} className="bg-[#1B1B20] text-[#F4F4F5]">{y}</option>
+                            <option key={y} value={String(y)} className="bg-white text-slate-900 dark:bg-[#1B1B20] dark:text-[#F4F4F5]">{y}</option>
                           ))}
                         </select>
                       </div>
@@ -560,48 +560,48 @@ export const ProfileSection: React.FC<ProfileSectionProps> = ({
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-semibold text-[#A1A1AA] mb-1">Height (cm)</label>
+                    <label className="block text-xs font-semibold text-slate-700 dark:text-[#A1A1AA] mb-1">Height (cm)</label>
                     <input
                       type="number"
                       value={height}
                       onChange={(e) => setHeight(e.target.value)}
                       placeholder="e.g. 175"
-                      className="w-full px-3.5 py-2 bg-[#1B1B20] border border-[#26262C] rounded-xl text-[#F4F4F5] text-sm focus:outline-none focus:border-[#D98B4A] transition"
+                      className="w-full px-3.5 py-2 bg-white dark:bg-[#1B1B20] border border-slate-200 dark:border-[#26262C] rounded-xl text-slate-900 dark:text-[#F4F4F5] text-sm focus:outline-none focus:border-[#3157D5] dark:focus:border-[#D98B4A] transition"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-[#A1A1AA] mb-1">Weight (kg)</label>
+                    <label className="block text-xs font-semibold text-slate-700 dark:text-[#A1A1AA] mb-1">Weight (kg)</label>
                     <input
                       type="number"
                       step="0.1"
                       value={weight}
                       onChange={(e) => setWeight(e.target.value)}
                       placeholder="e.g. 75"
-                      className="w-full px-3.5 py-2 bg-[#1B1B20] border border-[#26262C] rounded-xl text-[#F4F4F5] text-sm focus:outline-none focus:border-[#D98B4A] transition"
+                      className="w-full px-3.5 py-2 bg-white dark:bg-[#1B1B20] border border-slate-200 dark:border-[#26262C] rounded-xl text-slate-900 dark:text-[#F4F4F5] text-sm focus:outline-none focus:border-[#3157D5] dark:focus:border-[#D98B4A] transition"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-[#A1A1AA] mb-1">Gender</label>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-[#A1A1AA] mb-1">Gender</label>
                   <select
                     value={gender}
                     onChange={(e) => setGender(e.target.value as Gender)}
-                    className="w-full px-3.5 py-2 bg-[#1B1B20] border border-[#26262C] rounded-xl text-[#F4F4F5] text-sm focus:outline-none focus:border-[#D98B4A] transition"
+                    className="w-full px-3.5 py-2 bg-white dark:bg-[#1B1B20] border border-slate-200 dark:border-[#26262C] rounded-xl text-slate-900 dark:text-[#F4F4F5] text-sm focus:outline-none focus:border-[#3157D5] dark:focus:border-[#D98B4A] transition"
                   >
-                    <option value="male" className="bg-[#1B1B20] text-[#F4F4F5]">Male</option>
-                    <option value="female" className="bg-[#1B1B20] text-[#F4F4F5]">Female</option>
-                    <option value="other" className="bg-[#1B1B20] text-[#F4F4F5]">Other / Unspecified</option>
+                    <option value="male" className="bg-white text-slate-900 dark:bg-[#1B1B20] dark:text-[#F4F4F5]">Male</option>
+                    <option value="female" className="bg-white text-slate-900 dark:bg-[#1B1B20] dark:text-[#F4F4F5]">Female</option>
+                    <option value="other" className="bg-white text-slate-900 dark:bg-[#1B1B20] dark:text-[#F4F4F5]">Other / Unspecified</option>
                   </select>
                 </div>
 
-                <div className="flex items-center justify-between p-3.5 bg-[#1B1B20]/80 rounded-xl border border-[#26262C]">
+                <div className="flex items-center justify-between p-3.5 bg-slate-50 dark:bg-[#1B1B20]/80 rounded-xl border border-slate-200 dark:border-[#26262C]">
                   <div className="flex items-center gap-2.5">
-                    <Shield className="w-4 h-4 text-[#D98B4A]" />
+                    <Shield className="w-4 h-4 text-[#3157D5] dark:text-[#D98B4A]" />
                     <div>
-                      <span className="text-xs font-bold text-[#F4F4F5] block">Profile Privacy</span>
-                      <span className="text-[11px] text-[#A1A1AA]">Keep personal weight & log updates private</span>
+                      <span className="text-xs font-bold text-slate-900 dark:text-[#F4F4F5] block">Profile Privacy</span>
+                      <span className="text-[11px] text-slate-500 dark:text-[#A1A1AA]">Keep personal weight & log updates private</span>
                     </div>
                   </div>
                   <button
@@ -609,8 +609,8 @@ export const ProfileSection: React.FC<ProfileSectionProps> = ({
                     onClick={() => setIsPrivate(!isPrivate)}
                     className={`px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer ${
                       isPrivate
-                        ? 'bg-[#D98B4A]/20 text-[#E69A5C] border border-[#D98B4A]/40'
-                        : 'bg-[#1B1B20] text-[#A1A1AA] border border-[#26262C]'
+                        ? 'bg-[#EFF8FF] text-[#3157D5] border border-[#3157D5]/40 dark:bg-[#D98B4A]/20 dark:text-[#E69A5C] dark:border-[#D98B4A]/40'
+                        : 'bg-white text-slate-600 border border-slate-200 dark:bg-[#1B1B20] dark:text-[#A1A1AA] dark:border-[#26262C]'
                     }`}
                   >
                     {isPrivate ? 'Private' : 'Public'}
@@ -618,15 +618,15 @@ export const ProfileSection: React.FC<ProfileSectionProps> = ({
                 </div>
 
                 {saveSuccessMsg && (
-                  <div className="p-3 bg-emerald-950/60 border border-emerald-500/60 rounded-xl text-emerald-400 text-xs font-bold flex items-center gap-2 shadow-lg shadow-emerald-950/40">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                  <div className="p-3 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-300 dark:border-emerald-500/60 rounded-xl text-emerald-700 dark:text-emerald-400 text-xs font-bold flex items-center gap-2 shadow-sm">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
                     <span>{saveSuccessMsg}</span>
                   </div>
                 )}
 
                 <button
                   type="submit"
-                  className="w-full py-3 bg-gradient-to-r from-[#D98B4A] to-[#D98B4A] hover:from-[#D98B4A] hover:to-[#B45F1E] text-[#1B1B20] font-black rounded-xl text-sm transition shadow-lg shadow-[#D98B4A]/20 flex items-center justify-center gap-2 cursor-pointer"
+                  className="w-full py-3 bg-[#3157D5] hover:bg-[#2544B8] text-white font-bold rounded-xl text-sm transition shadow-md shadow-blue-500/20 flex items-center justify-center gap-2 cursor-pointer active:scale-95"
                 >
                   <Save className="w-4 h-4" /> Save Profile & Update Body Metrics
                 </button>
@@ -833,9 +833,9 @@ export const ProfileSection: React.FC<ProfileSectionProps> = ({
                     <button
                       type="button"
                       onClick={() => setIsEditingGroup(prev => !prev)}
-                      className="flex-1 min-w-[120px] px-3 py-2 bg-[#26262C] hover:bg-[#32323A] text-[#F4F4F5] border border-[#3A3A44] rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition cursor-pointer"
+                      className="flex-1 min-w-[120px] px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-200 dark:bg-[#26262C] dark:hover:bg-[#32323A] dark:text-[#F4F4F5] dark:border-[#3A3A44] rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition cursor-pointer active:scale-95"
                     >
-                      <Edit2 className="w-3.5 h-3.5 text-[#D98B4A]" />
+                      <Edit2 className="w-3.5 h-3.5 text-[#3157D5] dark:text-[#D98B4A]" />
                       <span>{isEditingGroup ? 'Close Edit' : 'Edit Group & Target'}</span>
                     </button>
                   )}

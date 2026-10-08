@@ -164,18 +164,18 @@ export const InviteModal: React.FC<InviteModalProps> = ({
 
         {/* Create Link Section / Pro Paywall */}
         {isBasePlan ? (
-          <div className="bg-gradient-to-br from-[#1C1A17] to-[#18181C] border border-[#D98B4A]/40 rounded-xl p-5 mb-5 text-center space-y-3">
-            <div className="w-12 h-12 rounded-xl bg-[#D98B4A]/15 border border-[#D98B4A]/30 flex items-center justify-center text-[#D98B4A] mx-auto shadow-sm">
-              <Crown className="w-6 h-6 text-[#FBBF24]" />
+          <div className="bg-slate-50 dark:bg-gradient-to-br dark:from-[#1C1A17] dark:to-[#18181C] border border-slate-200 dark:border-[#D98B4A]/40 rounded-xl p-5 mb-5 text-center space-y-3">
+            <div className="w-12 h-12 rounded-xl bg-blue-50 dark:bg-[#D98B4A]/15 border border-blue-200 dark:border-[#D98B4A]/30 flex items-center justify-center text-[#3157D5] dark:text-[#D98B4A] mx-auto shadow-sm">
+              <Crown className="w-6 h-6 text-[#3157D5] dark:text-[#FBBF24]" />
             </div>
             <div>
-              <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-[#D98B4A]/20 text-[#D98B4A] border border-[#D98B4A]/30">
+              <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-blue-100 dark:bg-[#D98B4A]/20 text-[#3157D5] dark:text-[#D98B4A] border border-[#3157D5]/30 dark:border-[#D98B4A]/30">
                 PULSE Pro Exclusive
               </span>
-              <h4 className="text-sm font-bold text-[#F4F4F5] mt-2">
+              <h4 className="text-sm font-bold text-slate-900 dark:text-[#F4F4F5] mt-2">
                 Group Invites Require PULSE Pro
               </h4>
-              <p className="text-xs text-[#A1A1AA] mt-1 max-w-sm mx-auto">
+              <p className="text-xs text-slate-600 dark:text-[#A1A1AA] mt-1 max-w-sm mx-auto">
                 Inviting friends, generating links, and squad accountability are exclusively available on PULSE Pro. Upgrade to invite unlimited friends.
               </p>
             </div>
@@ -251,9 +251,9 @@ export const InviteModal: React.FC<InviteModalProps> = ({
           </h4>
 
           {activeInvites.length === 0 ? (
-            <div className="bg-[#1B1B20]/60 border border-[#26262C] rounded-xl p-5 text-center space-y-1.5">
-              <p className="text-xs text-[#F4F4F5] font-medium">No active invite links</p>
-              <p className="text-[11px] text-[#A1A1AA]">
+            <div className="bg-slate-50 dark:bg-[#1B1B20]/60 border border-slate-200 dark:border-[#26262C] rounded-xl p-5 text-center space-y-1.5">
+              <p className="text-xs text-slate-800 dark:text-[#F4F4F5] font-medium">No active invite links</p>
+              <p className="text-[11px] text-slate-500 dark:text-[#A1A1AA]">
                 {isBasePlan
                   ? 'Upgrade to PULSE Pro to generate and share group invite links.'
                   : isOwner 

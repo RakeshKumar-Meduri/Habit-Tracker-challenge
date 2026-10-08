@@ -281,8 +281,9 @@ export const WorkoutModal: React.FC<WorkoutModalProps> = ({
                         type="number"
                         min="1"
                         max="99"
-                        value={item.sets}
-                        onChange={(e) => handleUpdateRow(item.id, 'sets', Number(e.target.value))}
+                        placeholder="3"
+                        value={item.sets === 0 || !item.sets ? '' : item.sets}
+                        onChange={(e) => handleUpdateRow(item.id, 'sets', e.target.value === '' ? '' : Number(e.target.value))}
                         className="w-full px-2.5 py-2 bg-[#131316] border border-[#26262C] rounded-lg text-[#F4F4F5] text-xs text-center tabular-nums focus:outline-none focus:border-[#D98B4A]"
                       />
                     </div>
@@ -292,8 +293,9 @@ export const WorkoutModal: React.FC<WorkoutModalProps> = ({
                         type="number"
                         min="1"
                         max="999"
-                        value={item.reps}
-                        onChange={(e) => handleUpdateRow(item.id, 'reps', Number(e.target.value))}
+                        placeholder="10"
+                        value={item.reps === 0 || !item.reps ? '' : item.reps}
+                        onChange={(e) => handleUpdateRow(item.id, 'reps', e.target.value === '' ? '' : Number(e.target.value))}
                         className="w-full px-2.5 py-2 bg-[#131316] border border-[#26262C] rounded-lg text-[#F4F4F5] text-xs text-center tabular-nums focus:outline-none focus:border-[#D98B4A]"
                       />
                     </div>

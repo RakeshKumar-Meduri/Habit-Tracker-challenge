@@ -297,7 +297,7 @@ export const SubscriptionModal: React.FC<SubscriptionModalProps> = ({
                     </div>
 
                     <div className="space-y-2.5 text-xs border-t border-[#26262C] pt-4 mb-4">
-                      <div className="flex items-center gap-2 text-amber-300 font-semibold">
+                      <div className="flex items-center gap-2 text-amber-600 dark:text-amber-300 font-semibold">
                         <Sparkles className="w-4 h-4 text-[#D98B4A] shrink-0" />
                         <span>Everything in Base Plan</span>
                       </div>
@@ -338,7 +338,7 @@ export const SubscriptionModal: React.FC<SubscriptionModalProps> = ({
                   onClick={() => setSelectedPlanId(proYearly.id)}
                   className={`relative flex flex-col justify-between rounded-xl p-5 border transition-all cursor-pointer ${
                     selectedPlanId === proYearly.id
-                      ? 'bg-gradient-to-b from-[#1C1A17] to-[#18181C] border-[#FBBF24] shadow-xl shadow-[#D98B4A]/15 ring-2 ring-[#FBBF24]/50'
+                      ? 'bg-[#18181C] border-[#D98B4A] shadow-lg shadow-[#D98B4A]/10 ring-2 ring-[#D98B4A]/40'
                       : 'bg-[#16161A] border-[#26262C] hover:border-[#3F3F46]'
                   }`}
                 >
@@ -347,18 +347,18 @@ export const SubscriptionModal: React.FC<SubscriptionModalProps> = ({
                       ✓ Current Plan
                     </div>
                   ) : (
-                    <div className="absolute -top-3 right-4 px-2.5 py-0.5 bg-gradient-to-r from-[#D98B4A] to-[#F59E0B] text-[#0B0B0D] text-[10px] font-black rounded-full uppercase tracking-wider shadow-md">
+                    <div className="absolute -top-3 right-4 px-2.5 py-0.5 bg-gradient-to-r from-amber-500 to-amber-600 text-white text-[10px] font-black rounded-full uppercase tracking-wider shadow-md">
                       Best Value • 16% OFF
                     </div>
                   )}
 
                   <div>
                     <div className="flex items-center justify-between mb-3">
-                      <span className="text-xs font-bold text-[#FBBF24] uppercase tracking-wider flex items-center gap-1">
+                      <span className="text-xs font-bold text-[#D98B4A] uppercase tracking-wider flex items-center gap-1">
                         <Crown className="w-3.5 h-3.5" /> Annual Full Access
                       </span>
                       <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${
-                        selectedPlanId === proYearly.id ? 'border-[#FBBF24] bg-[#FBBF24]' : 'border-[#3F3F46]'
+                        selectedPlanId === proYearly.id ? 'border-[#D98B4A] bg-[#D98B4A]' : 'border-[#3F3F46]'
                       }`}>
                         {selectedPlanId === proYearly.id && <div className="w-1.5 h-1.5 bg-[#0B0B0D] rounded-full" />}
                       </div>
@@ -368,13 +368,13 @@ export const SubscriptionModal: React.FC<SubscriptionModalProps> = ({
                     <p className="text-xs text-[#71717A] mb-4">Complete 1-year access to all features with maximum savings.</p>
 
                     <div className="flex items-baseline gap-1 mb-5">
-                      <span className="text-3xl font-extrabold text-[#FBBF24]">₹{proYearly.price / 100}</span>
+                      <span className="text-3xl font-extrabold text-[#F4F4F5]">₹{proYearly.price / 100}</span>
                       <span className="text-xs text-[#71717A]">/ year (~₹83/mo)</span>
                     </div>
 
                     <div className="space-y-2.5 text-xs border-t border-[#26262C] pt-4 mb-4">
-                      <div className="flex items-center gap-2 text-amber-300 font-semibold">
-                        <Sparkles className="w-4 h-4 text-[#FBBF24] shrink-0" />
+                      <div className="flex items-center gap-2 text-amber-600 dark:text-amber-300 font-semibold">
+                        <Sparkles className="w-4 h-4 text-[#D98B4A] shrink-0" />
                         <span>All Pro Features Included</span>
                       </div>
                       <div className="flex items-center gap-2 text-[#E4E4E7]">
@@ -400,7 +400,7 @@ export const SubscriptionModal: React.FC<SubscriptionModalProps> = ({
                     </div>
                   </div>
 
-                  <div className="text-[11px] font-semibold text-center text-[#FBBF24] bg-[#FBBF24]/10 border border-[#FBBF24]/20 py-1.5 rounded-lg">
+                  <div className="text-[11px] font-semibold text-center text-[#D98B4A] bg-[#D98B4A]/10 border border-[#D98B4A]/20 py-1.5 rounded-lg">
                     Save ₹189 vs Monthly Billing
                   </div>
                 </div>

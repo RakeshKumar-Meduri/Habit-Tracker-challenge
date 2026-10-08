@@ -101,7 +101,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
   return (
     <>
-      <header className="sticky top-0 z-40 bg-[#131316]/95 border-b border-[#26262C] backdrop-blur-md transition-colors font-sans">
+      <header className="sticky top-0 z-40 bg-white/95 dark:bg-[#131316]/95 border-b border-slate-200 dark:border-[#26262C] backdrop-blur-md transition-colors font-sans">
         <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-14 sm:h-16 gap-2 sm:gap-4">
             
@@ -110,14 +110,14 @@ export const Navbar: React.FC<NavbarProps> = ({
               <img 
                 src="/logo.png" 
                 alt="PULSE" 
-                className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl object-cover shrink-0 shadow-md shadow-cyan-500/10 border border-white/5" 
+                className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl object-cover shrink-0 shadow-md shadow-cyan-500/10 border border-slate-200 dark:border-white/5" 
               />
               <div className="min-w-0">
-                <h1 className="text-base sm:text-lg font-black tracking-tight text-[#F4F4F5] flex items-center gap-1.5 leading-none">
-                  PULSE <span className="text-[#D98B4A] text-[10px] sm:text-xs px-1.5 py-0.5 rounded-full bg-[rgba(217,139,74,0.12)] border border-[#D98B4A]/30 font-bold">FITNESS</span>
+                <h1 className="text-base sm:text-lg font-black tracking-tight text-slate-900 dark:text-[#F4F4F5] flex items-center gap-1.5 leading-none">
+                  PULSE <span className="text-[#3157D5] dark:text-[#D98B4A] text-[10px] sm:text-xs px-1.5 py-0.5 rounded-full bg-[#EFF8FF] dark:bg-[rgba(217,139,74,0.12)] border border-[#3157D5]/30 dark:border-[#D98B4A]/30 font-bold">FITNESS</span>
                 </h1>
                 <div className="flex items-center gap-2 mt-0.5">
-                  <span className="text-[10px] sm:text-[11px] font-bold text-[#D98B4A] bg-[rgba(217,139,74,0.12)] border border-[#D98B4A]/30 px-2 py-0.5 rounded-full truncate max-w-[110px] sm:max-w-[160px] inline-block" title={currentGroup?.name || 'Group'}>
+                  <span className="text-[10px] sm:text-[11px] font-bold text-[#3157D5] dark:text-[#D98B4A] bg-[#EFF8FF] dark:bg-[rgba(217,139,74,0.12)] border border-[#3157D5]/30 dark:border-[#D98B4A]/30 px-2 py-0.5 rounded-full truncate max-w-[110px] sm:max-w-[160px] inline-block" title={currentGroup?.name || 'Group'}>
                     {currentGroup?.name || 'PULSE'}
                   </span>
                   {realtimeStatus && (() => {
@@ -133,14 +133,14 @@ export const Navbar: React.FC<NavbarProps> = ({
                         title="Live Sync Status • Tap to force refresh members and data"
                         className={`inline-flex items-center gap-1 px-1.5 sm:px-2 py-0.5 rounded-full text-[9px] sm:text-[10px] font-semibold border transition cursor-pointer active:scale-95 ${
                           realtimeStatus.isConnected
-                            ? 'bg-[#34D399]/15 border-[#34D399]/30 text-[#34D399] hover:bg-[#34D399]/25'
-                            : 'bg-amber-500/10 border-amber-500/25 text-[#FBBF24] hover:bg-amber-500/20'
+                            ? 'bg-emerald-500/15 border-emerald-500/30 text-emerald-600 dark:text-[#34D399] hover:bg-emerald-500/25'
+                            : 'bg-amber-500/10 border-amber-500/25 text-amber-600 dark:text-[#FBBF24] hover:bg-amber-500/20'
                         }`}
                       >
-                        <span className={`w-1.5 h-1.5 rounded-full ${realtimeStatus.isConnected ? 'bg-[#34D399] animate-pulse' : 'bg-[#FBBF24]'}`} />
+                        <span className={`w-1.5 h-1.5 rounded-full ${realtimeStatus.isConnected ? 'bg-emerald-500 dark:bg-[#34D399] animate-pulse' : 'bg-amber-500'}`} />
                         <span className="hidden sm:inline tabular-nums">{realtimeStatus.isConnected ? `Live Sync (${effectiveCount} online)` : 'Syncing...'}</span>
                         <span className="sm:hidden tabular-nums">{realtimeStatus.isConnected ? `${effectiveCount} on` : 'sync'}</span>
-                        {isRefreshingMembers && <RefreshCw className="w-2.5 h-2.5 animate-spin ml-0.5 text-[#D98B4A]" />}
+                        {isRefreshingMembers && <RefreshCw className="w-2.5 h-2.5 animate-spin ml-0.5 text-[#3157D5] dark:text-[#D98B4A]" />}
                       </button>
                     );
                   })()}
@@ -154,17 +154,17 @@ export const Navbar: React.FC<NavbarProps> = ({
               {currentUser && (
                 <div 
                   onClick={() => setActiveTab('profile')}
-                  className="flex items-center gap-2 bg-[#1B1B20] border border-[#26262C] rounded-lg px-3 py-1.5 text-xs shadow-sm cursor-pointer hover:border-[#D98B4A]/50 transition"
+                  className="flex items-center gap-2 bg-slate-50 dark:bg-[#1B1B20] border border-slate-200 dark:border-[#26262C] rounded-lg px-3 py-1.5 text-xs shadow-sm cursor-pointer hover:border-[#3157D5]/50 dark:hover:border-[#D98B4A]/50 transition"
                   title="View Profile"
                 >
-                  <div className="w-6 h-6 rounded-full bg-[#1B1B20] border border-[#26262C] text-[11px] font-bold text-[#F4F4F5] flex items-center justify-center shrink-0">
+                  <div className="w-6 h-6 rounded-full bg-slate-200 dark:bg-[#1B1B20] border border-slate-300 dark:border-[#26262C] text-[11px] font-bold text-slate-800 dark:text-[#F4F4F5] flex items-center justify-center shrink-0">
                     {currentUser.name.charAt(0).toUpperCase()}
                   </div>
                   <div className="flex flex-col text-left">
-                    <span className="text-xs text-[#F4F4F5] font-semibold truncate max-w-[100px] lg:max-w-[140px]">
+                    <span className="text-xs text-slate-900 dark:text-[#F4F4F5] font-semibold truncate max-w-[100px] lg:max-w-[140px]">
                       {currentUser.name}
                     </span>
-                    <span className="text-[10px] text-[#A1A1AA] font-mono leading-none">
+                    <span className="text-[10px] text-slate-500 dark:text-[#A1A1AA] font-mono leading-none">
                       @{currentUser.username}
                     </span>
                   </div>
@@ -175,9 +175,9 @@ export const Navbar: React.FC<NavbarProps> = ({
               <button
                 onClick={onOpenRecap}
                 title="Weekly Recap"
-                className="p-2 rounded-lg bg-[#1B1B20] hover:bg-[#26262C] text-[#D98B4A] border border-[#26262C] transition flex items-center gap-1.5 text-xs font-semibold cursor-pointer"
+                className="p-2 rounded-lg bg-slate-50 hover:bg-slate-100 text-[#3157D5] border border-slate-200 dark:bg-[#1B1B20] dark:hover:bg-[#26262C] dark:text-[#D98B4A] dark:border-[#26262C] transition flex items-center gap-1.5 text-xs font-semibold cursor-pointer"
               >
-                <Sparkles className="w-4 h-4 text-[#D98B4A]" />
+                <Sparkles className="w-4 h-4 text-[#3157D5] dark:text-[#D98B4A]" />
                 <span className="hidden lg:inline">Weekly Recap</span>
               </button>
 
@@ -186,9 +186,9 @@ export const Navbar: React.FC<NavbarProps> = ({
                 <button
                   onClick={onExportCSV}
                   title="Export My Data as CSV"
-                  className="p-2 rounded-lg bg-[#1B1B20] hover:bg-[#26262C] text-[#D98B4A] border border-[#26262C] transition flex items-center gap-1.5 text-xs font-semibold cursor-pointer"
+                  className="p-2 rounded-lg bg-slate-50 hover:bg-slate-100 text-[#3157D5] border border-slate-200 dark:bg-[#1B1B20] dark:hover:bg-[#26262C] dark:text-[#D98B4A] dark:border-[#26262C] transition flex items-center gap-1.5 text-xs font-semibold cursor-pointer"
                 >
-                  <Download className="w-4 h-4 text-[#D98B4A]" />
+                  <Download className="w-4 h-4 text-[#3157D5] dark:text-[#D98B4A]" />
                   <span className="hidden lg:inline">CSV Export</span>
                 </button>
               )}
@@ -451,7 +451,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           </div>
 
           {/* Top Tab Navigation Strip (Horizontal scroll with smooth touch - Desktop & Tablet) */}
-          <nav className="hidden md:flex items-center gap-1 overflow-x-auto py-2 scrollbar-none border-t border-[#26262C]/60 no-scrollbar touch-pan-x">
+          <nav className="hidden md:flex items-center gap-1 overflow-x-auto py-2 scrollbar-none border-t border-slate-200 dark:border-[#26262C]/60 no-scrollbar touch-pan-x">
             {navItems.map((item) => {
               const Icon = item.icon;
               const isActive = activeTab === item.id;
@@ -462,10 +462,10 @@ export const Navbar: React.FC<NavbarProps> = ({
                   className={`flex items-center gap-1.5 sm:gap-2 px-3 py-1.5 sm:py-2 rounded-lg text-xs font-semibold whitespace-nowrap transition-all cursor-pointer shrink-0 ${
                     isActive
                       ? 'bg-[#EFF8FF] text-[#3157D5] border border-[#3157D5]/20 font-bold'
-                      : 'text-[#667085] hover:text-[#111827] hover:bg-[#F1F3F6]'
+                      : 'text-slate-600 dark:text-[#A1A1AA] hover:text-slate-900 dark:hover:text-[#F4F4F5] hover:bg-slate-100 dark:hover:bg-[#1B1B20]'
                   }`}
                 >
-                  <Icon className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${isActive ? 'text-[#3157D5]' : 'text-[#667085]'}`} />
+                  <Icon className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${isActive ? 'text-[#3157D5]' : 'text-slate-500 dark:text-[#A1A1AA]'}`} />
                   <span>{item.label}</span>
                   {(item.id === 'badges' || item.id === 'comparison') && planTier !== 'pro' && (
                     <span className="text-[9px] px-1.5 py-0.2 rounded-full bg-[#D98B4A]/15 text-[#D98B4A] font-bold border border-[#D98B4A]/25 flex items-center gap-0.5 leading-none">
@@ -482,7 +482,7 @@ export const Navbar: React.FC<NavbarProps> = ({
       {/* Modern Native-Style Bottom Navigation Bar for Mobile (< 768px) */}
       <nav 
         aria-label="Mobile Navigation"
-        className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#131316]/95 border-t border-[#26262C] backdrop-blur-lg px-2 pt-1.5 pb-[calc(0.5rem+env(safe-area-inset-bottom,0px))] shadow-2xl"
+        className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-[#131316]/95 border-t border-slate-200 dark:border-[#26262C] backdrop-blur-lg px-2 pt-1.5 pb-[calc(0.5rem+env(safe-area-inset-bottom,0px))] shadow-2xl"
       >
         <div className="grid grid-cols-5 gap-1 max-w-md mx-auto">
           {bottomNavItems.map((item) => {
