@@ -193,14 +193,14 @@ export function App() {
       localStorage.setItem('pulse_fitness_theme', isDarkMode ? 'dark' : 'light');
     } catch {}
     if (isDarkMode) {
-      document.documentElement.classList.add('dark-theme');
+      document.documentElement.classList.add('dark', 'dark-theme');
       document.documentElement.setAttribute('data-theme', 'dark');
-      document.body.classList.add('dark-theme');
+      document.body.classList.add('dark', 'dark-theme');
       document.body.setAttribute('data-theme', 'dark');
     } else {
-      document.documentElement.classList.remove('dark-theme');
+      document.documentElement.classList.remove('dark', 'dark-theme');
       document.documentElement.setAttribute('data-theme', 'light');
-      document.body.classList.remove('dark-theme');
+      document.body.classList.remove('dark', 'dark-theme');
       document.body.setAttribute('data-theme', 'light');
     }
   }, [isDarkMode]);

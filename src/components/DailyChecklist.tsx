@@ -660,16 +660,16 @@ export const DailyChecklist: React.FC<DailyChecklistProps> = ({
 
       {/* Solo Plan Banner for Base Users */}
       {isBasePlan && (
-        <div className="bg-[#131316] border border-[#26262C] rounded-xl p-3.5 px-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs text-[#A1A1AA] shadow-sm">
+        <div className="bg-white dark:bg-[#131316] border border-slate-200 dark:border-[#26262C] rounded-xl p-3.5 px-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs text-slate-600 dark:text-[#A1A1AA] shadow-sm">
           <div className="flex items-center gap-2">
-            <span className="text-[10px] px-2 py-0.5 rounded-full bg-[rgba(217,139,74,0.15)] text-[#D98B4A] font-extrabold uppercase tracking-wider">Base Solo Plan</span>
+            <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#EFF8FF] text-[#3157D5] dark:bg-[rgba(217,139,74,0.15)] dark:text-[#D98B4A] font-extrabold uppercase tracking-wider">Base Solo Plan</span>
             <span>Personal tracking active. Upgrade to Pro for group formation and team challenges.</span>
           </div>
           {onOpenUpgradeModal && (
             <button
               type="button"
               onClick={onOpenUpgradeModal}
-              className="text-[#D98B4A] hover:text-[#E69A5C] hover:underline font-bold shrink-0 cursor-pointer text-left sm:text-right"
+              className="text-[#3157D5] hover:text-[#2544B8] dark:text-[#D98B4A] dark:hover:text-[#E69A5C] hover:underline font-bold shrink-0 cursor-pointer text-left sm:text-right"
             >
               Upgrade to Pro →
             </button>
@@ -681,19 +681,19 @@ export const DailyChecklist: React.FC<DailyChecklistProps> = ({
       {isViewingOther && (
         <div className={`rounded-xl p-3 flex items-center justify-between text-xs border ${
           hasLoggedForDate 
-            ? 'bg-amber-500/10 border-amber-500/25 text-[#FBBF24]' 
-            : 'bg-zinc-800/60 border-zinc-700/50 text-[#A1A1AA]'
+            ? 'bg-amber-500/10 border-amber-500/25 text-amber-700 dark:text-[#FBBF24]' 
+            : 'bg-slate-100 border-slate-200 dark:bg-zinc-800/60 dark:border-zinc-700/50 text-slate-600 dark:text-[#A1A1AA]'
         }`}>
           <div className="flex items-center gap-2">
             {hasLoggedForDate ? (
-              <Eye className="w-4 h-4 text-[#FBBF24] shrink-0" />
+              <Eye className="w-4 h-4 text-amber-600 dark:text-[#FBBF24] shrink-0" />
             ) : (
-              <Clock className="w-4 h-4 text-zinc-400 shrink-0" />
+              <Clock className="w-4 h-4 text-slate-500 dark:text-zinc-400 shrink-0" />
             )}
             <span>
               Viewing <strong>{targetUser.name}</strong>'s daily checklist for <strong>{selectedDate}</strong>.
               {!hasLoggedForDate && (
-                <span className="ml-1 text-zinc-300 font-medium">
+                <span className="ml-1 text-slate-600 dark:text-zinc-300 font-medium">
                   — No checklist entry recorded by {targetUser.name} for this date yet.
                 </span>
               )}
@@ -704,20 +704,20 @@ export const DailyChecklist: React.FC<DailyChecklistProps> = ({
 
       {/* Collective Team Daily Goal Progress Bar - Pro Exclusive */}
       {isBasePlan ? (
-        <div className="bg-[#131316] border border-[#26262C] rounded-xl p-4 sm:p-5 shadow-sm space-y-3 relative overflow-hidden">
+        <div className="bg-white dark:bg-[#131316] border border-slate-200 dark:border-[#26262C] rounded-xl p-4 sm:p-5 shadow-sm space-y-3 relative overflow-hidden">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-lg bg-[#D98B4A]/15 border border-[#D98B4A]/30 flex items-center justify-center text-[#D98B4A] font-bold shrink-0 shadow-sm">
-                <Users className="w-4 h-4 text-[#D98B4A]" />
+              <div className="w-8 h-8 rounded-lg bg-[#EFF8FF] text-[#3157D5] border border-[#3157D5]/25 dark:bg-[#D98B4A]/15 dark:text-[#D98B4A] dark:border-[#D98B4A]/30 flex items-center justify-center font-bold shrink-0 shadow-sm">
+                <Users className="w-4 h-4" />
               </div>
               <div>
-                <h3 className="text-sm sm:text-base font-bold text-[#F4F4F5] flex items-center gap-2">
+                <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-[#F4F4F5] flex items-center gap-2">
                   Team Daily Goals
-                  <span className="text-[10px] px-2 py-0.5 rounded-md bg-[rgba(217,139,74,0.12)] text-[#D98B4A] font-bold border border-[#D98B4A]/25 flex items-center gap-1">
+                  <span className="text-[10px] px-2 py-0.5 rounded-md bg-[#EFF8FF] text-[#3157D5] border border-[#3157D5]/25 dark:bg-[rgba(217,139,74,0.12)] dark:text-[#D98B4A] dark:border-[#D98B4A]/25 font-bold flex items-center gap-1">
                     <Lock className="w-2.5 h-2.5" /> PULSE Pro Exclusive
                   </span>
                 </h3>
-                <p className="text-xs text-[#A1A1AA]">
+                <p className="text-xs text-slate-600 dark:text-[#A1A1AA]">
                   Collective squad targets, combined progress bars, and team accountability are exclusively available on PULSE Pro.
                 </p>
               </div>
@@ -726,7 +726,7 @@ export const DailyChecklist: React.FC<DailyChecklistProps> = ({
             <button
               type="button"
               onClick={() => onOpenUpgradeModal?.()}
-              className="self-start sm:self-auto px-4 py-2 min-h-[36px] bg-gradient-to-r from-[#D98B4A] to-[#B45F1E] hover:from-[#E69A5C] hover:to-[#D98B4A] text-[#131316] font-bold rounded-lg text-xs transition cursor-pointer shadow-sm flex items-center gap-1.5 active:scale-95 shrink-0"
+              className="self-start sm:self-auto px-4 py-2 min-h-[36px] bg-gradient-to-r from-[#3157D5] to-[#2544B8] text-white hover:from-[#2544B8] hover:to-[#172554] dark:from-[#D98B4A] dark:to-[#B45F1E] dark:text-[#131316] font-bold rounded-lg text-xs transition cursor-pointer shadow-sm flex items-center gap-1.5 active:scale-95 shrink-0"
             >
               <Crown className="w-3.5 h-3.5" />
               <span>Unlock Team Goals</span>
@@ -734,41 +734,41 @@ export const DailyChecklist: React.FC<DailyChecklistProps> = ({
           </div>
 
           {/* Locked Preview Progress Bar */}
-          <div className="w-full h-2.5 bg-[#1B1B20] rounded-full overflow-hidden border border-[#26262C] opacity-35">
-            <div className="h-full bg-[#D98B4A]/50 rounded-full" style={{ width: '60%' }} />
+          <div className="w-full h-2.5 bg-slate-100 dark:bg-[#1B1B20] rounded-full overflow-hidden border border-slate-200 dark:border-[#26262C] opacity-35">
+            <div className="h-full bg-[#3157D5]/50 dark:bg-[#D98B4A]/50 rounded-full" style={{ width: '60%' }} />
           </div>
         </div>
       ) : (
-      <div className="bg-[#131316] border border-[#26262C] rounded-xl p-4 sm:p-5 shadow-sm space-y-3">
+      <div className="bg-white dark:bg-[#131316] border border-slate-200 dark:border-[#26262C] rounded-xl p-4 sm:p-5 shadow-sm space-y-3">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-[#D98B4A] flex items-center justify-center text-[#0B0B0D] font-black shrink-0 shadow-sm">
-              <Users className="w-4 h-4 text-[#0B0B0D]" />
+            <div className="w-8 h-8 rounded-lg bg-[#EFF8FF] text-[#3157D5] border border-[#3157D5]/25 dark:bg-[#D98B4A] dark:text-[#0B0B0D] flex items-center justify-center font-black shrink-0 shadow-sm">
+              <Users className="w-4 h-4" />
             </div>
             <div>
-              <h3 className="text-sm sm:text-base font-bold text-[#F4F4F5] flex items-center gap-2">
+              <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-[#F4F4F5] flex items-center gap-2">
                 Team Daily Goal Progress
-                <span className="text-[10px] px-2 py-0.5 rounded-md bg-[rgba(217,139,74,0.12)] text-[#D98B4A] font-bold border border-[#D98B4A]/25 tabular-nums">
+                <span className="text-[10px] px-2 py-0.5 rounded-md bg-[#EFF8FF] text-[#3157D5] border border-[#3157D5]/25 dark:bg-[rgba(217,139,74,0.12)] dark:text-[#D98B4A] dark:border-[#D98B4A]/25 font-bold tabular-nums">
                   {teamCompletionPercent}% Together
                 </span>
               </h3>
-              <p className="text-xs text-[#A1A1AA]">
+              <p className="text-xs text-slate-600 dark:text-[#A1A1AA]">
                 Collective accountability across all {activeMembersList.length} {activeMembersList.length === 1 ? 'member' : 'members'} for {selectedDate}
               </p>
             </div>
           </div>
 
           <div className="text-left sm:text-right">
-            <span className="text-xs text-[#D98B4A] font-mono font-bold tabular-nums">
+            <span className="text-xs text-[#3157D5] dark:text-[#D98B4A] font-mono font-bold tabular-nums">
               {teamCompletedCount} / {teamTotalTarget} Goals Met
             </span>
           </div>
         </div>
 
         {/* Combined Team Progress Bar */}
-        <div className="w-full h-2.5 bg-[#1B1B20] rounded-full overflow-hidden border border-[#26262C] relative">
+        <div className="w-full h-2.5 bg-slate-100 dark:bg-[#1B1B20] rounded-full overflow-hidden border border-slate-200 dark:border-[#26262C] relative">
           <div
-            className="h-full bg-[#D98B4A] transition-all duration-500 rounded-full"
+            className="h-full bg-[#3157D5] dark:bg-[#D98B4A] transition-all duration-500 rounded-full"
             style={{ width: `${teamCompletionPercent}%` }}
           />
         </div>
@@ -794,16 +794,16 @@ export const DailyChecklist: React.FC<DailyChecklistProps> = ({
                 onClick={() => setSelectedMemberId(user.id)}
                 className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold border transition cursor-pointer active:scale-95 ${
                   isSelected
-                    ? 'bg-[rgba(217,139,74,0.12)] border-[#D98B4A] text-[#F4F4F5]'
-                    : 'bg-[#1B1B20] border-[#26262C] text-[#A1A1AA] hover:text-[#F4F4F5] hover:border-[#D98B4A]/40'
+                    ? 'bg-[#EFF8FF] border-[#3157D5] text-[#3157D5] dark:bg-[rgba(217,139,74,0.12)] dark:border-[#D98B4A] dark:text-[#F4F4F5]'
+                    : 'bg-slate-50 border-slate-200 text-slate-700 hover:text-slate-900 dark:bg-[#1B1B20] dark:border-[#26262C] dark:text-[#A1A1AA] dark:hover:text-[#F4F4F5]'
                 }`}
                 title={`View ${user.name}'s checklist for ${selectedDate}`}
               >
-                <div className="w-5 h-5 rounded-full bg-[#1B1B20] border border-[#26262C] text-[10px] font-bold text-[#F4F4F5] flex items-center justify-center shrink-0">
+                <div className="w-5 h-5 rounded-full bg-slate-200 text-slate-800 dark:bg-[#1B1B20] border border-slate-300 dark:border-[#26262C] text-[10px] font-bold dark:text-[#F4F4F5] flex items-center justify-center shrink-0">
                   {user.name.charAt(0).toUpperCase()}
                 </div>
                 <span>{isCurrent ? `${user.name} (You)` : user.name}:</span>
-                <strong className={`tabular-nums ${uCompleted > 0 ? 'text-[#34D399] font-bold' : 'text-[#71717A]'}`}>
+                <strong className={`tabular-nums ${uCompleted > 0 ? 'text-emerald-600 dark:text-[#34D399] font-bold' : 'text-slate-400 dark:text-[#71717A]'}`}>
                   {uCompleted}/5 goals
                 </strong>
               </button>
@@ -814,33 +814,33 @@ export const DailyChecklist: React.FC<DailyChecklistProps> = ({
       )}
 
       {/* Date Navigation & Calendar Picker Bar */}
-      <div className="bg-[#131316] border border-[#26262C] rounded-xl p-4 sm:p-5 shadow-sm flex flex-col md:flex-row items-center justify-between gap-4">
+      <div className="bg-white dark:bg-[#131316] border border-slate-200 dark:border-[#26262C] rounded-xl p-4 sm:p-5 shadow-sm flex flex-col md:flex-row items-center justify-between gap-4">
         
         {/* Interactive Calendar Date Selector */}
-        <div className="flex items-center gap-3 bg-[#1B1B20] border border-[#26262C] rounded-lg px-3 py-2">
+        <div className="flex items-center gap-3 bg-slate-50 dark:bg-[#1B1B20] border border-slate-200 dark:border-[#26262C] rounded-lg px-3 py-2">
           <button
             onClick={() => handleDateChange(-1)}
-            className="p-1.5 hover:bg-[#26262C] rounded-lg text-[#A1A1AA] hover:text-[#F4F4F5] transition cursor-pointer"
+            className="p-1.5 hover:bg-slate-200 dark:hover:bg-[#26262C] rounded-lg text-slate-600 dark:text-[#A1A1AA] hover:text-slate-900 dark:hover:text-[#F4F4F5] transition cursor-pointer"
             title="Previous Day"
           >
             <ChevronLeft className="w-5 h-5" />
           </button>
 
-          <div className="flex items-center gap-2 text-[#F4F4F5] font-bold text-sm">
-            <Calendar className="w-4 h-4 text-[#D98B4A]" />
+          <div className="flex items-center gap-2 text-slate-900 dark:text-[#F4F4F5] font-bold text-sm">
+            <Calendar className="w-4 h-4 text-[#3157D5] dark:text-[#D98B4A]" />
             <input
               type="date"
               value={selectedDate}
               onChange={(e) => setSelectedDate(e.target.value)}
-              className="bg-transparent text-[#F4F4F5] font-bold text-sm focus:outline-none cursor-pointer"
+              className="bg-transparent text-slate-900 dark:text-[#F4F4F5] font-bold text-sm focus:outline-none cursor-pointer"
             />
             {selectedDate === todayStr && (
-              <span className="text-[10px] px-2 py-0.5 rounded-md bg-[rgba(217,139,74,0.12)] text-[#D98B4A] font-bold border border-[#D98B4A]/30">
+              <span className="text-[10px] px-2 py-0.5 rounded-md bg-[#EFF8FF] text-[#3157D5] border border-[#3157D5]/30 dark:bg-[rgba(217,139,74,0.12)] dark:text-[#D98B4A] dark:border-[#D98B4A]/30 font-bold">
                 Today
               </span>
             )}
             {isSunday && (
-              <span className="text-[10px] px-2 py-0.5 rounded-md bg-[#34D399]/15 text-[#34D399] font-bold border border-[#34D399]/30">
+              <span className="text-[10px] px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-300 dark:bg-[#34D399]/15 dark:text-[#34D399] dark:border-[#34D399]/30 font-bold">
                 Sunday
               </span>
             )}
@@ -848,7 +848,7 @@ export const DailyChecklist: React.FC<DailyChecklistProps> = ({
 
           <button
             onClick={() => handleDateChange(1)}
-            className="p-1.5 hover:bg-[#26262C] rounded-lg text-[#A1A1AA] hover:text-[#F4F4F5] transition cursor-pointer"
+            className="p-1.5 hover:bg-slate-200 dark:hover:bg-[#26262C] rounded-lg text-slate-600 dark:text-[#A1A1AA] hover:text-slate-900 dark:hover:text-[#F4F4F5] transition cursor-pointer"
             title="Next Day"
           >
             <ChevronRight className="w-5 h-5" />
@@ -857,10 +857,10 @@ export const DailyChecklist: React.FC<DailyChecklistProps> = ({
           {onOpenCalendar && (
             <button
               onClick={onOpenCalendar}
-              className="p-1.5 px-2.5 hover:bg-[#26262C] text-[#D98B4A] hover:text-[#F4F4F5] rounded-lg transition flex items-center gap-1.5 cursor-pointer border border-[#26262C] ml-1 bg-[#131316]"
+              className="p-1.5 px-2.5 bg-white hover:bg-slate-100 text-[#3157D5] border border-slate-200 dark:bg-[#131316] dark:hover:bg-[#26262C] dark:text-[#D98B4A] dark:hover:text-[#F4F4F5] dark:border-[#26262C] rounded-lg transition flex items-center gap-1.5 cursor-pointer ml-1"
               title="Open Month Calendar View"
             >
-              <Calendar className="w-3.5 h-3.5 text-[#D98B4A]" />
+              <Calendar className="w-3.5 h-3.5 text-[#3157D5] dark:text-[#D98B4A]" />
               <span className="hidden sm:inline text-xs font-bold">Calendar</span>
             </button>
           )}
@@ -944,26 +944,26 @@ export const DailyChecklist: React.FC<DailyChecklistProps> = ({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         
         {/* Goal 1: Gym Routine */}
-        <div className={`relative bg-[#131316] border rounded-xl p-4 sm:p-5 transition-all overflow-hidden ${
-          (displayedDailyLog.gym_done || isSunday) ? 'border-[#34D399]/40 bg-[#34D399]/5' : 'border-[#26262C]'
+        <div className={`relative bg-white dark:bg-[#131316] border rounded-xl p-4 sm:p-5 transition-all overflow-hidden ${
+          (displayedDailyLog.gym_done || isSunday) ? 'border-[#34D399]/40 bg-[#34D399]/5 dark:bg-[#34D399]/5' : 'border-slate-200 dark:border-[#26262C]'
         }`}>
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="flex items-center gap-3">
               <div className={`p-2.5 sm:p-3 rounded-lg shrink-0 ${
-                (displayedDailyLog.gym_done || isSunday) ? 'bg-[#34D399]/15 text-[#34D399]' : 'bg-[#1B1B20] text-[#A1A1AA]'
+                (displayedDailyLog.gym_done || isSunday) ? 'bg-[#34D399]/15 text-[#34D399]' : 'bg-slate-100 text-slate-500 dark:bg-[#1B1B20] dark:text-[#A1A1AA]'
               }`}>
                 <Dumbbell className="w-5 h-5 sm:w-6 sm:h-6" />
               </div>
               <div>
                 <div className="flex items-center gap-2 flex-wrap">
-                  <h4 className="font-bold text-[#F4F4F5] text-sm sm:text-base whitespace-nowrap">1. Gym Routine</h4>
+                  <h4 className="font-bold text-slate-900 dark:text-[#F4F4F5] text-sm sm:text-base whitespace-nowrap">1. Gym Routine</h4>
                   {isSunday && (
                     <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-[#34D399]/15 text-[#34D399] border border-[#34D399]/30 flex items-center gap-1 shrink-0">
                       🌿 Healing
                     </span>
                   )}
                 </div>
-                <p className="text-xs text-[#A1A1AA]">
+                <p className="text-xs text-slate-500 dark:text-[#A1A1AA]">
                   {isSunday ? 'Sunday Body Recovery — Rest & Healing Day' : 'Log strength or cardio workouts'}
                 </p>
               </div>
@@ -981,7 +981,7 @@ export const DailyChecklist: React.FC<DailyChecklistProps> = ({
               <span className={`w-full xl:w-auto justify-center px-3 py-2.5 rounded-xl text-xs font-bold flex items-center gap-1.5 whitespace-nowrap shrink-0 ${
                 displayedDailyLog.gym_done
                   ? 'bg-[#34D399]/15 text-[#34D399] border border-[#34D399]/30'
-                  : 'bg-[#1B1B20] text-[#A1A1AA] border border-[#26262C]'
+                  : 'bg-slate-100 text-slate-600 border border-slate-200 dark:bg-[#1B1B20] dark:text-[#A1A1AA] dark:border-[#26262C]'
               }`}>
                 {displayedDailyLog.gym_done ? (
                   <CheckCircle2 className="w-4 h-4 text-[#34D399]" />
@@ -1007,7 +1007,7 @@ export const DailyChecklist: React.FC<DailyChecklistProps> = ({
                   <div className="flex items-center gap-2 w-full sm:w-auto shrink-0">
                     <button
                       onClick={() => handleToggleGoal('gym', false)}
-                      className="flex-1 sm:flex-initial px-4 py-2.5 rounded-xl bg-[#D98B4A] hover:bg-[#E69A5C] text-[#0B0B0D] font-bold text-xs flex items-center justify-center gap-1.5 transition cursor-pointer min-h-[42px] whitespace-nowrap shadow-sm active:scale-[0.98]"
+                      className="flex-1 sm:flex-initial px-4 py-2.5 rounded-xl bg-[#3157D5] hover:bg-[#2544B8] dark:bg-[#D98B4A] dark:hover:bg-[#E69A5C] text-white dark:text-[#0B0B0D] font-bold text-xs flex items-center justify-center gap-1.5 transition cursor-pointer min-h-[42px] whitespace-nowrap shadow-sm active:scale-[0.98]"
                     >
                       <CheckCircle2 className="w-4 h-4" />
                       <span>Mark Done</span>
@@ -1018,7 +1018,7 @@ export const DailyChecklist: React.FC<DailyChecklistProps> = ({
                       className={`px-3 py-2.5 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition cursor-pointer border min-h-[42px] whitespace-nowrap active:scale-[0.98] ${
                         getGoalMissedReason('gym')
                           ? 'bg-rose-500/15 text-[#F87171] border-rose-500/30 hover:bg-rose-500/25'
-                          : 'bg-rose-500/10 text-[#F87171] border-rose-500/25 hover:bg-rose-500/20'
+                          : 'bg-rose-50 text-rose-600 border-rose-200 hover:bg-rose-100 dark:bg-rose-500/10 dark:text-[#F87171] dark:border-rose-500/25 dark:hover:bg-rose-500/20'
                       }`}
                       title={getGoalMissedReason('gym') ? "Marked as Failed — click to remove / undo" : "Unable to complete gym workout? Log reason"}
                     >
@@ -1031,14 +1031,14 @@ export const DailyChecklist: React.FC<DailyChecklistProps> = ({
             )}
           </div>
 
-          <div className="mt-4 pt-3 border-t border-[#26262C] flex items-center justify-between">
-            <span className="text-xs text-[#A1A1AA]">
-              Workouts Logged: <strong className="text-[#D98B4A] tabular-nums">{targetWorkoutsCount} entries</strong>
+          <div className="mt-4 pt-3 border-t border-slate-200 dark:border-[#26262C] flex items-center justify-between">
+            <span className="text-xs text-slate-500 dark:text-[#A1A1AA]">
+              Workouts Logged: <strong className="text-[#3157D5] dark:text-[#D98B4A] tabular-nums">{targetWorkoutsCount} entries</strong>
             </span>
             {!isViewingOther && !getGoalMissedReason('gym') && (
               <button
                 onClick={onOpenWorkoutModal}
-                className="text-xs font-bold text-[#D98B4A] hover:text-[#F4F4F5] flex items-center gap-1 py-1.5 px-2.5 rounded-lg bg-[rgba(217,139,74,0.12)] border border-[#D98B4A]/30 transition cursor-pointer active:scale-95"
+                className="text-xs font-bold text-[#3157D5] dark:text-[#D98B4A] hover:underline flex items-center gap-1 py-1.5 px-2.5 rounded-lg bg-[#EFF8FF] text-[#3157D5] border border-[#3157D5]/30 dark:bg-[rgba(217,139,74,0.12)] dark:border-[#D98B4A]/30 transition cursor-pointer active:scale-95"
               >
                 <Plus className="w-3.5 h-3.5" /> {isSunday ? 'Optional: Log Workout' : 'Log Details'}
               </button>
@@ -1141,37 +1141,37 @@ export const DailyChecklist: React.FC<DailyChecklistProps> = ({
           ];
 
           return (
-            <div className={`relative bg-[#131316] border rounded-2xl p-4 sm:p-5 transition-all overflow-hidden flex flex-col justify-between ${
-              isStepHit ? 'border-[#34D399]/40 bg-[#34D399]/5' : 'border-[#26262C]'
+            <div className={`relative bg-white dark:bg-[#131316] border rounded-2xl p-4 sm:p-5 transition-all overflow-hidden flex flex-col justify-between ${
+              isStepHit ? 'border-[#34D399]/40 bg-[#34D399]/5 dark:bg-[#34D399]/5' : 'border-slate-200 dark:border-[#26262C]'
             }`}>
               <div>
                 {/* Header: Icon, Title, Points Badge & Target */}
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex items-start sm:items-center gap-3 min-w-0 flex-1">
                     <div className={`p-2.5 sm:p-3 rounded-xl shrink-0 mt-0.5 sm:mt-0 ${
-                      isStepHit ? 'bg-[#34D399]/15 text-[#34D399]' : 'bg-[#1B1B20] text-[#A1A1AA]'
+                      isStepHit ? 'bg-[#34D399]/15 text-[#34D399]' : 'bg-slate-100 text-slate-500 dark:bg-[#1B1B20] dark:text-[#A1A1AA]'
                     }`}>
                       <Footprints className="w-5 h-5 sm:w-6 sm:h-6" />
                     </div>
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <h4 className="font-bold text-[#F4F4F5] text-sm sm:text-base whitespace-nowrap">
+                        <h4 className="font-bold text-slate-900 dark:text-[#F4F4F5] text-sm sm:text-base whitespace-nowrap">
                           2. Daily Steps
                         </h4>
                         <span className={`text-[11px] font-mono font-bold px-2.5 py-0.5 rounded-full whitespace-nowrap ${
                           isStepHit 
                             ? 'bg-[#34D399]/20 text-[#34D399] border border-[#34D399]/30' 
                             : stepPartialPoints > 0 
-                            ? 'bg-[#D98B4A]/20 text-[#D98B4A] border border-[#D98B4A]/30' 
-                            : 'bg-zinc-800 text-zinc-400 border border-zinc-700'
+                            ? 'bg-[#EFF8FF] text-[#3157D5] border border-[#3157D5]/30 dark:bg-[#D98B4A]/20 dark:text-[#D98B4A] dark:border-[#D98B4A]/30' 
+                            : 'bg-slate-100 text-slate-600 border border-slate-200 dark:bg-zinc-800 dark:text-zinc-400 dark:border-zinc-700'
                         }`}>
                           +{stepPartialPoints} / 10 pts
                         </span>
                       </div>
-                      <p className="text-xs text-[#A1A1AA] mt-0.5 truncate">
-                        Group Target: <span className="tabular-nums font-semibold text-[#F4F4F5]">{stepTarget.toLocaleString()}</span> steps
+                      <p className="text-xs text-slate-500 dark:text-[#A1A1AA] mt-0.5 truncate">
+                        Group Target: <span className="tabular-nums font-semibold text-slate-900 dark:text-[#F4F4F5]">{stepTarget.toLocaleString()}</span> steps
                         {!isStepHit && currentSteps > 0 && (
-                          <span className="text-[#D98B4A] ml-1.5 font-medium">({stepPercent}%)</span>
+                          <span className="text-[#3157D5] dark:text-[#D98B4A] ml-1.5 font-medium">({stepPercent}%)</span>
                         )}
                       </p>
                     </div>
@@ -1181,7 +1181,7 @@ export const DailyChecklist: React.FC<DailyChecklistProps> = ({
                     <span className={`px-2.5 py-1 rounded-lg text-xs font-bold flex items-center gap-1 shrink-0 ${
                       isStepHit
                         ? 'bg-[#34D399]/15 text-[#34D399] border border-[#34D399]/30'
-                        : 'bg-[#1B1B20] text-[#A1A1AA] border border-[#26262C]'
+                        : 'bg-slate-100 text-slate-600 border border-slate-200 dark:bg-[#1B1B20] dark:text-[#A1A1AA] dark:border-[#26262C]'
                     }`}>
                       {isStepHit ? (
                         <CheckCircle2 className="w-3.5 h-3.5 text-[#34D399]" />
@@ -1217,7 +1217,7 @@ export const DailyChecklist: React.FC<DailyChecklistProps> = ({
                             const val = Math.max(stepTarget, dailyLog.steps_value || 0);
                             onUpdateDailyLog({ ...dailyLog, steps_done: true, steps_value: val, steps_target: stepTarget });
                           }}
-                          className="flex-1 min-h-[42px] px-3.5 py-2.5 rounded-xl bg-gradient-to-r from-[#D98B4A] to-[#B45F1E] hover:from-[#E69A5C] hover:to-[#C66D28] text-white font-bold text-xs flex items-center justify-center gap-1.5 transition cursor-pointer shadow-md shadow-[#D98B4A]/20 active:scale-[0.98]"
+                          className="flex-1 min-h-[42px] px-3.5 py-2.5 rounded-xl bg-gradient-to-r from-[#3157D5] to-[#2544B8] hover:from-[#2544B8] hover:to-[#172554] dark:from-[#D98B4A] dark:to-[#B45F1E] dark:hover:from-[#E69A5C] dark:hover:to-[#C66D28] text-white font-bold text-xs flex items-center justify-center gap-1.5 transition cursor-pointer shadow-md shadow-blue-500/20 dark:shadow-[#D98B4A]/20 active:scale-[0.98]"
                         >
                           <CheckCircle2 className="w-4 h-4" />
                           <span>Hit Target (10 pts)</span>
@@ -1228,7 +1228,7 @@ export const DailyChecklist: React.FC<DailyChecklistProps> = ({
                           className={`min-h-[42px] px-3.5 py-2.5 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition cursor-pointer border active:scale-[0.98] shrink-0 ${
                             getGoalMissedReason('steps')
                               ? 'bg-rose-500/15 text-[#F87171] border-rose-500/30 hover:bg-rose-500/25'
-                              : 'bg-rose-500/10 text-[#F87171] border-rose-500/25 hover:bg-rose-500/20'
+                              : 'bg-rose-50 text-rose-600 border-rose-200 hover:bg-rose-100 dark:bg-rose-500/10 dark:text-[#F87171] dark:border-rose-500/25 dark:hover:bg-rose-500/20'
                           }`}
                           title={getGoalMissedReason('steps') ? "Marked as Failed — click to remove / undo" : "Unable to hit step goal? Log reason"}
                         >
@@ -1242,51 +1242,51 @@ export const DailyChecklist: React.FC<DailyChecklistProps> = ({
 
                 {/* Progress Bar towards Step Target */}
                 <div className="mt-3.5 space-y-1.5">
-                  <div className="flex items-center justify-between text-xs text-[#A1A1AA]">
+                  <div className="flex items-center justify-between text-xs text-slate-500 dark:text-[#A1A1AA]">
                     <span className="font-medium">
                       {isBasePlan ? 'Daily Step Progress' : 'Progress to Group Target'}
                     </span>
                     <div className="flex items-center gap-2">
-                      <span className="font-mono text-zinc-400 tabular-nums">
+                      <span className="font-mono text-slate-600 dark:text-zinc-400 tabular-nums">
                         {currentSteps.toLocaleString()} / {stepTarget.toLocaleString()}
                       </span>
-                      <span className="font-mono font-bold text-[#F4F4F5] bg-[#1B1B20] px-1.5 py-0.5 rounded border border-[#26262C]">
+                      <span className="font-mono font-bold text-slate-900 dark:text-[#F4F4F5] bg-slate-100 dark:bg-[#1B1B20] px-1.5 py-0.5 rounded border border-slate-200 dark:border-[#26262C]">
                         {stepPercent}%
                       </span>
                     </div>
                   </div>
-                  <div className="w-full bg-[#1B1B20] rounded-full h-2.5 overflow-hidden border border-[#26262C] relative">
+                  <div className="w-full bg-slate-100 dark:bg-[#1B1B20] rounded-full h-2.5 overflow-hidden border border-slate-200 dark:border-[#26262C] relative">
                     <div 
                       className={`h-full transition-all duration-300 rounded-full ${
                         isStepHit 
                           ? 'bg-[#34D399] shadow-[0_0_12px_rgba(52,211,153,0.4)]' 
-                          : 'bg-gradient-to-r from-amber-500 via-[#D98B4A] to-amber-600'
+                          : 'bg-gradient-to-r from-blue-500 to-[#3157D5] dark:from-amber-500 dark:via-[#D98B4A] dark:to-amber-600'
                       }`}
                       style={{ width: `${stepPercent}%` }}
                     />
                   </div>
                   {!isStepHit && stepsRemaining > 0 && (
-                    <p className="text-[11px] text-zinc-400 font-medium">
-                      🎯 <strong className="text-zinc-300 font-mono">{stepsRemaining.toLocaleString()}</strong> steps to reach 100% and claim all 10 pts
+                    <p className="text-[11px] text-slate-500 dark:text-zinc-400 font-medium">
+                      🎯 <strong className="text-slate-800 dark:text-zinc-300 font-mono">{stepsRemaining.toLocaleString()}</strong> steps to reach 100% and claim all 10 pts
                     </p>
                   )}
                 </div>
 
                 {/* Interactive Step Input & Dynamic Presets */}
-                <div className="mt-3.5 bg-[#1B1B20] p-3 sm:p-3.5 rounded-xl border border-[#26262C] space-y-2.5">
+                <div className="mt-3.5 bg-slate-50 dark:bg-[#1B1B20] p-3 sm:p-3.5 rounded-xl border border-slate-200 dark:border-[#26262C] space-y-2.5">
                   <div className="flex flex-col xs:flex-row xs:items-center justify-between gap-2">
                     <div>
-                      <label className="text-xs font-semibold text-[#F4F4F5] flex items-center gap-1.5">
+                      <label className="text-xs font-semibold text-slate-900 dark:text-[#F4F4F5] flex items-center gap-1.5">
                         <span>Log Step Count:</span>
-                        <span className="text-[11px] text-[#D98B4A] font-medium font-mono">
+                        <span className="text-[11px] text-[#3157D5] dark:text-[#D98B4A] font-medium font-mono">
                           +{stepPartialPoints} pts
                         </span>
                       </label>
-                      <p className="text-[11px] text-[#A1A1AA]">Earn partial points proportionally</p>
+                      <p className="text-[11px] text-slate-500 dark:text-[#A1A1AA]">Earn partial points proportionally</p>
                     </div>
 
                     {isViewingOther ? (
-                      <span className="font-mono font-bold text-sm text-[#F4F4F5] tabular-nums bg-[#131316] px-3 py-1.5 rounded-lg border border-[#26262C]">
+                      <span className="font-mono font-bold text-sm text-slate-900 dark:text-[#F4F4F5] tabular-nums bg-white dark:bg-[#131316] px-3 py-1.5 rounded-lg border border-slate-200 dark:border-[#26262C]">
                         {displayedDailyLog.steps_value || 0} steps
                       </span>
                     ) : (
@@ -1305,7 +1305,7 @@ export const DailyChecklist: React.FC<DailyChecklistProps> = ({
                           }}
                           disabled={(dailyLog.steps_value || 0) === 0}
                           title="Subtract 500 steps"
-                          className="w-8 h-8 rounded-lg bg-[#131316] hover:bg-[#26262C] text-[#A1A1AA] hover:text-[#F4F4F5] border border-[#26262C] flex items-center justify-center font-bold text-xs transition cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed active:scale-95"
+                          className="w-8 h-8 rounded-lg bg-white hover:bg-slate-100 text-slate-700 hover:text-slate-900 border border-slate-200 dark:bg-[#131316] dark:hover:bg-[#26262C] dark:text-[#A1A1AA] dark:hover:text-[#F4F4F5] dark:border-[#26262C] flex items-center justify-center font-bold text-xs transition cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed active:scale-95"
                         >
                           -500
                         </button>
@@ -1328,7 +1328,7 @@ export const DailyChecklist: React.FC<DailyChecklistProps> = ({
                                 steps_target: stepTarget,
                               });
                             }}
-                            className="w-24 sm:w-28 px-2.5 py-1.5 bg-[#131316] text-[#F4F4F5] font-mono tabular-nums font-bold text-sm rounded-lg border border-[#26262C] focus:outline-none focus:border-[#D98B4A] text-right"
+                            className="w-24 sm:w-28 px-2.5 py-1.5 bg-white text-slate-900 dark:bg-[#131316] dark:text-[#F4F4F5] font-mono tabular-nums font-bold text-sm rounded-lg border border-slate-200 dark:border-[#26262C] focus:outline-none focus:border-[#3157D5] dark:focus:border-[#D98B4A] text-right"
                           />
                         </div>
 
@@ -1434,242 +1434,258 @@ export const DailyChecklist: React.FC<DailyChecklistProps> = ({
         })()}
 
         {/* Goal 3: Sleep Tracker */}
-        <div className={`relative bg-[#131316] border rounded-xl p-4 sm:p-5 transition-all overflow-hidden ${displayedDailyLog.sleep_done ? 'border-[#34D399]/40 bg-[#34D399]/5' : 'border-[#26262C]'}`}>
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div className="flex items-center gap-3">
-              <div className={`p-2.5 sm:p-3 rounded-lg shrink-0 ${displayedDailyLog.sleep_done ? 'bg-[#34D399]/15 text-[#34D399]' : 'bg-[#1B1B20] text-[#A1A1AA]'}`}>
-                <Moon className="w-5 h-5 sm:w-6 sm:h-6" />
+        <div className={`relative bg-white dark:bg-[#131316] border rounded-2xl p-4 sm:p-5 transition-all overflow-hidden flex flex-col justify-between ${
+          displayedDailyLog.sleep_done ? 'border-[#34D399]/40 bg-[#34D399]/5 dark:bg-[#34D399]/5' : 'border-slate-200 dark:border-[#26262C]'
+        }`}>
+          <div>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <div className={`p-2.5 sm:p-3 rounded-xl shrink-0 ${
+                  displayedDailyLog.sleep_done ? 'bg-[#34D399]/15 text-[#34D399]' : 'bg-slate-100 text-slate-500 dark:bg-[#1B1B20] dark:text-[#A1A1AA]'
+                }`}>
+                  <Moon className="w-5 h-5 sm:w-6 sm:h-6" />
+                </div>
+                <div>
+                  <h4 className="font-bold text-slate-900 dark:text-[#F4F4F5] text-sm sm:text-base whitespace-nowrap">3. Sleep Routine</h4>
+                  <p className="text-xs text-slate-500 dark:text-[#A1A1AA]">Target: <span className="tabular-nums font-semibold text-slate-900 dark:text-[#F4F4F5]">{sleepMin} – {sleepMax}</span> hrs</p>
+                </div>
+              </div>
+
+              {/* Action Buttons: Mark Done and Failed */}
+              {isViewingOther ? (
+                <span className={`w-full xl:w-auto justify-center px-3 py-2.5 rounded-xl text-xs font-bold flex items-center gap-1.5 whitespace-nowrap shrink-0 ${
+                  displayedDailyLog.sleep_done
+                    ? 'bg-[#34D399]/15 text-[#34D399] border border-[#34D399]/30'
+                    : 'bg-slate-100 text-slate-500 border border-slate-200 dark:bg-[#1B1B20] dark:text-[#A1A1AA] dark:border-[#26262C]'
+                }`}>
+                  {displayedDailyLog.sleep_done ? (
+                    <CheckCircle2 className="w-4 h-4 text-[#34D399]" />
+                  ) : !hasLoggedForDate ? (
+                    <Clock className="w-4 h-4 text-slate-400 dark:text-zinc-500" />
+                  ) : (
+                    <XCircle className="w-4 h-4 text-slate-500 dark:text-[#71717A]" />
+                  )}
+                  <span>{displayedDailyLog.sleep_done ? 'Target Hit' : !hasLoggedForDate ? 'Pending' : 'Off Target'}</span>
+                </span>
+              ) : (
+                <div className="flex items-center gap-2 w-full sm:w-auto shrink-0 ml-auto">
+                  {displayedDailyLog.sleep_done ? (
+                    <button
+                      onClick={() => handleToggleGoal('sleep', true)}
+                      className="w-full sm:w-auto flex-1 sm:flex-initial px-4 py-2.5 rounded-xl bg-[#34D399]/15 border border-[#34D399]/30 hover:bg-[#34D399]/25 text-[#34D399] font-bold text-xs flex items-center justify-center gap-1.5 transition cursor-pointer min-h-[40px] whitespace-nowrap shrink-0 active:scale-[0.98]"
+                      title="Click to unmark"
+                    >
+                      <CheckCircle2 className="w-4 h-4" />
+                      <span>Target Hit</span>
+                    </button>
+                  ) : (
+                    <div className="flex items-center gap-2 w-full sm:w-auto shrink-0">
+                      <button
+                        onClick={() => handleToggleGoal('sleep', false)}
+                        className="flex-1 sm:flex-initial px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-xl bg-[#3157D5] hover:bg-[#2544B8] text-white font-bold text-xs flex items-center justify-center gap-1.5 transition cursor-pointer min-h-[40px] whitespace-nowrap shadow-sm active:scale-[0.98]"
+                      >
+                        <CheckCircle2 className="w-4 h-4" />
+                        <span>Mark Done</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleToggleFailed('sleep')}
+                        className={`px-3 py-2 sm:px-3.5 sm:py-2.5 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition cursor-pointer border min-h-[40px] whitespace-nowrap active:scale-[0.98] ${
+                          getGoalMissedReason('sleep')
+                            ? 'bg-rose-100 text-rose-800 border-rose-300 dark:bg-rose-500/15 dark:text-[#F87171] dark:border-rose-500/30'
+                            : 'bg-rose-50 text-rose-700 border-rose-200 hover:bg-rose-100 dark:bg-rose-500/10 dark:text-[#F87171] dark:border-rose-500/25'
+                        }`}
+                        title={getGoalMissedReason('sleep') ? "Marked as Failed — click to remove / undo" : "Missed sleep schedule? Log reason"}
+                      >
+                        {getGoalMissedReason('sleep') ? <XCircle className="w-3.5 h-3.5" /> : <AlertCircle className="w-3.5 h-3.5" />}
+                        <span>Failed</span>
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Sleep Time Inputs */}
+            <div className="mt-4 grid grid-cols-2 gap-3 bg-slate-50 dark:bg-[#1B1B20] p-3 rounded-xl border border-slate-200 dark:border-[#26262C]">
+              <div>
+                <label className="block text-[11px] font-semibold text-slate-600 dark:text-[#A1A1AA] mb-1 flex items-center gap-1">
+                  <Clock className="w-3 h-3 text-[#3157D5] dark:text-[#D98B4A]" /> Sleep Start
+                </label>
+                {isViewingOther ? (
+                  <span className="font-mono text-xs text-slate-900 dark:text-[#F4F4F5] tabular-nums font-semibold">{displayedDailyLog.sleep_start || '23:00'}</span>
+                ) : (
+                  <input
+                    type="time"
+                    value={dailyLog.sleep_start || '23:00'}
+                    onChange={(e) => handleSleepTimeChange(e.target.value, undefined)}
+                    className="w-full bg-white text-slate-900 dark:bg-[#131316] dark:text-[#F4F4F5] text-sm sm:text-xs px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-[#26262C] focus:outline-none focus:border-[#3157D5] dark:focus:border-[#D98B4A]"
+                  />
+                )}
               </div>
               <div>
-                <h4 className="font-bold text-[#F4F4F5] text-sm sm:text-base whitespace-nowrap">3. Sleep Routine</h4>
-                <p className="text-xs text-[#A1A1AA]">Target: <span className="tabular-nums font-semibold text-[#F4F4F5]">{sleepMin} – {sleepMax}</span> hrs</p>
+                <label className="block text-[11px] font-semibold text-slate-600 dark:text-[#A1A1AA] mb-1 flex items-center gap-1">
+                  <Clock className="w-3 h-3 text-[#3157D5] dark:text-[#D98B4A]" /> Wake Time
+                </label>
+                {isViewingOther ? (
+                  <span className="font-mono text-xs text-slate-900 dark:text-[#F4F4F5] tabular-nums font-semibold">{displayedDailyLog.sleep_end || '07:00'}</span>
+                ) : (
+                  <input
+                    type="time"
+                    value={dailyLog.sleep_end || '07:00'}
+                    onChange={(e) => handleSleepTimeChange(undefined, e.target.value)}
+                    className="w-full bg-white text-slate-900 dark:bg-[#131316] dark:text-[#F4F4F5] text-sm sm:text-xs px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-[#26262C] focus:outline-none focus:border-[#3157D5] dark:focus:border-[#D98B4A]"
+                  />
+                )}
               </div>
             </div>
 
-            {/* Action Buttons: Mark Done and Failed */}
-            {isViewingOther ? (
-              <span className={`w-full xl:w-auto justify-center px-3 py-2.5 rounded-xl text-xs font-bold flex items-center gap-1.5 whitespace-nowrap shrink-0 ${
-                displayedDailyLog.sleep_done
-                  ? 'bg-[#34D399]/15 text-[#34D399] border border-[#34D399]/30'
-                  : 'bg-[#1B1B20] text-[#A1A1AA] border border-[#26262C]'
-              }`}>
-                {displayedDailyLog.sleep_done ? (
-                  <CheckCircle2 className="w-4 h-4 text-[#34D399]" />
-                ) : !hasLoggedForDate ? (
-                  <Clock className="w-4 h-4 text-zinc-500" />
-                ) : (
-                  <XCircle className="w-4 h-4 text-[#71717A]" />
-                )}
-                <span>{displayedDailyLog.sleep_done ? 'Target Hit' : !hasLoggedForDate ? 'Pending' : 'Off Target'}</span>
-              </span>
-            ) : (
-              <div className="flex items-center gap-2 w-full xl:w-auto shrink-0">
-                {displayedDailyLog.sleep_done ? (
+            <div className="mt-3 flex items-center justify-between text-xs">
+              <span className="text-slate-500 dark:text-[#A1A1AA]">Calculated Sleep Duration:</span>
+              <strong className="text-slate-900 dark:text-[#F4F4F5] font-mono text-sm tabular-nums">{displayedDailyLog.sleep_duration || 0} hrs</strong>
+            </div>
+
+            {/* Logged Failure Reason Banner */}
+            {!displayedDailyLog.sleep_done && getGoalMissedReason('sleep') && (
+              <div className="mt-3 p-3 bg-amber-500/10 rounded-xl text-xs text-amber-700 dark:text-[#FBBF24] flex items-center justify-between border border-amber-500/25">
+                <div className="flex items-center gap-2 min-w-0 flex-1">
+                  <AlertCircle className="w-4 h-4 text-amber-600 dark:text-[#FBBF24] shrink-0" />
+                  <span className="break-words">
+                    <strong>Reason:</strong> [{getGoalMissedReason('sleep')?.reason_tag}]{' '}
+                    {getGoalMissedReason('sleep')?.reason_text}
+                  </span>
+                </div>
+                {!isViewingOther && (
                   <button
-                    onClick={() => handleToggleGoal('sleep', true)}
-                    className="w-full xl:w-auto flex-1 xl:flex-initial px-4 py-2.5 rounded-xl bg-[#34D399]/15 border border-[#34D399]/30 hover:bg-[#34D399]/25 text-[#34D399] font-bold text-xs flex items-center justify-center gap-1.5 transition cursor-pointer min-h-[42px] whitespace-nowrap shrink-0 active:scale-[0.98]"
-                    title="Click to unmark"
+                    type="button"
+                    onClick={() => setActiveMissedGoal('sleep')}
+                    className="text-xs px-2.5 py-1 rounded bg-white hover:bg-slate-100 text-amber-800 dark:bg-[#1B1B20] dark:hover:bg-[#26262C] dark:text-[#FBBF24] border border-amber-500/30 font-semibold cursor-pointer shrink-0 ml-3 transition"
                   >
-                    <CheckCircle2 className="w-4 h-4" />
-                    <span>Target Hit</span>
+                    Edit Reason
                   </button>
-                ) : (
-                  <div className="flex items-center gap-2 w-full sm:w-auto shrink-0">
-                    <button
-                      onClick={() => handleToggleGoal('sleep', false)}
-                      className="flex-1 sm:flex-initial px-4 py-2.5 rounded-xl bg-[#D98B4A] hover:bg-[#E69A5C] text-[#0B0B0D] font-bold text-xs flex items-center justify-center gap-1.5 transition cursor-pointer min-h-[42px] whitespace-nowrap shadow-sm active:scale-[0.98]"
-                    >
-                      <CheckCircle2 className="w-4 h-4" />
-                      <span>Mark Done</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleToggleFailed('sleep')}
-                      className={`px-3 py-2.5 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition cursor-pointer border min-h-[42px] whitespace-nowrap active:scale-[0.98] ${
-                        getGoalMissedReason('sleep')
-                          ? 'bg-rose-500/15 text-[#F87171] border-rose-500/30 hover:bg-rose-500/25'
-                          : 'bg-rose-500/10 text-[#F87171] border-rose-500/25 hover:bg-rose-500/20'
-                      }`}
-                      title={getGoalMissedReason('sleep') ? "Marked as Failed — click to remove / undo" : "Missed sleep schedule? Log reason"}
-                    >
-                      {getGoalMissedReason('sleep') ? <XCircle className="w-3.5 h-3.5" /> : <AlertCircle className="w-3.5 h-3.5" />}
-                      <span>Failed</span>
-                    </button>
-                  </div>
                 )}
               </div>
             )}
           </div>
-
-          {/* Sleep Time Inputs */}
-          <div className="mt-4 grid grid-cols-2 gap-3 bg-[#1B1B20] p-3 rounded-lg border border-[#26262C]">
-            <div>
-              <label className="block text-[11px] font-semibold text-[#A1A1AA] mb-1 flex items-center gap-1">
-                <Clock className="w-3 h-3 text-[#D98B4A]" /> Sleep Start
-              </label>
-              {isViewingOther ? (
-                <span className="font-mono text-xs text-[#F4F4F5] tabular-nums">{displayedDailyLog.sleep_start || '23:00'}</span>
-              ) : (
-                <input
-                  type="time"
-                  value={dailyLog.sleep_start || '23:00'}
-                  onChange={(e) => handleSleepTimeChange(e.target.value, undefined)}
-                  className="w-full bg-[#131316] text-[#F4F4F5] text-sm sm:text-xs px-2 py-1.5 rounded-lg border border-[#26262C] focus:outline-none focus:border-[#D98B4A]"
-                />
-              )}
-            </div>
-            <div>
-              <label className="block text-[11px] font-semibold text-[#A1A1AA] mb-1 flex items-center gap-1">
-                <Clock className="w-3 h-3 text-[#D98B4A]" /> Wake Time
-              </label>
-              {isViewingOther ? (
-                <span className="font-mono text-xs text-[#F4F4F5] tabular-nums">{displayedDailyLog.sleep_end || '07:00'}</span>
-              ) : (
-                <input
-                  type="time"
-                  value={dailyLog.sleep_end || '07:00'}
-                  onChange={(e) => handleSleepTimeChange(undefined, e.target.value)}
-                  className="w-full bg-[#131316] text-[#F4F4F5] text-sm sm:text-xs px-2 py-1.5 rounded-lg border border-[#26262C] focus:outline-none focus:border-[#D98B4A]"
-                />
-              )}
-            </div>
-          </div>
-
-          <div className="mt-3 flex items-center justify-between text-xs">
-            <span className="text-[#A1A1AA]">Calculated Sleep Duration:</span>
-            <strong className="text-[#F4F4F5] font-mono text-sm tabular-nums">{displayedDailyLog.sleep_duration || 0} hrs</strong>
-          </div>
-
-          {/* Logged Failure Reason Banner */}
-          {!displayedDailyLog.sleep_done && getGoalMissedReason('sleep') && (
-            <div className="mt-3 p-3 bg-amber-500/10 rounded-lg text-xs text-[#FBBF24] flex items-center justify-between border border-amber-500/25">
-              <div className="flex items-center gap-2 min-w-0 flex-1">
-                <AlertCircle className="w-4 h-4 text-[#FBBF24] shrink-0" />
-                <span className="break-words">
-                  <strong>Reason:</strong> [{getGoalMissedReason('sleep')?.reason_tag}]{' '}
-                  {getGoalMissedReason('sleep')?.reason_text}
-                </span>
-              </div>
-              {!isViewingOther && (
-                <button
-                  type="button"
-                  onClick={() => setActiveMissedGoal('sleep')}
-                  className="text-xs px-2.5 py-1 rounded bg-[#1B1B20] hover:bg-[#26262C] text-[#FBBF24] border border-amber-500/30 font-semibold cursor-pointer shrink-0 ml-3 transition"
-                >
-                  Edit Reason
-                </button>
-              )}
-            </div>
-          )}
         </div>
 
         {/* Goal 4: Junk Food Tracker */}
-        <div className={`relative bg-[#131316] border rounded-xl p-4 sm:p-5 transition-all overflow-hidden ${displayedDailyLog.junk_food_avoided ? 'border-[#34D399]/40 bg-[#34D399]/5' : 'border-[#26262C]'}`}>
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div className="flex items-center gap-3 min-w-0 flex-1">
-              <div className={`p-2.5 sm:p-3 rounded-lg shrink-0 ${displayedDailyLog.junk_food_avoided ? 'bg-[#34D399]/15 text-[#34D399]' : 'bg-[#1B1B20] text-[#A1A1AA]'}`}>
-                <UtensilsCrossed className="w-5 h-5 sm:w-6 sm:h-6" />
+        <div className={`relative bg-white dark:bg-[#131316] border rounded-2xl p-4 sm:p-5 pr-5 sm:pr-6 transition-all overflow-hidden flex flex-col justify-between ${
+          displayedDailyLog.junk_food_avoided ? 'border-[#34D399]/40 bg-[#34D399]/5 dark:bg-[#34D399]/5' : 'border-slate-200 dark:border-[#26262C]'
+        }`}>
+          <div>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="flex items-center gap-3 min-w-0 flex-1">
+                <div className={`p-2.5 sm:p-3 rounded-xl shrink-0 ${
+                  displayedDailyLog.junk_food_avoided ? 'bg-[#34D399]/15 text-[#34D399]' : 'bg-slate-100 text-slate-500 dark:bg-[#1B1B20] dark:text-[#A1A1AA]'
+                }`}>
+                  <UtensilsCrossed className="w-5 h-5 sm:w-6 sm:h-6" />
+                </div>
+                <div className="min-w-0">
+                  <h4 className="font-bold text-slate-900 dark:text-[#F4F4F5] text-sm sm:text-base">4. Junk Food Control</h4>
+                  <p className="text-xs text-slate-500 dark:text-[#A1A1AA] truncate">Avoid processed sweets & junk meals</p>
+                </div>
               </div>
-              <div className="min-w-0">
-                <h4 className="font-bold text-[#F4F4F5] text-sm sm:text-base whitespace-nowrap">4. Junk Food Control</h4>
-                <p className="text-xs text-[#A1A1AA] truncate">Avoid processed sweets & junk meals</p>
-              </div>
-            </div>
 
-            {/* Action Buttons: Mark Done and Failed */}
-            {isViewingOther ? (
-              <span className={`w-full sm:w-auto justify-center px-3 py-2.5 rounded-xl text-xs font-bold flex items-center gap-1.5 whitespace-nowrap shrink-0 ${
-                displayedDailyLog.junk_food_avoided
-                  ? 'bg-[#34D399]/15 text-[#34D399] border border-[#34D399]/30'
-                  : 'bg-[#1B1B20] text-[#A1A1AA] border border-[#26262C]'
-              }`}>
-                {displayedDailyLog.junk_food_avoided ? (
-                  <CheckCircle2 className="w-4 h-4 text-[#34D399]" />
-                ) : !hasLoggedForDate ? (
-                  <Clock className="w-4 h-4 text-zinc-500" />
-                ) : (
-                  <XCircle className="w-4 h-4 text-[#71717A]" />
-                )}
-                <span>{displayedDailyLog.junk_food_avoided ? 'Clean Nutrition' : !hasLoggedForDate ? 'Pending' : 'Had Junk Food'}</span>
-              </span>
-            ) : (
-              <div className="flex items-center gap-2 shrink-0">
-                {displayedDailyLog.junk_food_avoided ? (
-                  <button
-                    onClick={() => handleToggleGoal('junk_food', true)}
-                    className="px-4 py-2.5 rounded-xl bg-[#34D399]/15 border border-[#34D399]/30 hover:bg-[#34D399]/25 text-[#34D399] font-bold text-xs flex items-center justify-center gap-1.5 transition cursor-pointer min-h-[42px] whitespace-nowrap shrink-0 active:scale-[0.98]"
-                    title="Click to unmark"
-                  >
-                    <CheckCircle2 className="w-4 h-4" />
-                    <span>Avoided</span>
-                  </button>
-                ) : (
-                  <div className="flex items-center gap-2 shrink-0">
+              {/* Action Buttons: Mark Done and Failed */}
+              {isViewingOther ? (
+                <span className={`w-full sm:w-auto justify-center px-3 py-2.5 rounded-xl text-xs font-bold flex items-center gap-1.5 whitespace-nowrap shrink-0 ${
+                  displayedDailyLog.junk_food_avoided
+                    ? 'bg-[#34D399]/15 text-[#34D399] border border-[#34D399]/30'
+                    : 'bg-slate-100 text-slate-500 border border-slate-200 dark:bg-[#1B1B20] dark:text-[#A1A1AA] dark:border-[#26262C]'
+                }`}>
+                  {displayedDailyLog.junk_food_avoided ? (
+                    <CheckCircle2 className="w-4 h-4 text-[#34D399]" />
+                  ) : !hasLoggedForDate ? (
+                    <Clock className="w-4 h-4 text-slate-400 dark:text-zinc-500" />
+                  ) : (
+                    <XCircle className="w-4 h-4 text-slate-500 dark:text-[#71717A]" />
+                  )}
+                  <span>{displayedDailyLog.junk_food_avoided ? 'Clean Nutrition' : !hasLoggedForDate ? 'Pending' : 'Had Junk Food'}</span>
+                </span>
+              ) : (
+                <div className="flex items-center gap-2 shrink-0 ml-auto pr-1">
+                  {displayedDailyLog.junk_food_avoided ? (
                     <button
-                      onClick={() => handleToggleGoal('junk_food', false)}
-                      className="px-4 py-2.5 rounded-xl bg-[#D98B4A] hover:bg-[#E69A5C] text-[#0B0B0D] font-bold text-xs flex items-center justify-center gap-1.5 transition cursor-pointer min-h-[42px] whitespace-nowrap shadow-sm active:scale-[0.98]"
+                      onClick={() => handleToggleGoal('junk_food', true)}
+                      className="px-4 py-2.5 rounded-xl bg-[#34D399]/15 border border-[#34D399]/30 hover:bg-[#34D399]/25 text-[#34D399] font-bold text-xs flex items-center justify-center gap-1.5 transition cursor-pointer min-h-[40px] whitespace-nowrap shrink-0 active:scale-[0.98]"
+                      title="Click to unmark"
                     >
                       <CheckCircle2 className="w-4 h-4" />
-                      <span>Mark Done</span>
+                      <span>Avoided</span>
                     </button>
-                    <button
-                      type="button"
-                      onClick={() => handleToggleFailed('junk_food')}
-                      className={`px-3 py-2.5 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition cursor-pointer border min-h-[42px] whitespace-nowrap active:scale-[0.98] ${
-                        getGoalMissedReason('junk_food')
-                          ? 'bg-rose-500/15 text-[#F87171] border-rose-500/30 hover:bg-rose-500/25'
-                          : 'bg-rose-500/10 text-[#F87171] border-rose-500/25 hover:bg-rose-500/20'
-                      }`}
-                      title={getGoalMissedReason('junk_food') ? "Marked as Failed — click to remove / undo" : "Ate junk food / cheat meal? Log reason"}
-                    >
-                      {getGoalMissedReason('junk_food') ? <XCircle className="w-3.5 h-3.5" /> : <AlertCircle className="w-3.5 h-3.5" />}
-                      <span>Failed</span>
-                    </button>
-                  </div>
+                  ) : (
+                    <div className="flex items-center gap-2 shrink-0">
+                      <button
+                        onClick={() => handleToggleGoal('junk_food', false)}
+                        className="px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-xl bg-[#3157D5] hover:bg-[#2544B8] text-white font-bold text-xs flex items-center justify-center gap-1.5 transition cursor-pointer min-h-[40px] whitespace-nowrap shadow-sm active:scale-[0.98]"
+                      >
+                        <CheckCircle2 className="w-4 h-4" />
+                        <span>Mark Done</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleToggleFailed('junk_food')}
+                        className={`px-3 py-2 sm:px-3.5 sm:py-2.5 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition cursor-pointer border min-h-[40px] whitespace-nowrap active:scale-[0.98] ${
+                          getGoalMissedReason('junk_food')
+                            ? 'bg-rose-100 text-rose-800 border-rose-300 dark:bg-rose-500/15 dark:text-[#F87171] dark:border-rose-500/30'
+                            : 'bg-rose-50 text-rose-700 border-rose-200 hover:bg-rose-100 dark:bg-rose-500/10 dark:text-[#F87171] dark:border-rose-500/25'
+                        }`}
+                        title={getGoalMissedReason('junk_food') ? "Marked as Failed — click to remove / undo" : "Ate junk food / cheat meal? Log reason"}
+                      >
+                        {getGoalMissedReason('junk_food') ? <XCircle className="w-3.5 h-3.5" /> : <AlertCircle className="w-3.5 h-3.5" />}
+                        <span>Failed</span>
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            <div className="mt-4 pt-3 border-t border-slate-200 dark:border-[#26262C]">
+              <span className="text-xs text-slate-500 dark:text-[#A1A1AA]">
+                Goal: <strong className="text-slate-900 dark:text-[#F4F4F5]">Strict nutrition discipline</strong>
+              </span>
+            </div>
+
+            {/* Logged Failure Reason Banner */}
+            {!displayedDailyLog.junk_food_avoided && getGoalMissedReason('junk_food') && (
+              <div className="mt-3 p-3 bg-amber-500/10 rounded-xl text-xs text-amber-700 dark:text-[#FBBF24] flex items-center justify-between border border-amber-500/25">
+                <div className="flex items-center gap-2 min-w-0 flex-1">
+                  <AlertCircle className="w-4 h-4 text-amber-600 dark:text-[#FBBF24] shrink-0" />
+                  <span className="break-words">
+                    <strong>Reason:</strong> [{getGoalMissedReason('junk_food')?.reason_tag}]{' '}
+                    {getGoalMissedReason('junk_food')?.reason_text}
+                  </span>
+                </div>
+                {!isViewingOther && (
+                  <button
+                    type="button"
+                    onClick={() => setActiveMissedGoal('junk_food')}
+                    className="text-xs px-2.5 py-1 rounded bg-white hover:bg-slate-100 text-amber-800 dark:bg-[#1B1B20] dark:hover:bg-[#26262C] dark:text-[#FBBF24] border border-amber-500/30 font-semibold cursor-pointer shrink-0 ml-3 transition"
+                  >
+                    Edit Reason
+                  </button>
                 )}
               </div>
             )}
           </div>
-
-          <div className="mt-4 pt-3 border-t border-[#26262C]">
-            <span className="text-xs text-[#A1A1AA]">
-              Goal: <strong className="text-[#F4F4F5]">Strict nutrition discipline</strong>
-            </span>
-          </div>
-
-          {/* Logged Failure Reason Banner */}
-          {!displayedDailyLog.junk_food_avoided && getGoalMissedReason('junk_food') && (
-            <div className="mt-3 p-3 bg-amber-500/10 rounded-lg text-xs text-[#FBBF24] flex items-center justify-between border border-amber-500/25">
-              <div className="flex items-center gap-2 min-w-0 flex-1">
-                <AlertCircle className="w-4 h-4 text-[#FBBF24] shrink-0" />
-                <span className="break-words">
-                  <strong>Reason:</strong> [{getGoalMissedReason('junk_food')?.reason_tag}]{' '}
-                  {getGoalMissedReason('junk_food')?.reason_text}
-                </span>
-              </div>
-              {!isViewingOther && (
-                <button
-                  type="button"
-                  onClick={() => setActiveMissedGoal('junk_food')}
-                  className="text-xs px-2.5 py-1 rounded bg-[#1B1B20] hover:bg-[#26262C] text-[#FBBF24] border border-amber-500/30 font-semibold cursor-pointer shrink-0 ml-3 transition"
-                >
-                  Edit Reason
-                </button>
-              )}
-            </div>
-          )}
         </div>
 
         {/* Goal 5: Water Hydration Tracker */}
-        <div className={`relative bg-[#131316] border rounded-xl p-4 sm:p-5 transition-all overflow-hidden col-span-1 md:col-span-2 ${displayedDailyLog.water_done ? 'border-[#34D399]/40 bg-[#34D399]/5' : 'border-[#26262C]'}`}>
+        <div className={`relative bg-white dark:bg-[#131316] border rounded-2xl p-4 sm:p-5 transition-all overflow-hidden col-span-1 md:col-span-2 ${
+          displayedDailyLog.water_done ? 'border-[#34D399]/40 bg-[#34D399]/5 dark:bg-[#34D399]/5' : 'border-slate-200 dark:border-[#26262C]'
+        }`}>
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="flex items-center gap-3">
-              <div className={`p-2.5 sm:p-3 rounded-lg shrink-0 ${displayedDailyLog.water_done ? 'bg-[#34D399]/15 text-[#34D399]' : 'bg-[#1B1B20] text-[#A1A1AA]'}`}>
-                <Droplets className="w-5 h-5 sm:w-6 sm:h-6 text-[#D98B4A]" />
+              <div className={`p-2.5 sm:p-3 rounded-xl shrink-0 ${
+                displayedDailyLog.water_done ? 'bg-[#34D399]/15 text-[#34D399]' : 'bg-slate-100 text-slate-500 dark:bg-[#1B1B20] dark:text-[#A1A1AA]'
+              }`}>
+                <Droplets className="w-5 h-5 sm:w-6 sm:h-6 text-[#3157D5] dark:text-[#D98B4A]" />
               </div>
               <div>
-                <h4 className="font-bold text-[#F4F4F5] text-sm sm:text-base whitespace-nowrap">5. Water Hydration</h4>
-                <p className="text-xs text-[#A1A1AA]">Daily target: <span className="tabular-nums font-semibold text-[#F4F4F5]">{(waterTarget / 1000).toFixed(1)}</span> Liters</p>
+                <h4 className="font-bold text-slate-900 dark:text-[#F4F4F5] text-sm sm:text-base whitespace-nowrap">5. Water Hydration</h4>
+                <p className="text-xs text-slate-500 dark:text-[#A1A1AA]">Daily target: <span className="tabular-nums font-semibold text-slate-900 dark:text-[#F4F4F5]">{(waterTarget / 1000).toFixed(1)}</span> Liters</p>
               </div>
             </div>
 
@@ -1678,14 +1694,14 @@ export const DailyChecklist: React.FC<DailyChecklistProps> = ({
               <span className={`w-full xl:w-auto justify-center px-3 py-2.5 rounded-xl text-xs font-bold flex items-center gap-1.5 whitespace-nowrap shrink-0 ${
                 displayedDailyLog.water_done
                   ? 'bg-[#34D399]/15 text-[#34D399] border border-[#34D399]/30'
-                  : 'bg-[#1B1B20] text-[#A1A1AA] border border-[#26262C]'
+                  : 'bg-slate-100 text-slate-500 border border-slate-200 dark:bg-[#1B1B20] dark:text-[#A1A1AA] dark:border-[#26262C]'
               }`}>
                 {displayedDailyLog.water_done ? (
                   <CheckCircle2 className="w-4 h-4 text-[#34D399]" />
                 ) : !hasLoggedForDate ? (
-                  <Clock className="w-4 h-4 text-zinc-500" />
+                  <Clock className="w-4 h-4 text-slate-400 dark:text-zinc-500" />
                 ) : (
-                  <XCircle className="w-4 h-4 text-[#71717A]" />
+                  <XCircle className="w-4 h-4 text-slate-500 dark:text-[#71717A]" />
                 )}
                 <span className="tabular-nums">
                   {displayedDailyLog.water_done
@@ -1696,11 +1712,11 @@ export const DailyChecklist: React.FC<DailyChecklistProps> = ({
                 </span>
               </span>
             ) : (
-              <div className="flex items-center gap-2 w-full xl:w-auto shrink-0">
+              <div className="flex items-center gap-2 w-full sm:w-auto shrink-0 ml-auto pr-1">
                 {displayedDailyLog.water_done ? (
                   <button
                     onClick={() => handleToggleGoal('water', true)}
-                    className="w-full xl:w-auto flex-1 xl:flex-initial px-4 py-2.5 rounded-xl bg-[#34D399]/15 border border-[#34D399]/30 hover:bg-[#34D399]/25 text-[#34D399] font-bold text-xs flex items-center justify-center gap-1.5 transition cursor-pointer min-h-[42px] whitespace-nowrap shrink-0 active:scale-[0.98]"
+                    className="w-full sm:w-auto flex-1 sm:flex-initial px-4 py-2.5 rounded-xl bg-[#34D399]/15 border border-[#34D399]/30 hover:bg-[#34D399]/25 text-[#34D399] font-bold text-xs flex items-center justify-center gap-1.5 transition cursor-pointer min-h-[40px] whitespace-nowrap shrink-0 active:scale-[0.98]"
                     title="Click to unmark"
                   >
                     <CheckCircle2 className="w-4 h-4" />
@@ -1710,7 +1726,7 @@ export const DailyChecklist: React.FC<DailyChecklistProps> = ({
                   <div className="flex items-center gap-2 w-full sm:w-auto shrink-0">
                     <button
                       onClick={() => handleToggleGoal('water', false)}
-                      className="flex-1 sm:flex-initial px-4 py-2.5 rounded-xl bg-[#D98B4A] hover:bg-[#E69A5C] text-[#0B0B0D] font-bold text-xs flex items-center justify-center gap-1.5 transition cursor-pointer min-h-[42px] whitespace-nowrap shadow-sm active:scale-[0.98]"
+                      className="flex-1 sm:flex-initial px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-xl bg-[#3157D5] hover:bg-[#2544B8] text-white font-bold text-xs flex items-center justify-center gap-1.5 transition cursor-pointer min-h-[40px] whitespace-nowrap shadow-sm active:scale-[0.98]"
                     >
                       <CheckCircle2 className="w-4 h-4" />
                       <span>Target Hit</span>
@@ -1718,10 +1734,10 @@ export const DailyChecklist: React.FC<DailyChecklistProps> = ({
                     <button
                       type="button"
                       onClick={() => handleToggleFailed('water')}
-                      className={`px-3 py-2.5 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition cursor-pointer border min-h-[42px] whitespace-nowrap active:scale-[0.98] ${
+                      className={`px-3 py-2 sm:px-3.5 sm:py-2.5 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition cursor-pointer border min-h-[40px] whitespace-nowrap active:scale-[0.98] ${
                         getGoalMissedReason('water')
-                          ? 'bg-rose-500/15 text-[#F87171] border-rose-500/30 hover:bg-rose-500/25'
-                          : 'bg-rose-500/10 text-[#F87171] border-rose-500/25 hover:bg-rose-500/20'
+                          ? 'bg-rose-100 text-rose-800 border-rose-300 dark:bg-rose-500/15 dark:text-[#F87171] dark:border-rose-500/30'
+                          : 'bg-rose-50 text-rose-700 border-rose-200 hover:bg-rose-100 dark:bg-rose-500/10 dark:text-[#F87171] dark:border-rose-500/25'
                       }`}
                       title={getGoalMissedReason('water') ? "Marked as Failed — click to remove / undo" : "Missed hydration target? Log reason"}
                     >
@@ -1734,10 +1750,10 @@ export const DailyChecklist: React.FC<DailyChecklistProps> = ({
             )}
           </div>
 
-          <div className="mt-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-[#1B1B20] p-3 rounded-xl border border-[#26262C]">
+          <div className="mt-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-50 dark:bg-[#1B1B20] p-3 rounded-xl border border-slate-200 dark:border-[#26262C]">
             <div className="flex items-center gap-2">
-              <span className="text-xs text-[#A1A1AA]">Water Logged:</span>
-              <strong className="text-[#D98B4A] font-mono text-sm tabular-nums">{displayedDailyLog.water_intake_ml || 0} ml / {waterTarget} ml</strong>
+              <span className="text-xs text-slate-500 dark:text-[#A1A1AA]">Water Logged:</span>
+              <strong className="text-[#3157D5] dark:text-[#D98B4A] font-mono text-sm tabular-nums">{displayedDailyLog.water_intake_ml || 0} ml / {waterTarget} ml</strong>
             </div>
 
             {/* Water Action Buttons (Add, Subtract, Reset) */}
@@ -1746,14 +1762,14 @@ export const DailyChecklist: React.FC<DailyChecklistProps> = ({
                 <button
                   type="button"
                   onClick={() => handleAddWater(250)}
-                  className="min-h-[40px] py-2 px-2 text-center rounded-xl bg-[rgba(217,139,74,0.12)] hover:bg-[rgba(217,139,74,0.22)] text-[#D98B4A] text-xs font-bold border border-[#D98B4A]/30 transition cursor-pointer tabular-nums active:scale-95"
+                  className="min-h-[40px] py-2 px-2 text-center rounded-xl bg-[#EFF8FF] hover:bg-[#DCEBFE] text-[#3157D5] text-xs font-bold border border-[#3157D5]/25 dark:bg-[rgba(217,139,74,0.12)] dark:hover:bg-[rgba(217,139,74,0.22)] dark:text-[#D98B4A] dark:border-[#D98B4A]/30 transition cursor-pointer tabular-nums active:scale-95"
                 >
                   +250ml
                 </button>
                 <button
                   type="button"
                   onClick={() => handleAddWater(500)}
-                  className="min-h-[40px] py-2 px-2 text-center rounded-xl bg-[rgba(217,139,74,0.12)] hover:bg-[rgba(217,139,74,0.22)] text-[#D98B4A] text-xs font-bold border border-[#D98B4A]/30 transition cursor-pointer tabular-nums active:scale-95"
+                  className="min-h-[40px] py-2 px-2 text-center rounded-xl bg-[#EFF8FF] hover:bg-[#DCEBFE] text-[#3157D5] text-xs font-bold border border-[#3157D5]/25 dark:bg-[rgba(217,139,74,0.12)] dark:hover:bg-[rgba(217,139,74,0.22)] dark:text-[#D98B4A] dark:border-[#D98B4A]/30 transition cursor-pointer tabular-nums active:scale-95"
                 >
                   +500ml
                 </button>
@@ -1771,7 +1787,7 @@ export const DailyChecklist: React.FC<DailyChecklistProps> = ({
                     });
                   }}
                   disabled={(dailyLog.water_intake_ml || 0) === 0}
-                  className="min-h-[40px] py-2 px-2 text-center rounded-xl bg-[#131316] hover:bg-[#26262C] text-[#A1A1AA] hover:text-[#F4F4F5] text-xs font-bold border border-[#26262C] transition cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed tabular-nums active:scale-95"
+                  className="min-h-[40px] py-2 px-2 text-center rounded-xl bg-white hover:bg-slate-100 text-slate-700 hover:text-slate-900 text-xs font-bold border border-slate-200 dark:bg-[#131316] dark:hover:bg-[#26262C] dark:text-[#A1A1AA] dark:hover:text-[#F4F4F5] dark:border-[#26262C] transition cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed tabular-nums active:scale-95"
                   title="Subtract 250ml"
                 >
                   -250ml
@@ -1788,7 +1804,7 @@ export const DailyChecklist: React.FC<DailyChecklistProps> = ({
                     });
                   }}
                   disabled={(dailyLog.water_intake_ml || 0) === 0}
-                  className="min-h-[40px] py-2 px-2 text-center rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-[#F87171] border border-rose-500/25 transition cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center active:scale-95"
+                  className="min-h-[40px] py-2 px-2 text-center rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 dark:bg-rose-500/10 dark:hover:bg-rose-500/20 dark:text-[#F87171] dark:border-rose-500/25 transition cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center active:scale-95"
                   title="Reset Water Entry"
                 >
                   <Trash2 className="w-4 h-4" />

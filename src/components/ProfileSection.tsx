@@ -256,40 +256,40 @@ export const ProfileSection: React.FC<ProfileSectionProps> = ({
     <div className="space-y-6 max-w-4xl mx-auto font-sans">
       
       {/* Member Selector Bar - ALWAYS VISIBLE */}
-      <div className="bg-[#131316] border border-[#26262C] rounded-xl p-4 shadow-xl flex flex-col sm:flex-row items-center justify-between gap-3">
+      <div className="bg-white dark:bg-[#131316] border border-slate-200 dark:border-[#26262C] rounded-xl p-4 shadow-sm dark:shadow-xl flex flex-col sm:flex-row items-center justify-between gap-3">
         <div className="flex items-center gap-3">
-          <div className="p-2.5 rounded-xl bg-[#D98B4A]/20 text-[#E69A5C] border border-[#D98B4A]/30 shrink-0">
+          <div className="p-2.5 rounded-xl bg-blue-50 text-[#3157D5] border border-[#3157D5]/20 dark:bg-[#D98B4A]/20 dark:text-[#E69A5C] dark:border-[#D98B4A]/30 shrink-0">
             <Users className="w-5 h-5" />
           </div>
           <div>
-            <h3 className="text-sm font-bold text-[#F4F4F5] flex items-center gap-2">
+            <h3 className="text-sm font-bold text-slate-900 dark:text-[#F4F4F5] flex items-center gap-2">
               Member Profile Viewer
               {isViewingOther && (
-                <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-950/40 text-amber-400 border border-amber-800/60 font-semibold flex items-center gap-1">
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-blue-50 text-[#3157D5] border border-[#3157D5]/30 dark:bg-amber-950/40 dark:text-amber-400 dark:border-amber-800/60 font-semibold flex items-center gap-1">
                   <Eye className="w-3 h-3" /> Viewing {targetUser.name}
                 </span>
               )}
             </h3>
-            <p className="text-xs text-[#A1A1AA]">Inspect your own profile or view teammate profiles and transformation stats</p>
+            <p className="text-xs text-slate-500 dark:text-[#A1A1AA]">Inspect your own profile or view teammate profiles and transformation stats</p>
           </div>
         </div>
 
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 w-full sm:w-auto">
           <div className="flex items-center gap-2 w-full sm:w-auto flex-1 min-w-0">
-            <span className="text-xs font-semibold text-[#A1A1AA] shrink-0">Member:</span>
+            <span className="text-xs font-semibold text-slate-600 dark:text-[#A1A1AA] shrink-0">Member:</span>
             <select
               value={selectedUserId}
               onChange={(e) => setSelectedUserId(e.target.value)}
-              className="flex-1 sm:w-52 md:w-60 min-h-[42px] bg-[#1B1B20] text-[#F4F4F5] font-bold text-xs border border-[#26262C] rounded-xl px-3 py-2 focus:outline-none focus:border-[#D98B4A] cursor-pointer"
+              className="flex-1 sm:w-52 md:w-60 min-h-[42px] bg-slate-50 text-slate-900 dark:bg-[#1B1B20] dark:text-[#F4F4F5] font-bold text-xs border border-slate-200 dark:border-[#26262C] rounded-xl px-3 py-2 focus:outline-none focus:border-[#3157D5] dark:focus:border-[#D98B4A] cursor-pointer"
             >
               {allUsers && allUsers.length > 0 ? (
                 allUsers.map((u) => (
-                  <option key={u.id} value={u.id}>
+                  <option key={u.id} value={u.id} className="bg-white text-slate-900 dark:bg-[#1B1B20] dark:text-[#F4F4F5]">
                     {u.id === currentUser.id ? `👤 You (${u.name})` : `👥 ${u.name} (@${u.username})`}
                   </option>
                 ))
               ) : (
-                <option value={currentUser.id}>👤 You ({currentUser.name})</option>
+                <option value={currentUser.id} className="bg-white text-slate-900 dark:bg-[#1B1B20] dark:text-[#F4F4F5]">👤 You ({currentUser.name})</option>
               )}
             </select>
           </div>
@@ -301,7 +301,7 @@ export const ProfileSection: React.FC<ProfileSectionProps> = ({
                 onClick={onRefreshMembers}
                 disabled={isRefreshingMembers}
                 title="Sync members from server"
-                className="min-h-[40px] px-3 py-2 bg-[#1B1B20] hover:bg-[#26262C] text-[#D98B4A] rounded-xl border border-[#26262C] transition cursor-pointer flex items-center gap-1.5 active:scale-95 disabled:opacity-60"
+                className="min-h-[40px] px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-[#1B1B20] dark:hover:bg-[#26262C] dark:text-[#D98B4A] rounded-xl border border-slate-200 dark:border-[#26262C] transition cursor-pointer flex items-center gap-1.5 active:scale-95 disabled:opacity-60"
               >
                 <RefreshCw className={`w-3.5 h-3.5 ${isRefreshingMembers ? 'animate-spin' : ''}`} />
                 <span>Sync</span>
@@ -312,9 +312,9 @@ export const ProfileSection: React.FC<ProfileSectionProps> = ({
                 type="button"
                 onClick={() => setSelectedUserId(currentUser.id)}
                 title="Return to your personal profile"
-                className="min-h-[40px] px-3 py-2 bg-[#D98B4A]/20 hover:bg-[#D98B4A]/30 text-[#E69A5C] text-xs font-bold rounded-xl border border-[#D98B4A]/40 transition shrink-0 cursor-pointer flex items-center gap-1.5 active:scale-95 shadow-sm"
+                className="min-h-[40px] px-3 py-2 bg-blue-50 hover:bg-blue-100 text-[#3157D5] dark:bg-[#D98B4A]/20 dark:hover:bg-[#D98B4A]/30 dark:text-[#E69A5C] text-xs font-bold rounded-xl border border-[#3157D5]/30 dark:border-[#D98B4A]/40 transition shrink-0 cursor-pointer flex items-center gap-1.5 active:scale-95 shadow-sm"
               >
-                <RotateCcw className="w-3.5 h-3.5 text-[#D98B4A]" />
+                <RotateCcw className="w-3.5 h-3.5 text-[#3157D5] dark:text-[#D98B4A]" />
                 <span>Reset to Me</span>
               </button>
             )}
@@ -323,46 +323,46 @@ export const ProfileSection: React.FC<ProfileSectionProps> = ({
       </div>
 
       {/* Profile Header */}
-      <div className="bg-[#131316] border border-[#26262C] rounded-xl p-4 sm:p-6 shadow-xl flex flex-col md:flex-row items-center gap-5 sm:gap-6">
-        <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl bg-gradient-to-tr from-[#D98B4A] to-[#B45F1E] flex items-center justify-center text-2xl sm:text-3xl font-black text-[#F4F4F5] shadow-lg shadow-[#D98B4A]/20 shrink-0">
+      <div className="bg-white dark:bg-[#131316] border border-slate-200 dark:border-[#26262C] rounded-xl p-4 sm:p-6 shadow-sm dark:shadow-xl flex flex-col md:flex-row items-center gap-5 sm:gap-6">
+        <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl bg-gradient-to-tr from-[#3157D5] to-[#2544B8] dark:from-[#D98B4A] dark:to-[#B45F1E] flex items-center justify-center text-2xl sm:text-3xl font-black text-white shadow-lg shadow-[#3157D5]/20 dark:shadow-[#D98B4A]/20 shrink-0">
           {targetUser.name.charAt(0)}
         </div>
 
         <div className="text-center md:text-left flex-1 min-w-0">
-          <h2 className="text-xl sm:text-2xl font-black text-[#F4F4F5] flex flex-wrap items-center justify-center md:justify-start gap-2">
+          <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-[#F4F4F5] flex flex-wrap items-center justify-center md:justify-start gap-2">
             <span>{targetUser.name}</span>
             {targetUser.is_private && (
-              <span className="text-[10px] sm:text-xs px-2.5 py-0.5 rounded-full bg-[#D98B4A]/20 text-[#E69A5C] font-bold border border-[#D98B4A]/30 flex items-center gap-1">
+              <span className="text-[10px] sm:text-xs px-2.5 py-0.5 rounded-full bg-[#EFF8FF] text-[#3157D5] border border-[#3157D5]/30 dark:bg-[#D98B4A]/20 dark:text-[#E69A5C] dark:border-[#D98B4A]/30 font-bold flex items-center gap-1">
                 <Lock className="w-3 h-3" /> Private Profile
               </span>
             )}
             {targetUser.role === 'admin' && (
-              <span className="text-[10px] sm:text-xs px-2.5 py-0.5 rounded-full bg-amber-950/40 text-amber-400 font-bold border border-amber-800/60">
+              <span className="text-[10px] sm:text-xs px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800 dark:bg-amber-950/40 dark:text-amber-400 font-bold border border-amber-300 dark:border-amber-800/60">
                 Admin
               </span>
             )}
           </h2>
-          <p className="text-xs text-[#A1A1AA] mt-1">
+          <p className="text-xs text-slate-500 dark:text-[#A1A1AA] mt-1">
             @{targetUser.username} • Member since {targetUser.created_at || '2026'}
           </p>
 
           <div className="flex flex-wrap items-center justify-center md:justify-start gap-2 sm:gap-3 mt-3 text-xs">
-            <span className="bg-[#1B1B20] px-2.5 py-1 rounded-xl border border-[#26262C] text-[#A1A1AA]">
-              Height: <strong className="text-[#F4F4F5]">{displayHeight} cm</strong>
+            <span className="bg-slate-100 dark:bg-[#1B1B20] px-2.5 py-1 rounded-xl border border-slate-200 dark:border-[#26262C] text-slate-600 dark:text-[#A1A1AA]">
+              Height: <strong className="text-slate-900 dark:text-[#F4F4F5]">{displayHeight} cm</strong>
             </span>
-            <span className="bg-[#1B1B20] px-2.5 py-1 rounded-xl border border-[#26262C] text-[#A1A1AA]">
-              Current Weight: <strong className="text-[#E69A5C]">{displayWeight} kg</strong>
+            <span className="bg-slate-100 dark:bg-[#1B1B20] px-2.5 py-1 rounded-xl border border-slate-200 dark:border-[#26262C] text-slate-600 dark:text-[#A1A1AA]">
+              Current Weight: <strong className="text-[#3157D5] dark:text-[#E69A5C]">{displayWeight} kg</strong>
             </span>
-            <span className="bg-[#1B1B20] px-2.5 py-1 rounded-xl border border-[#26262C] text-[#A1A1AA]">
-              Age: <strong className="text-[#F4F4F5]">{displayAge} yrs</strong>
+            <span className="bg-slate-100 dark:bg-[#1B1B20] px-2.5 py-1 rounded-xl border border-slate-200 dark:border-[#26262C] text-slate-600 dark:text-[#A1A1AA]">
+              Age: <strong className="text-slate-900 dark:text-[#F4F4F5]">{displayAge} yrs</strong>
             </span>
           </div>
         </div>
 
         {/* Live Updating BMI Gauge Card */}
-        <div className="w-full md:w-auto bg-[#1B1B20] border border-[#26262C] rounded-xl p-4 sm:p-5 text-center min-w-[170px] shadow-inner">
-          <span className="text-[10px] sm:text-[11px] font-semibold text-[#A1A1AA] uppercase tracking-wider block">Live BMI Gauge</span>
-          <div className="text-2xl sm:text-3xl font-black text-[#F4F4F5] mt-0.5">{bmi}</div>
+        <div className="w-full md:w-auto bg-slate-50 dark:bg-[#1B1B20] border border-slate-200 dark:border-[#26262C] rounded-xl p-4 sm:p-5 text-center min-w-[170px] shadow-sm">
+          <span className="text-[10px] sm:text-[11px] font-semibold text-slate-500 dark:text-[#A1A1AA] uppercase tracking-wider block">Live BMI Gauge</span>
+          <div className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-[#F4F4F5] mt-0.5">{bmi}</div>
           <span className={`text-xs mt-1 inline-block ${color}`}>
             {category}
           </span>
@@ -372,66 +372,66 @@ export const ProfileSection: React.FC<ProfileSectionProps> = ({
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
         
         {/* Main Content Area */}
-        <div className="md:col-span-2 bg-[#131316] border border-[#26262C] rounded-xl p-4 sm:p-6 shadow-xl space-y-6">
+        <div className="md:col-span-2 bg-white dark:bg-[#131316] border border-slate-200 dark:border-[#26262C] rounded-xl p-4 sm:p-6 shadow-sm dark:shadow-xl space-y-6">
           {isViewingOther ? (
             /* Teammate Profile Overview (Read-Only) */
             <div className="space-y-6">
               <div>
-                <h3 className="text-lg font-black text-[#F4F4F5] mb-3 flex items-center gap-2">
-                  <UserIcon className="w-5 h-5 text-[#D98B4A]" />
+                <h3 className="text-lg font-black text-slate-900 dark:text-[#F4F4F5] mb-3 flex items-center gap-2">
+                  <UserIcon className="w-5 h-5 text-[#3157D5] dark:text-[#D98B4A]" />
                   {targetUser.name}'s Fitness Profile
                 </h3>
-                <p className="text-xs text-[#A1A1AA] mb-4">
+                <p className="text-xs text-slate-500 dark:text-[#A1A1AA] mb-4">
                   Account details and metrics shared across the challenge group.
                 </p>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="p-4 bg-[#1B1B20] rounded-xl border border-[#26262C]">
-                    <span className="text-xs text-[#A1A1AA] block mb-1">Age & Date of Birth</span>
-                    <strong className="text-sm text-[#F4F4F5]">
+                  <div className="p-4 bg-slate-50 dark:bg-[#1B1B20] rounded-xl border border-slate-200 dark:border-[#26262C]">
+                    <span className="text-xs text-slate-500 dark:text-[#A1A1AA] block mb-1">Age & Date of Birth</span>
+                    <strong className="text-sm text-slate-900 dark:text-[#F4F4F5]">
                       {targetUser.age ? `${targetUser.age} years old` : 'Not specified'}
                       {targetUser.birthday && !targetUser.is_private ? ` (DOB: ${targetUser.birthday})` : ''}
                     </strong>
                   </div>
 
-                  <div className="p-4 bg-[#1B1B20] rounded-xl border border-[#26262C]">
-                    <span className="text-xs text-[#A1A1AA] block mb-1">Gender</span>
-                    <strong className="text-sm text-[#F4F4F5] capitalize">{targetUser.gender || 'Not specified'}</strong>
+                  <div className="p-4 bg-slate-50 dark:bg-[#1B1B20] rounded-xl border border-slate-200 dark:border-[#26262C]">
+                    <span className="text-xs text-slate-500 dark:text-[#A1A1AA] block mb-1">Gender</span>
+                    <strong className="text-sm text-slate-900 dark:text-[#F4F4F5] capitalize">{targetUser.gender || 'Not specified'}</strong>
                   </div>
 
-                  <div className="p-4 bg-[#1B1B20] rounded-xl border border-[#26262C]">
-                    <span className="text-xs text-[#A1A1AA] block mb-1">Target Category</span>
-                    <strong className="text-sm text-[#E69A5C]">{category} (BMI: {bmi})</strong>
+                  <div className="p-4 bg-slate-50 dark:bg-[#1B1B20] rounded-xl border border-slate-200 dark:border-[#26262C]">
+                    <span className="text-xs text-slate-500 dark:text-[#A1A1AA] block mb-1">Target Category</span>
+                    <strong className="text-sm text-[#3157D5] dark:text-[#E69A5C]">{category} (BMI: {bmi})</strong>
                   </div>
 
-                  <div className="p-4 bg-[#1B1B20] rounded-xl border border-[#26262C]">
-                    <span className="text-xs text-[#A1A1AA] block mb-1">Privacy Level</span>
-                    <strong className="text-sm text-[#F4F4F5]">{targetUser.is_private ? 'Private Account' : 'Public Profile'}</strong>
+                  <div className="p-4 bg-slate-50 dark:bg-[#1B1B20] rounded-xl border border-slate-200 dark:border-[#26262C]">
+                    <span className="text-xs text-slate-500 dark:text-[#A1A1AA] block mb-1">Privacy Level</span>
+                    <strong className="text-sm text-slate-900 dark:text-[#F4F4F5]">{targetUser.is_private ? 'Private Account' : 'Public Profile'}</strong>
                   </div>
                 </div>
               </div>
 
               {/* Teammate Body Shape Progress Photo */}
-              <div className="pt-4 border-t border-[#26262C]">
-                <h4 className="text-base font-bold text-[#F4F4F5] mb-3 flex items-center gap-2">
-                  <Camera className="w-4 h-4 text-[#D98B4A]" />
+              <div className="pt-4 border-t border-slate-200 dark:border-[#26262C]">
+                <h4 className="text-base font-bold text-slate-900 dark:text-[#F4F4F5] mb-3 flex items-center gap-2">
+                  <Camera className="w-4 h-4 text-[#3157D5] dark:text-[#D98B4A]" />
                   Transformation Photo
                 </h4>
-                <div className="bg-[#1B1B20] p-4 rounded-xl border border-[#26262C] flex items-center gap-4">
+                <div className="bg-slate-50 dark:bg-[#1B1B20] p-4 rounded-xl border border-slate-200 dark:border-[#26262C] flex items-center gap-4">
                   {targetUser.body_shape_photo ? (
                     <img
                       src={targetUser.body_shape_photo}
                       alt={`${targetUser.name}'s progress`}
-                      className="w-24 h-32 object-cover rounded-xl border border-[#26262C] shadow"
+                      className="w-24 h-32 object-cover rounded-xl border border-slate-200 dark:border-[#26262C] shadow"
                     />
                   ) : (
-                    <div className="w-24 h-32 rounded-xl bg-[#131316] border border-dashed border-[#26262C] flex flex-col items-center justify-center text-[#A1A1AA] gap-1 shrink-0">
-                      <ImageIcon className="w-6 h-6 text-[#D98B4A]" />
+                    <div className="w-24 h-32 rounded-xl bg-slate-100 dark:bg-[#131316] border border-dashed border-slate-300 dark:border-[#26262C] flex flex-col items-center justify-center text-slate-400 dark:text-[#A1A1AA] gap-1 shrink-0">
+                      <ImageIcon className="w-6 h-6 text-[#3157D5] dark:text-[#D98B4A]" />
                       <span className="text-[10px]">No Photo</span>
                     </div>
                   )}
-                  <div className="text-xs text-[#A1A1AA]">
-                    <p className="font-semibold text-[#F4F4F5] mb-1">
+                  <div className="text-xs text-slate-600 dark:text-[#A1A1AA]">
+                    <p className="font-semibold text-slate-900 dark:text-[#F4F4F5] mb-1">
                       {targetUser.body_shape_photo ? `${targetUser.name} has shared a transformation photo.` : `${targetUser.name} hasn't uploaded a progress photo yet.`}
                     </p>
                     <p>Encourage teammates to update their transformation pictures regularly!</p>
@@ -442,20 +442,20 @@ export const ProfileSection: React.FC<ProfileSectionProps> = ({
           ) : (
             /* Current User Edit Form */
             <div>
-              <h3 className="text-lg font-black text-[#F4F4F5] mb-4 flex items-center gap-2">
-                <UserIcon className="w-5 h-5 text-[#D98B4A]" />
+              <h3 className="text-lg font-black text-slate-900 dark:text-[#F4F4F5] mb-4 flex items-center gap-2">
+                <UserIcon className="w-5 h-5 text-[#3157D5] dark:text-[#D98B4A]" />
                 Personal & Health Profile
               </h3>
 
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                  <label className="block text-xs font-semibold text-[#A1A1AA] mb-1">Display Name</label>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-[#A1A1AA] mb-1">Display Name</label>
                   <input
                     type="text"
                     required
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    className="w-full max-w-full min-w-0 box-border block px-3.5 py-2.5 bg-[#1B1B20] border border-[#26262C] rounded-xl text-[#F4F4F5] text-sm focus:outline-none focus:border-[#D98B4A] transition"
+                    className="w-full max-w-full min-w-0 box-border block px-3.5 py-2.5 bg-white dark:bg-[#1B1B20] border border-slate-200 dark:border-[#26262C] rounded-xl text-slate-900 dark:text-[#F4F4F5] text-sm focus:outline-none focus:border-[#3157D5] dark:focus:border-[#D98B4A] transition"
                   />
                 </div>
 
@@ -633,32 +633,32 @@ export const ProfileSection: React.FC<ProfileSectionProps> = ({
               </form>
 
               {/* Body Shape Progress Photo Section */}
-              <div className="pt-4 border-t border-[#26262C] mt-6">
-                <h4 className="text-base font-bold text-[#F4F4F5] mb-3 flex items-center gap-2">
-                  <Camera className="w-4 h-4 text-[#D98B4A]" />
+              <div className="pt-4 border-t border-slate-200 dark:border-[#26262C] mt-6">
+                <h4 className="text-base font-bold text-slate-900 dark:text-[#F4F4F5] mb-3 flex items-center gap-2">
+                  <Camera className="w-4 h-4 text-[#3157D5] dark:text-[#D98B4A]" />
                   Body Shape Progress Photo
                 </h4>
-                <p className="text-xs text-[#A1A1AA] mb-3">
+                <p className="text-xs text-slate-500 dark:text-[#A1A1AA] mb-3">
                   Upload a progress photo to track your physical transformation over time.
                 </p>
 
-                <div className="flex flex-col sm:flex-row items-center gap-4 bg-[#1B1B20] p-4 rounded-xl border border-[#26262C]">
+                <div className="flex flex-col sm:flex-row items-center gap-4 bg-slate-50 dark:bg-[#1B1B20] p-4 rounded-xl border border-slate-200 dark:border-[#26262C]">
                   {bodyShapePhoto ? (
                     <img
                       src={bodyShapePhoto}
                       alt="Body Shape Progress"
-                      className="w-24 h-32 object-cover rounded-xl border border-[#26262C] shadow"
+                      className="w-24 h-32 object-cover rounded-xl border border-slate-200 dark:border-[#26262C] shadow"
                     />
                   ) : (
-                    <div className="w-24 h-32 rounded-xl bg-[#131316] border border-dashed border-[#26262C] flex flex-col items-center justify-center text-[#A1A1AA] gap-1 shrink-0">
-                      <ImageIcon className="w-6 h-6 text-[#D98B4A]" />
+                    <div className="w-24 h-32 rounded-xl bg-slate-100 dark:bg-[#131316] border border-dashed border-slate-300 dark:border-[#26262C] flex flex-col items-center justify-center text-slate-400 dark:text-[#A1A1AA] gap-1 shrink-0">
+                      <ImageIcon className="w-6 h-6 text-[#3157D5] dark:text-[#D98B4A]" />
                       <span className="text-[10px]">No Photo</span>
                     </div>
                   )}
 
                   <div className="space-y-2 flex-1 w-full text-center sm:text-left">
-                    <label className="inline-flex items-center gap-2 px-4 py-2 bg-[#1B1B20] hover:bg-[#26262C] text-[#F4F4F5] border border-[#26262C] rounded-xl text-xs font-bold transition cursor-pointer">
-                      <Camera className="w-4 h-4 text-[#D98B4A]" />
+                    <label className="inline-flex items-center gap-2 px-4 py-2 bg-white hover:bg-slate-100 text-slate-800 border border-slate-200 dark:bg-[#1B1B20] dark:hover:bg-[#26262C] dark:text-[#F4F4F5] dark:border-[#26262C] rounded-xl text-xs font-bold transition cursor-pointer">
+                      <Camera className="w-4 h-4 text-[#3157D5] dark:text-[#D98B4A]" />
                       <span>Upload New Progress Image</span>
                       <input
                         type="file"
@@ -685,26 +685,26 @@ export const ProfileSection: React.FC<ProfileSectionProps> = ({
 
         {/* Timestamped Weight History Log & Delete Account Card */}
         <div className="space-y-4 sm:space-y-6 flex flex-col min-w-0">
-          <div className="bg-[#131316] border border-[#26262C] rounded-xl p-4 sm:p-6 shadow-xl flex flex-col min-w-0">
-            <h3 className="text-sm sm:text-base font-bold text-[#F4F4F5] mb-3 flex items-center gap-2">
-              <Scale className="w-4 h-4 text-[#D98B4A]" />
+          <div className="bg-white dark:bg-[#131316] border border-slate-200 dark:border-[#26262C] rounded-xl p-4 sm:p-6 shadow-sm dark:shadow-xl flex flex-col min-w-0">
+            <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-[#F4F4F5] mb-3 flex items-center gap-2">
+              <Scale className="w-4 h-4 text-[#3157D5] dark:text-[#D98B4A]" />
               {isViewingOther ? `${targetUser.name}'s Weight Log` : 'Weight History Log'}
             </h3>
 
             <div className="flex-1 overflow-y-auto max-h-[260px] space-y-2 pr-1">
               {userWeightLogs.length === 0 ? (
-                <p className="text-xs text-[#A1A1AA] italic py-2">No weight entries logged yet.</p>
+                <p className="text-xs text-slate-500 dark:text-[#A1A1AA] italic py-2">No weight entries logged yet.</p>
               ) : (
                 userWeightLogs.map((log) => (
                   <div
                     key={log.id}
-                    className="flex items-center justify-between p-2.5 bg-[#1B1B20] rounded-xl border border-[#26262C] text-xs"
+                    className="flex items-center justify-between p-2.5 bg-slate-50 dark:bg-[#1B1B20] rounded-xl border border-slate-200 dark:border-[#26262C] text-xs"
                   >
-                    <div className="flex items-center gap-2 text-[#A1A1AA]">
-                      <Calendar className="w-3.5 h-3.5 text-[#B45F1E]" />
+                    <div className="flex items-center gap-2 text-slate-600 dark:text-[#A1A1AA]">
+                      <Calendar className="w-3.5 h-3.5 text-[#3157D5] dark:text-[#B45F1E]" />
                       <span>{log.date}</span>
                     </div>
-                    <strong className="text-[#F4F4F5] font-mono text-sm">{log.weight} kg</strong>
+                    <strong className="text-slate-900 dark:text-[#F4F4F5] font-mono text-sm">{log.weight} kg</strong>
                   </div>
                 ))
               )}
@@ -713,32 +713,32 @@ export const ProfileSection: React.FC<ProfileSectionProps> = ({
 
           {/* Membership & Billing Card (Only shown when viewing own profile) */}
           {!isViewingOther && (
-            <div className="bg-[#131316] border border-[#26262C] rounded-xl p-4 sm:p-5 shadow-xl space-y-4 min-w-0 overflow-hidden">
-              <div className="flex flex-col gap-3 pb-3 border-b border-[#26262C]">
+            <div className="bg-white dark:bg-[#131316] border border-slate-200 dark:border-[#26262C] rounded-xl p-4 sm:p-5 shadow-sm dark:shadow-xl space-y-4 min-w-0 overflow-hidden">
+              <div className="flex flex-col gap-3 pb-3 border-b border-slate-200 dark:border-[#26262C]">
                 <div className="flex items-start gap-3 min-w-0">
                   <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
                     planTier === 'pro'
-                      ? 'bg-amber-500/15 border border-amber-500/30 text-[#FBBF24]'
+                      ? 'bg-amber-500/15 border border-amber-500/30 text-amber-600 dark:text-[#FBBF24]'
                       : planTier === 'base'
-                      ? 'bg-[#D98B4A]/15 border border-[#D98B4A]/30 text-[#D98B4A]'
-                      : 'bg-zinc-800 border border-zinc-700 text-zinc-400'
+                      ? 'bg-blue-50 text-[#3157D5] border border-[#3157D5]/20 dark:bg-[#D98B4A]/15 dark:border-[#D98B4A]/30 dark:text-[#D98B4A]'
+                      : 'bg-slate-100 border border-slate-200 text-slate-500 dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-400'
                   }`}>
                     <Crown className="w-5 h-5" />
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
-                      <h3 className="text-base font-bold text-[#F4F4F5]">Membership & Billing</h3>
+                      <h3 className="text-base font-bold text-slate-900 dark:text-[#F4F4F5]">Membership & Billing</h3>
                       <span className={`text-[10px] px-2.5 py-0.5 rounded-full font-black uppercase tracking-wider ${
                         planTier === 'pro'
-                          ? 'bg-gradient-to-r from-[#D98B4A] to-[#F59E0B] text-[#0B0B0D]'
+                          ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-white dark:from-[#D98B4A] dark:to-[#F59E0B] dark:text-[#0B0B0D]'
                           : planTier === 'base'
-                          ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30'
-                          : 'bg-zinc-800 text-zinc-400 border border-zinc-700'
+                          ? 'bg-emerald-50 text-emerald-700 border border-emerald-300 dark:bg-emerald-500/15 dark:text-emerald-400 dark:border-emerald-500/30'
+                          : 'bg-slate-100 text-slate-600 border border-slate-200 dark:bg-zinc-800 dark:text-zinc-400 dark:border-zinc-700'
                       }`}>
                         {planTier === 'pro' ? '★ PRO MEMBER' : planTier === 'base' ? 'BASE (FREE)' : 'FREE'}
                       </span>
                     </div>
-                    <p className="text-xs text-[#A1A1AA] mt-1 break-words">
+                    <p className="text-xs text-slate-600 dark:text-[#A1A1AA] mt-1 break-words">
                       {planTier === 'pro' 
                         ? 'Unlimited group members, head-to-head battles, rankings & shared goals.'
                         : planTier === 'base'
@@ -755,8 +755,8 @@ export const ProfileSection: React.FC<ProfileSectionProps> = ({
                       onClick={() => onOpenUpgradeModal(planTier === 'base')}
                       className={`w-full py-2.5 px-4 rounded-xl text-xs font-bold transition flex items-center justify-center gap-2 cursor-pointer shadow-md active:scale-95 ${
                         planTier === 'pro'
-                          ? 'bg-[#1B1B20] hover:bg-[#26262C] text-[#F4F4F5] border border-[#3F3F46]'
-                          : 'bg-gradient-to-r from-[#D98B4A] to-[#B45F1E] hover:from-[#B45F1E] hover:to-[#8E4410] text-[#0B0B0D] font-extrabold shadow-[#D98B4A]/20'
+                          ? 'bg-slate-100 hover:bg-slate-200 text-slate-900 border border-slate-200 dark:bg-[#1B1B20] dark:hover:bg-[#26262C] dark:text-[#F4F4F5] dark:border-[#3F3F46]'
+                          : 'bg-gradient-to-r from-[#3157D5] to-[#2544B8] hover:from-[#2544B8] hover:to-[#172554] text-white dark:from-[#D98B4A] dark:to-[#B45F1E] dark:hover:from-[#B45F1E] dark:hover:to-[#8E4410] dark:text-[#0B0B0D] font-extrabold shadow-blue-500/20'
                       }`}
                     >
                       <Crown className="w-4 h-4" />
@@ -767,10 +767,10 @@ export const ProfileSection: React.FC<ProfileSectionProps> = ({
               </div>
 
               {activeSubscription && (
-                <div className="flex flex-wrap items-center justify-between text-xs text-[#A1A1AA] pt-1">
-                  <span>Current Plan: <strong className="text-[#F4F4F5]">{activeSubscription.plan?.name || (planTier === 'pro' ? 'PULSE Pro' : 'PULSE Base (Free)')}</strong></span>
+                <div className="flex flex-wrap items-center justify-between text-xs text-slate-600 dark:text-[#A1A1AA] pt-1">
+                  <span>Current Plan: <strong className="text-slate-900 dark:text-[#F4F4F5]">{activeSubscription.plan?.name || (planTier === 'pro' ? 'PULSE Pro' : 'PULSE Base (Free)')}</strong></span>
                   {activeSubscription.expires_at && (
-                    <span>Valid until: <strong className="text-[#F4F4F5] font-mono">{new Date(activeSubscription.expires_at).toLocaleDateString()}</strong></span>
+                    <span>Valid until: <strong className="text-slate-900 dark:text-[#F4F4F5] font-mono">{new Date(activeSubscription.expires_at).toLocaleDateString()}</strong></span>
                   )}
                 </div>
               )}
@@ -779,23 +779,23 @@ export const ProfileSection: React.FC<ProfileSectionProps> = ({
 
           {/* Group Settings Panel (Only shown when viewing own profile) */}
           {!isViewingOther && (
-            <div className="bg-[#131316] border border-[#26262C] rounded-xl p-4 sm:p-5 shadow-xl space-y-4 min-w-0 overflow-hidden">
+            <div className="bg-white dark:bg-[#131316] border border-slate-200 dark:border-[#26262C] rounded-xl p-4 sm:p-5 shadow-sm dark:shadow-xl space-y-4 min-w-0 overflow-hidden">
               
               {/* Pro Plan Exclusive Notice for Base Users */}
               {planTier === 'base' && (
                 <div className="p-4 bg-amber-500/10 border border-amber-500/25 rounded-xl space-y-2">
-                  <div className="flex items-center gap-2 text-xs font-bold text-[#FBBF24]">
-                    <Lock className="w-4 h-4 text-[#FBBF24]" />
+                  <div className="flex items-center gap-2 text-xs font-bold text-amber-700 dark:text-[#FBBF24]">
+                    <Lock className="w-4 h-4 text-amber-600 dark:text-[#FBBF24]" />
                     <span>Group Formation & Invites are exclusive to PULSE Pro</span>
                   </div>
-                  <p className="text-xs text-[#A1A1AA] leading-relaxed">
+                  <p className="text-xs text-slate-600 dark:text-[#A1A1AA] leading-relaxed">
                     You are on the Base Solo plan (Free). Upgrade to PULSE Pro to form groups, invite teammates of any group size, and unlock head-to-head battles and team leaderboards. (Note: all joining teammates must also have an active Pro plan).
                   </p>
                   {onOpenUpgradeModal && (
                     <button
                       type="button"
                       onClick={() => onOpenUpgradeModal(true)}
-                      className="mt-1 px-3.5 py-1.5 bg-[#D98B4A] hover:bg-[#B45F1E] text-[#0B0B0D] font-extrabold rounded-lg text-xs transition cursor-pointer flex items-center gap-1.5"
+                      className="mt-1 px-3.5 py-1.5 bg-[#3157D5] hover:bg-[#2544B8] text-white dark:bg-[#D98B4A] dark:hover:bg-[#B45F1E] dark:text-[#0B0B0D] font-extrabold rounded-lg text-xs transition cursor-pointer flex items-center gap-1.5"
                     >
                       <Crown className="w-3.5 h-3.5" />
                       <span>Upgrade to Pro (from ₹99/mo)</span>
@@ -804,26 +804,26 @@ export const ProfileSection: React.FC<ProfileSectionProps> = ({
                 </div>
               )}
 
-              <div className="flex flex-col gap-3 pb-3 border-b border-[#26262C]">
+              <div className="flex flex-col gap-3 pb-3 border-b border-slate-200 dark:border-[#26262C]">
                 <div className="flex items-start gap-3 min-w-0">
-                  <div className="w-10 h-10 rounded-xl bg-[#D98B4A]/15 border border-[#D98B4A]/30 flex items-center justify-center text-[#D98B4A] shrink-0">
+                  <div className="w-10 h-10 rounded-xl bg-blue-50 text-[#3157D5] border border-[#3157D5]/20 dark:bg-[#D98B4A]/15 dark:border-[#D98B4A]/30 dark:text-[#D98B4A] flex items-center justify-center shrink-0">
                     <Users className="w-5 h-5" />
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
-                      <h3 className="text-base font-bold text-[#F4F4F5] truncate">
+                      <h3 className="text-base font-bold text-slate-900 dark:text-[#F4F4F5] truncate">
                         {currentGroup?.name || 'My Group'}
                       </h3>
                       <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase ${
                         myRole === 'owner' 
-                          ? 'bg-[#D98B4A]/20 text-[#D98B4A] border border-[#D98B4A]/30'
-                          : 'bg-zinc-800 text-zinc-300 border border-zinc-700'
+                          ? 'bg-[#EFF8FF] text-[#3157D5] border border-[#3157D5]/30 dark:bg-[#D98B4A]/20 dark:text-[#D98B4A] dark:border-[#D98B4A]/30'
+                          : 'bg-slate-100 text-slate-600 border border-slate-200 dark:bg-zinc-800 dark:text-zinc-300 dark:border-zinc-700'
                       }`}>
                         {myRole === 'owner' ? 'Group Owner' : 'Member'}
                       </span>
                     </div>
-                    <p className="text-xs text-[#A1A1AA] mt-0.5">
-                      {currentGroup?.members?.length || 1} {(currentGroup?.members?.length || 1) === 1 ? 'member' : 'members'} · Daily Target: <span className="text-[#F4F4F5] font-semibold tabular-nums">{(currentGroup?.step_target || 10000).toLocaleString()}</span> steps
+                    <p className="text-xs text-slate-600 dark:text-[#A1A1AA] mt-0.5">
+                      {currentGroup?.members?.length || 1} {(currentGroup?.members?.length || 1) === 1 ? 'member' : 'members'} · Daily Target: <span className="text-slate-900 dark:text-[#F4F4F5] font-semibold tabular-nums">{(currentGroup?.step_target || 10000).toLocaleString()}</span> steps
                     </p>
                   </div>
                 </div>
@@ -833,7 +833,7 @@ export const ProfileSection: React.FC<ProfileSectionProps> = ({
                     <button
                       type="button"
                       onClick={() => setIsEditingGroup(prev => !prev)}
-                      className="flex-1 min-w-[120px] px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-200 dark:bg-[#26262C] dark:hover:bg-[#32323A] dark:text-[#F4F4F5] dark:border-[#3A3A44] rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition cursor-pointer active:scale-95"
+                      className="flex-1 min-w-[120px] px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-900 border border-slate-200 dark:bg-[#26262C] dark:hover:bg-[#32323A] dark:text-[#F4F4F5] dark:border-[#3A3A44] rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition cursor-pointer active:scale-95"
                     >
                       <Edit2 className="w-3.5 h-3.5 text-[#3157D5] dark:text-[#D98B4A]" />
                       <span>{isEditingGroup ? 'Close Edit' : 'Edit Group & Target'}</span>
@@ -849,12 +849,12 @@ export const ProfileSection: React.FC<ProfileSectionProps> = ({
                           onOpenInviteModal();
                         }
                       }}
-                      className="flex-1 min-w-[120px] px-3 py-2 bg-[#D98B4A]/15 hover:bg-[#D98B4A]/25 text-[#D98B4A] border border-[#D98B4A]/30 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition cursor-pointer"
+                      className="flex-1 min-w-[120px] px-3 py-2 bg-[#EFF8FF] hover:bg-[#DCEBFE] text-[#3157D5] border border-[#3157D5]/25 dark:bg-[#D98B4A]/15 dark:hover:bg-[#D98B4A]/25 dark:text-[#D98B4A] dark:border-[#D98B4A]/30 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition cursor-pointer"
                     >
                       <UserPlus className="w-3.5 h-3.5" />
                       <span>Invite Friends</span>
                       {planTier !== 'pro' && (
-                        <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-[#D98B4A]/20 text-[#D98B4A] font-bold border border-[#D98B4A]/30 flex items-center gap-0.5 ml-1">
+                        <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-[#3157D5]/15 text-[#3157D5] dark:bg-[#D98B4A]/20 dark:text-[#D98B4A] font-bold border border-[#3157D5]/25 dark:border-[#D98B4A]/30 flex items-center gap-0.5 ml-1">
                           <Lock className="w-2.5 h-2.5" /> PRO
                         </span>
                       )}
@@ -881,15 +881,15 @@ export const ProfileSection: React.FC<ProfileSectionProps> = ({
                       setTimeout(() => setGroupSaveSuccess(''), 4000);
                     }
                   }}
-                  className="bg-[#1B1B20] border border-[#D98B4A]/30 rounded-xl p-4 space-y-3.5"
+                  className="bg-slate-50 dark:bg-[#1B1B20] border border-slate-200 dark:border-[#D98B4A]/30 rounded-xl p-4 space-y-3.5"
                 >
                   <div className="flex items-center justify-between">
-                    <h4 className="text-xs font-bold uppercase tracking-wider text-[#D98B4A] flex items-center gap-1.5">
+                    <h4 className="text-xs font-bold uppercase tracking-wider text-[#3157D5] dark:text-[#D98B4A] flex items-center gap-1.5">
                       <Edit2 className="w-3.5 h-3.5" />
                       <span>Group Configuration (Owner Controls)</span>
                     </h4>
                     {groupSaveSuccess && (
-                      <span className="text-xs text-emerald-400 font-semibold flex items-center gap-1">
+                      <span className="text-xs text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1">
                         <CheckCircle2 className="w-3.5 h-3.5" />
                         <span>{groupSaveSuccess}</span>
                       </span>
@@ -898,7 +898,7 @@ export const ProfileSection: React.FC<ProfileSectionProps> = ({
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-[11px] font-semibold text-[#A1A1AA] mb-1">
+                      <label className="block text-[11px] font-semibold text-slate-700 dark:text-[#A1A1AA] mb-1">
                         Group Name
                       </label>
                       <input
@@ -906,14 +906,14 @@ export const ProfileSection: React.FC<ProfileSectionProps> = ({
                         value={groupNameInput}
                         onChange={(e) => setGroupNameInput(e.target.value)}
                         placeholder="e.g. Iron Legion, Sunrise Runners"
-                        className="w-full px-3 py-2 bg-[#131316] border border-[#26262C] rounded-lg text-xs text-[#F4F4F5] focus:outline-none focus:border-[#D98B4A]"
+                        className="w-full px-3 py-2 bg-white text-slate-900 dark:bg-[#131316] dark:text-[#F4F4F5] border border-slate-200 dark:border-[#26262C] rounded-lg text-xs focus:outline-none focus:border-[#3157D5] dark:focus:border-[#D98B4A]"
                         required
                         minLength={2}
                       />
                     </div>
 
                     <div>
-                      <label className="block text-[11px] font-semibold text-[#A1A1AA] mb-1">
+                      <label className="block text-[11px] font-semibold text-slate-700 dark:text-[#A1A1AA] mb-1">
                         Daily Step Target (For all members)
                       </label>
                       <div className="flex items-center gap-2">
@@ -924,17 +924,17 @@ export const ProfileSection: React.FC<ProfileSectionProps> = ({
                           max="100000"
                           value={groupStepTargetInput}
                           onChange={(e) => setGroupStepTargetInput(e.target.value)}
-                          className="w-full px-3 py-2 bg-[#131316] border border-[#26262C] rounded-lg text-xs text-[#F4F4F5] font-mono tabular-nums focus:outline-none focus:border-[#D98B4A]"
+                          className="w-full px-3 py-2 bg-white text-slate-900 dark:bg-[#131316] dark:text-[#F4F4F5] border border-slate-200 dark:border-[#26262C] rounded-lg text-xs font-mono tabular-nums focus:outline-none focus:border-[#3157D5] dark:focus:border-[#D98B4A]"
                           required
                         />
-                        <span className="text-xs text-[#A1A1AA] font-bold shrink-0">steps</span>
+                        <span className="text-xs text-slate-600 dark:text-[#A1A1AA] font-bold shrink-0">steps</span>
                       </div>
                     </div>
                   </div>
 
                   {/* Step Target Presets */}
                   <div>
-                    <label className="block text-[11px] text-[#A1A1AA] mb-1.5">
+                    <label className="block text-[11px] text-slate-600 dark:text-[#A1A1AA] mb-1.5">
                       Quick Step Presets:
                     </label>
                     <div className="flex flex-wrap gap-2">
@@ -945,15 +945,15 @@ export const ProfileSection: React.FC<ProfileSectionProps> = ({
                           onClick={() => setGroupStepTargetInput(String(cnt))}
                           className={`px-2.5 py-1 rounded-lg text-xs font-semibold border transition cursor-pointer ${
                             Number(groupStepTargetInput) === cnt
-                              ? 'bg-[#D98B4A]/20 text-[#D98B4A] border-[#D98B4A]/40'
-                              : 'bg-[#131316] hover:bg-[#26262C] text-[#A1A1AA] border-[#26262C]'
+                              ? 'bg-[#EFF8FF] text-[#3157D5] border-[#3157D5]/40 dark:bg-[#D98B4A]/20 dark:text-[#D98B4A] dark:border-[#D98B4A]/40'
+                              : 'bg-white hover:bg-slate-100 text-slate-700 border-slate-200 dark:bg-[#131316] dark:hover:bg-[#26262C] dark:text-[#A1A1AA] dark:border-[#26262C]'
                           }`}
                         >
                           {cnt.toLocaleString()}
                         </button>
                       ))}
                     </div>
-                    <p className="text-[11px] text-[#A1A1AA] mt-1.5">
+                    <p className="text-[11px] text-slate-500 dark:text-[#A1A1AA] mt-1.5">
                       💡 Partial points for daily steps are awarded proportionally up to 10 points based on this group target.
                     </p>
                   </div>
@@ -966,14 +966,14 @@ export const ProfileSection: React.FC<ProfileSectionProps> = ({
                         setGroupStepTargetInput(String(currentGroup?.step_target || 10000));
                         setIsEditingGroup(false);
                       }}
-                      className="px-3.5 py-1.5 bg-[#131316] hover:bg-[#26262C] text-[#A1A1AA] text-xs font-semibold rounded-lg border border-[#26262C] transition cursor-pointer"
+                      className="px-3.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-[#131316] dark:hover:bg-[#26262C] dark:text-[#A1A1AA] text-xs font-semibold rounded-lg border border-slate-200 dark:border-[#26262C] transition cursor-pointer"
                     >
                       Cancel
                     </button>
                     <button
                       type="submit"
                       disabled={isSavingGroup}
-                      className="px-4 py-1.5 bg-[#D98B4A] hover:bg-[#B45F1E] disabled:opacity-50 text-[#131316] font-bold text-xs rounded-lg transition flex items-center gap-1.5 cursor-pointer shadow-sm"
+                      className="px-4 py-1.5 bg-[#3157D5] hover:bg-[#2544B8] text-white dark:bg-[#D98B4A] dark:hover:bg-[#B45F1E] dark:text-[#131316] disabled:opacity-50 font-bold text-xs rounded-lg transition flex items-center gap-1.5 cursor-pointer shadow-sm"
                     >
                       <Save className="w-3.5 h-3.5" />
                       <span>{isSavingGroup ? 'Saving...' : 'Save Group Settings'}</span>
@@ -984,30 +984,30 @@ export const ProfileSection: React.FC<ProfileSectionProps> = ({
 
               {/* Group Members List */}
               <div className="space-y-2">
-                <h4 className="text-xs font-bold text-[#A1A1AA] uppercase tracking-wider">
+                <h4 className="text-xs font-bold text-slate-600 dark:text-[#A1A1AA] uppercase tracking-wider">
                   Group Members
                 </h4>
-                <div className="divide-y divide-[#26262C] bg-[#1B1B20] border border-[#26262C] rounded-xl overflow-hidden">
+                <div className="divide-y divide-slate-200 dark:divide-[#26262C] bg-slate-50 dark:bg-[#1B1B20] border border-slate-200 dark:border-[#26262C] rounded-xl overflow-hidden">
                   {(currentGroup?.members || []).map(member => (
                     <div key={member.user_id} className="p-3 flex items-center justify-between gap-3">
                       <div className="flex items-center gap-2.5 min-w-0">
-                        <div className="w-8 h-8 rounded-full bg-[#131316] border border-[#26262C] flex items-center justify-center font-bold text-xs text-[#F4F4F5] shrink-0">
+                        <div className="w-8 h-8 rounded-full bg-slate-200 text-slate-800 dark:bg-[#131316] dark:text-[#F4F4F5] border border-slate-300 dark:border-[#26262C] flex items-center justify-center font-bold text-xs shrink-0">
                           {member.name.charAt(0).toUpperCase()}
                         </div>
                         <div className="min-w-0">
-                          <p className="text-xs font-semibold text-[#F4F4F5] truncate flex items-center gap-1.5">
+                          <p className="text-xs font-semibold text-slate-900 dark:text-[#F4F4F5] truncate flex items-center gap-1.5">
                             {member.name}
-                            {member.user_id === currentUser.id && <span className="text-[10px] text-[#A1A1AA] font-normal">(You)</span>}
+                            {member.user_id === currentUser.id && <span className="text-[10px] text-slate-500 dark:text-[#A1A1AA] font-normal">(You)</span>}
                           </p>
-                          <p className="text-[10px] text-[#A1A1AA] font-mono">@{member.username}</p>
+                          <p className="text-[10px] text-slate-500 dark:text-[#A1A1AA] font-mono">@{member.username}</p>
                         </div>
                       </div>
 
                       <div className="flex items-center gap-2 shrink-0">
                         <span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold ${
                           member.role === 'owner'
-                            ? 'bg-[#D98B4A]/20 text-[#D98B4A] border border-[#D98B4A]/30'
-                            : 'bg-zinc-800 text-zinc-400'
+                            ? 'bg-[#EFF8FF] text-[#3157D5] border border-[#3157D5]/30 dark:bg-[#D98B4A]/20 dark:text-[#D98B4A] dark:border-[#D98B4A]/30'
+                            : 'bg-slate-100 text-slate-600 dark:bg-zinc-800 dark:text-zinc-400'
                         }`}>
                           {member.role === 'owner' ? 'Owner' : 'Member'}
                         </span>
@@ -1021,7 +1021,7 @@ export const ProfileSection: React.FC<ProfileSectionProps> = ({
                                 onRemoveGroupMember(member.user_id);
                               }
                             }}
-                            className="p-1.5 hover:bg-rose-500/10 text-[#A1A1AA] hover:text-rose-400 rounded-lg transition cursor-pointer"
+                            className="p-1.5 hover:bg-rose-500/10 text-slate-400 hover:text-rose-500 dark:text-[#A1A1AA] dark:hover:text-rose-400 rounded-lg transition cursor-pointer"
                             title="Remove from group"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
@@ -1036,15 +1036,15 @@ export const ProfileSection: React.FC<ProfileSectionProps> = ({
               {/* Active Invites */}
               {(invites || []).filter(i => !i.revoked).length > 0 && (
                 <div className="space-y-2 pt-2">
-                  <h4 className="text-xs font-bold text-[#A1A1AA] uppercase tracking-wider">
+                  <h4 className="text-xs font-bold text-slate-600 dark:text-[#A1A1AA] uppercase tracking-wider">
                     Active Invites ({(invites || []).filter(i => !i.revoked).length})
                   </h4>
                   <div className="space-y-2">
                     {(invites || []).filter(i => !i.revoked).map(inv => (
-                      <div key={inv.token} className="p-2.5 bg-[#1B1B20] border border-[#26262C] rounded-xl flex items-center justify-between gap-2 text-xs">
-                        <span className="font-mono text-[#F4F4F5] truncate text-[11px]">{inv.token}</span>
+                      <div key={inv.token} className="p-2.5 bg-slate-50 dark:bg-[#1B1B20] border border-slate-200 dark:border-[#26262C] rounded-xl flex items-center justify-between gap-2 text-xs">
+                        <span className="font-mono text-slate-900 dark:text-[#F4F4F5] truncate text-[11px]">{inv.token}</span>
                         <div className="flex items-center gap-2 shrink-0">
-                          <span className="text-[11px] text-[#A1A1AA]">{inv.uses}/{inv.max_uses} used</span>
+                          <span className="text-[11px] text-slate-500 dark:text-[#A1A1AA]">{inv.uses}/{inv.max_uses} used</span>
                           {onRevokeInvite && (
                             <button
                               type="button"
@@ -1053,7 +1053,7 @@ export const ProfileSection: React.FC<ProfileSectionProps> = ({
                                   onRevokeInvite(inv.token);
                                 }
                               }}
-                              className="text-[11px] text-rose-400 hover:underline cursor-pointer"
+                              className="text-[11px] text-rose-500 hover:underline cursor-pointer"
                             >
                               Revoke
                             </button>
@@ -1066,19 +1066,19 @@ export const ProfileSection: React.FC<ProfileSectionProps> = ({
               )}
 
               {/* Leave Group Button with Confirmation */}
-              <div className="pt-3 border-t border-[#26262C]">
+              <div className="pt-3 border-t border-slate-200 dark:border-[#26262C]">
                 {!showLeaveConfirm ? (
                   <button
                     type="button"
                     onClick={() => setShowLeaveConfirm(true)}
-                    className="px-3.5 py-2 bg-amber-500/10 hover:bg-amber-500/20 text-[#FBBF24] border border-amber-500/25 rounded-xl text-xs font-semibold transition flex items-center gap-1.5 cursor-pointer"
+                    className="px-3.5 py-2 bg-amber-500/10 hover:bg-amber-500/20 text-amber-700 dark:text-[#FBBF24] border border-amber-500/25 rounded-xl text-xs font-semibold transition flex items-center gap-1.5 cursor-pointer"
                   >
                     <LogOut className="w-3.5 h-3.5" />
                     <span>Leave Group</span>
                   </button>
                 ) : (
                   <div className="p-4 bg-amber-500/10 border border-amber-500/30 rounded-xl space-y-3">
-                    <p className="text-xs font-semibold text-[#FBBF24]">
+                    <p className="text-xs font-semibold text-amber-800 dark:text-[#FBBF24]">
                       {myRole === 'owner' && (currentGroup?.members?.length || 1) > 1
                         ? 'As the group owner, leaving will transfer ownership to the next earliest member. Confirm?'
                         : 'Are you sure you want to leave this group? You will be placed in your own private group.'}
@@ -1092,14 +1092,14 @@ export const ProfileSection: React.FC<ProfileSectionProps> = ({
                             setShowLeaveConfirm(false);
                           }
                         }}
-                        className="px-3.5 py-1.5 bg-[#D98B4A] hover:bg-[#B45F1E] text-[#131316] font-bold rounded-lg text-xs transition cursor-pointer"
+                        className="px-3.5 py-1.5 bg-[#3157D5] hover:bg-[#2544B8] text-white dark:bg-[#D98B4A] dark:hover:bg-[#B45F1E] dark:text-[#131316] font-bold rounded-lg text-xs transition cursor-pointer"
                       >
                         Yes, Leave Group
                       </button>
                       <button
                         type="button"
                         onClick={() => setShowLeaveConfirm(false)}
-                        className="px-3.5 py-1.5 bg-[#1B1B20] text-[#A1A1AA] hover:text-[#F4F4F5] rounded-lg text-xs font-semibold transition cursor-pointer"
+                        className="px-3.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-[#1B1B20] dark:text-[#A1A1AA] dark:hover:text-[#F4F4F5] rounded-lg text-xs font-semibold transition cursor-pointer"
                       >
                         Cancel
                       </button>
@@ -1112,12 +1112,12 @@ export const ProfileSection: React.FC<ProfileSectionProps> = ({
 
           {/* Delete My Account Section (Only shown when viewing own profile) */}
           {!isViewingOther && (
-            <div className="bg-[#131316] border border-rose-900/40 rounded-xl p-4 sm:p-6 shadow-xl space-y-3">
-              <h3 className="text-sm sm:text-base font-bold text-rose-400 flex items-center gap-2">
-                <Trash2 className="w-4 h-4 sm:w-5 sm:h-5 text-rose-400" />
+            <div className="bg-white dark:bg-[#131316] border border-rose-200 dark:border-rose-900/40 rounded-xl p-4 sm:p-6 shadow-sm dark:shadow-xl space-y-3">
+              <h3 className="text-sm sm:text-base font-bold text-rose-600 dark:text-rose-400 flex items-center gap-2">
+                <Trash2 className="w-4 h-4 sm:w-5 sm:h-5 text-rose-500 dark:text-rose-400" />
                 Delete Account
               </h3>
-              <p className="text-xs text-[#A1A1AA]">
+              <p className="text-xs text-slate-500 dark:text-[#A1A1AA]">
                 Permanently delete your account (@{currentUser.username}). You can only delete your own account.
               </p>
 
@@ -1125,27 +1125,27 @@ export const ProfileSection: React.FC<ProfileSectionProps> = ({
                 <button
                   type="button"
                   onClick={() => setShowDeleteConfirm(true)}
-                  className="px-4 py-2 bg-rose-950/40 hover:bg-rose-900/50 text-rose-300 border border-rose-800/40 rounded-xl text-xs font-bold transition flex items-center gap-2 cursor-pointer"
+                  className="px-4 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 dark:bg-rose-950/40 dark:hover:bg-rose-900/50 dark:text-rose-300 dark:border-rose-800/40 rounded-xl text-xs font-bold transition flex items-center gap-2 cursor-pointer"
                 >
                   <Trash2 className="w-4 h-4" /> Delete My Account
                 </button>
               ) : (
-                <div className="p-4 bg-rose-950/60 border border-rose-800/60 rounded-xl space-y-3">
-                  <p className="text-xs font-bold text-rose-200">
+                <div className="p-4 bg-rose-50 dark:bg-rose-950/60 border border-rose-200 dark:border-rose-800/60 rounded-xl space-y-3">
+                  <p className="text-xs font-bold text-rose-800 dark:text-rose-200">
                     Are you sure you want to permanently delete your account? This action cannot be undone.
                   </p>
                   <div className="flex items-center gap-3">
                     <button
                       type="button"
                       onClick={() => onDeleteAccount(currentUser.id)}
-                      className="px-4 py-2 bg-rose-800 hover:bg-rose-700 text-white rounded-xl text-xs font-bold transition cursor-pointer shadow-lg shadow-rose-900/40"
+                      className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-bold transition cursor-pointer shadow-md"
                     >
                       Yes, Delete My Account
                     </button>
                     <button
                       type="button"
                       onClick={() => setShowDeleteConfirm(false)}
-                      className="px-4 py-2 bg-[#1B1B20] hover:bg-[#1B1B20] text-[#A1A1AA] rounded-xl text-xs font-bold transition cursor-pointer"
+                      className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-[#1B1B20] dark:hover:bg-[#1B1B20] dark:text-[#A1A1AA] rounded-xl text-xs font-bold transition cursor-pointer"
                     >
                       Cancel
                     </button>

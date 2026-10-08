@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *, .dark, .dark *));
+
 @layer base {
   :root {
     /* PULSE Professional Modern Design System (Light-first) */
@@ -135,8 +137,12 @@ html, body {
 :root:not([data-theme="dark"]):not(.dark-theme) .bg-\[\#131316\]\/95,
 :root:not([data-theme="dark"]):not(.dark-theme) .bg-\[\#131316\]\/90,
 :root:not([data-theme="dark"]):not(.dark-theme) .bg-\[\#131316\]\/80,
+:root:not([data-theme="dark"]):not(.dark-theme) .bg-\[\#0F0F12\],
+:root:not([data-theme="dark"]):not(.dark-theme) .bg-\[\#0F0F12\]\/95,
 html:not([data-theme="dark"]):not(.dark-theme) .bg-\[\#131316\],
-body:not([data-theme="dark"]):not(.dark-theme) .bg-\[\#131316\] {
+body:not([data-theme="dark"]):not(.dark-theme) .bg-\[\#131316\],
+html:not([data-theme="dark"]):not(.dark-theme) .bg-\[\#0F0F12\],
+body:not([data-theme="dark"]):not(.dark-theme) .bg-\[\#0F0F12\] {
   background-color: #FFFFFF !important;
 }
 

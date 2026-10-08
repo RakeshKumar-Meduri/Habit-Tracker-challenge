@@ -169,14 +169,14 @@ export const GamificationSection: React.FC<GamificationSectionProps> = ({
                 onClick={isBasePlan ? onOpenUpgradeModal : undefined}
                 className={`p-4 sm:p-5 rounded-xl border transition-all ${
                   isBasePlan
-                    ? 'bg-slate-50/80 border-slate-200 dark:bg-[#18181C]/60 dark:border-[#26262C] hover:border-[#3157D5]/40 cursor-pointer'
+                    ? 'bg-white border-slate-200 hover:border-[#3157D5]/40 dark:bg-[#18181C]/60 dark:border-[#26262C] cursor-pointer shadow-sm'
                     : isEarned
                       ? 'bg-white border-[#3157D5]/40 shadow-md dark:bg-[#131316] dark:border-[#D98B4A]/60 dark:shadow-[#D98B4A]/10'
-                      : 'bg-slate-50/90 border-slate-200 dark:bg-[#1B1B20]/50 dark:border-[#26262C]/70'
+                      : 'bg-white border-slate-200 dark:bg-[#1B1B20]/50 dark:border-[#26262C]/70 shadow-sm'
                 }`}
               >
                 <div className="flex items-start justify-between mb-3">
-                  <div className={`text-3xl ${!isEarned ? 'grayscale-[30%] opacity-80' : ''}`}>{badgeDef.icon}</div>
+                  <div className={`text-3xl ${!isEarned ? 'grayscale-[20%] opacity-90' : ''}`}>{badgeDef.icon}</div>
                   {isBasePlan ? (
                     <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#EFF8FF] text-[#3157D5] border border-[#3157D5]/30 dark:bg-[#D98B4A]/15 dark:text-[#D98B4A] dark:border-[#D98B4A]/30 flex items-center gap-1">
                       <Lock className="w-3 h-3" /> Pro Exclusive
@@ -186,14 +186,14 @@ export const GamificationSection: React.FC<GamificationSectionProps> = ({
                       <CheckCircle2 className="w-3 h-3" /> Unlocked
                     </span>
                   ) : (
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-200/80 text-slate-700 border border-slate-300 dark:bg-[#1B1B20] dark:text-[#A1A1AA] dark:border-[#26262C] flex items-center gap-1">
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200 dark:bg-[#1B1B20] dark:text-[#A1A1AA] dark:border-[#26262C] flex items-center gap-1">
                       <Lock className="w-3 h-3" /> Locked
                     </span>
                   )}
                 </div>
 
                 <h4 className="text-sm font-bold text-slate-900 dark:text-[#F4F4F5]">{badgeDef.title}</h4>
-                <p className="text-xs text-slate-600 dark:text-[#A1A1AA] mt-1">{badgeDef.desc}</p>
+                <p className="text-xs text-slate-600 dark:text-[#A1A1AA] mt-1 font-medium leading-relaxed">{badgeDef.desc}</p>
 
                 {isEarned && earnedInfo && (
                   <p className="text-[10px] text-emerald-700 dark:text-[#E69A5C] font-mono mt-3">
