@@ -12,15 +12,18 @@ console.log('   - Backend API & WebSockets: http://localhost:3001');
 console.log('   - Frontend Vite Client:     http://localhost:5173');
 console.log('====================================================\n');
 
-// 1. Start Backend Express + WebSocket Server (with --watch for live reload)
-const serverProc = spawn(process.execPath, ['--watch', path.join(rootDir, 'server', 'server.js')], {
+const isWin = process.platform === 'win32';
+const npxCmd = isWin ? 'npx.cmd' : 'npx';
+
+// 1. Start Backend Express + WebSocket Server (with tsx watch for live reload)
+const serverProc = spawn(npxCmd, ['tsx', 'watch', path.join(rootDir, 'server', 'src', 'server.ts')], {
   cwd: rootDir,
   stdio: 'inherit',
+  shell: isWin,
   env: { ...process.env, PORT: '3001' },
 });
 
 // 2. Start Vite Dev Server
-const isWin = process.platform === 'win32';
 const viteCmd = isWin ? 'npx.cmd' : 'npx';
 const viteProc = spawn(viteCmd, ['vite', '--host'], {
   cwd: rootDir,
