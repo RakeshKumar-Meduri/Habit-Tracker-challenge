@@ -734,9 +734,9 @@ export const DailyChecklist: React.FC<DailyChecklistProps> = ({
             <button
               type="button"
               onClick={() => onOpenUpgradeModal?.()}
-              className="self-start sm:self-auto px-4 py-2 min-h-[36px] bg-gradient-to-r from-[#3157D5] to-[#2544B8] text-white hover:from-[#2544B8] hover:to-[#172554] dark:from-[#D98B4A] dark:to-[#B45F1E] dark:text-[#131316] font-bold rounded-lg text-xs transition cursor-pointer shadow-sm flex items-center gap-1.5 active:scale-95 shrink-0"
+              className="self-start sm:self-auto px-4 py-2 min-h-[36px] bg-zinc-900 hover:bg-zinc-800 text-white dark:bg-zinc-100 dark:hover:bg-white dark:text-zinc-900 font-bold rounded-lg text-xs transition cursor-pointer shadow-sm flex items-center gap-1.5 active:scale-95 shrink-0"
             >
-              <Crown className="w-3.5 h-3.5" />
+              <Crown className="w-3.5 h-3.5 text-amber-400 dark:text-amber-500 shrink-0" />
               <span>Unlock Team Goals</span>
             </button>
           </div>

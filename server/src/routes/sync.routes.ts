@@ -81,6 +81,7 @@ router.get('/api/sync', requireAuth, async (req, res, next) => {
         dailyLogs,
         workouts,
         weightLogs,
+        missedReasons,
         badges,
         supplements,
         supplementLogs,
@@ -91,6 +92,7 @@ router.get('/api/sync', requireAuth, async (req, res, next) => {
         prisma.dailyLog.findMany({ where: { user_id: userId }, orderBy: { date: 'desc' } }),
         prisma.workout.findMany({ where: { user_id: userId, deleted_at: null }, orderBy: { date: 'desc' } }),
         prisma.weightLog.findMany({ where: { user_id: userId }, orderBy: { date: 'desc' } }),
+        prisma.missedReason.findMany({ where: { user_id: userId } }),
         prisma.badge.findMany({ where: { user_id: userId } }),
         prisma.supplement.findMany({ where: { user_id: userId } }),
         prisma.supplementLog.findMany({ where: { user_id: userId } }),
@@ -105,7 +107,7 @@ router.get('/api/sync', requireAuth, async (req, res, next) => {
           dailyLogs,
           workouts,
           weightLogs,
-          missedReasons: [],
+          missedReasons,
           reactions: [],
           badges,
           supplements,
@@ -161,6 +163,7 @@ router.get('/api/sync', requireAuth, async (req, res, next) => {
         dailyLogs,
         workouts,
         weightLogs,
+        missedReasons,
         badges,
         supplements,
         supplementLogs,
@@ -171,6 +174,7 @@ router.get('/api/sync', requireAuth, async (req, res, next) => {
         prisma.dailyLog.findMany({ where: { user_id: userId }, orderBy: { date: 'desc' } }),
         prisma.workout.findMany({ where: { user_id: userId, deleted_at: null }, orderBy: { date: 'desc' } }),
         prisma.weightLog.findMany({ where: { user_id: userId }, orderBy: { date: 'desc' } }),
+        prisma.missedReason.findMany({ where: { user_id: userId } }),
         prisma.badge.findMany({ where: { user_id: userId } }),
         prisma.supplement.findMany({ where: { user_id: userId } }),
         prisma.supplementLog.findMany({ where: { user_id: userId } }),
@@ -185,7 +189,7 @@ router.get('/api/sync', requireAuth, async (req, res, next) => {
           dailyLogs,
           workouts,
           weightLogs,
-          missedReasons: [],
+          missedReasons,
           reactions: [],
           badges,
           supplements,
@@ -216,6 +220,7 @@ router.get('/api/sync', requireAuth, async (req, res, next) => {
           dailyLogs,
           workouts,
           weightLogs,
+          missedReasons,
           badges,
           supplements,
           supplementLogs,
@@ -226,6 +231,7 @@ router.get('/api/sync', requireAuth, async (req, res, next) => {
           prisma.dailyLog.findMany({ where: { user_id: userId }, orderBy: { date: 'desc' } }),
           prisma.workout.findMany({ where: { user_id: userId, deleted_at: null }, orderBy: { date: 'desc' } }),
           prisma.weightLog.findMany({ where: { user_id: userId }, orderBy: { date: 'desc' } }),
+          prisma.missedReason.findMany({ where: { user_id: userId } }),
           prisma.badge.findMany({ where: { user_id: userId } }),
           prisma.supplement.findMany({ where: { user_id: userId } }),
           prisma.supplementLog.findMany({ where: { user_id: userId } }),
@@ -240,7 +246,7 @@ router.get('/api/sync', requireAuth, async (req, res, next) => {
             dailyLogs,
             workouts,
             weightLogs,
-            missedReasons: [],
+            missedReasons,
             reactions: [],
             badges,
             supplements,
@@ -263,6 +269,19 @@ router.get('/api/sync', requireAuth, async (req, res, next) => {
     const memberUserIds = activeMemberships.map(m => m.user.id);
     const safeUsers = activeMemberships.map(m => sanitizeUser(m.user));
 
+    // Resolve any aliased user IDs (accounts sharing the same username or alias)
+    const memberUsernames = activeMemberships.map(m => m.user.username).filter(Boolean);
+    const aliasedUsers = await prisma.user.findMany({
+      where: {
+        OR: [
+          { username: { in: memberUsernames } },
+          { id: { in: memberUserIds } },
+        ],
+      },
+      select: { id: true },
+    });
+    const allMemberUserIds = Array.from(new Set([...memberUserIds, ...aliasedUsers.map(u => u.id)]));
+
     // Parallel fetch of group-scoped data
     const [
       dailyLogs,
@@ -278,22 +297,22 @@ router.get('/api/sync', requireAuth, async (req, res, next) => {
       tombstones,
     ] = await Promise.all([
       prisma.dailyLog.findMany({
-        where: { user_id: { in: memberUserIds } },
+        where: { user_id: { in: allMemberUserIds } },
         orderBy: { date: 'desc' },
       }),
       prisma.workout.findMany({
         where: {
-          user_id: { in: memberUserIds },
+          user_id: { in: allMemberUserIds },
           deleted_at: null,
         },
         orderBy: { date: 'desc' },
       }),
       prisma.weightLog.findMany({
-        where: { user_id: { in: memberUserIds } },
+        where: { user_id: { in: allMemberUserIds } },
         orderBy: { date: 'desc' },
       }),
       prisma.missedReason.findMany({
-        where: { user_id: { in: memberUserIds } },
+        where: { user_id: { in: allMemberUserIds } },
       }),
       prisma.reaction.findMany({
         where: { from_user_id: { in: memberUserIds } },
