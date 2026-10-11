@@ -60,6 +60,7 @@ export async function sendResendEmail(params: {
     let { data, error } = await resend.emails.send({
       from: "PULSE <noreply@avixstudio.com>",
       to: [toEmail],
+      replyTo: ENV.RESEND_SUPPORT_EMAIL || "team@avixstudio.com",
       subject,
       html: htmlContent,
       text: textContent || subject,
