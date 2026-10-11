@@ -277,15 +277,41 @@ export function App() {
 
       const urlParams = new URLSearchParams(window.location.search);
 
-      // 2. /reset-password or ?resetToken=... (or ?token=... when on reset-password path)
-      const isResetPath = window.location.pathname.includes('reset-password');
-      const resetTokenParam = urlParams.get('resetToken') || (isResetPath ? urlParams.get('token') : null);
-      if (isResetPath || resetTokenParam !== null) {
-        setPasswordResetToken(resetTokenParam ? resetTokenParam.trim() : '');
+      let hashQuery = '';
+      if (window.location.hash.includes('?')) {
+        hashQuery = window.location.hash.substring(window.location.hash.indexOf('?'));
+      }
+      const hashParams = new URLSearchParams(hashQuery);
+
+      // 2. /reset-password or ?resetToken=... (or ?token=... when on reset-password path or hash)
+      const isResetPath = window.location.pathname.includes('reset-password') || window.location.hash.includes('reset-password');
+      const resetTokenParam = 
+        urlParams.get('resetToken') || 
+        urlParams.get('reset_token') || 
+        hashParams.get('resetToken') || 
+        hashParams.get('reset_token') || 
+        (isResetPath ? (urlParams.get('token') || hashParams.get('token')) : null);
+
+      let storedResetToken: string | null = null;
+      try {
+        storedResetToken = sessionStorage.getItem('pulse_reset_token');
+      } catch {}
+
+      const effectiveResetToken = (resetTokenParam ? resetTokenParam.trim() : null) || storedResetToken;
+
+      if (isResetPath || resetTokenParam !== null || storedResetToken) {
+        if (effectiveResetToken) {
+          setPasswordResetToken(effectiveResetToken);
+          try {
+            sessionStorage.setItem('pulse_reset_token', effectiveResetToken);
+          } catch {}
+        }
         setIsResetPasswordModalOpen(true);
-        // Clean URL immediately to prevent token leakage via referrer, browser history, or logs
+        // Clean URL query params to prevent token leakage via referrer or logs
         try {
-          window.history.replaceState({}, document.title, window.location.pathname);
+          if (resetTokenParam !== null) {
+            window.history.replaceState({}, document.title, window.location.pathname);
+          }
         } catch {}
       }
 
@@ -1748,6 +1774,10 @@ export function App() {
           isMandatory={!currentUser}
           initialMode={authModalMode}
           onClose={() => setIsAuthModalOpen(false)}
+          onOpenResetPassword={() => {
+            setIsAuthModalOpen(false);
+            setIsResetPasswordModalOpen(true);
+          }}
           users={users}
           onLoginSuccess={(user) => {
             // Immediately purge any stale group from memory/storage
@@ -1889,15 +1919,33 @@ export function App() {
         onClose={() => {
           setIsResetPasswordModalOpen(false);
           setPasswordResetToken('');
+          try {
+            sessionStorage.removeItem('pulse_reset_token');
+            if (window.location.pathname.includes('reset-password')) {
+              window.history.replaceState({}, document.title, '/');
+            }
+          } catch {}
         }}
         onSuccessReturnToLogin={() => {
           setIsResetPasswordModalOpen(false);
           setPasswordResetToken('');
+          try {
+            sessionStorage.removeItem('pulse_reset_token');
+            if (window.location.pathname.includes('reset-password')) {
+              window.history.replaceState({}, document.title, '/');
+            }
+          } catch {}
           handleOpenAuth('login');
         }}
         onRequestNewLink={() => {
           setIsResetPasswordModalOpen(false);
           setPasswordResetToken('');
+          try {
+            sessionStorage.removeItem('pulse_reset_token');
+            if (window.location.pathname.includes('reset-password')) {
+              window.history.replaceState({}, document.title, '/');
+            }
+          } catch {}
           handleOpenAuth('forgot');
         }}
       />

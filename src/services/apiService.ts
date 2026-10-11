@@ -812,7 +812,15 @@ export async function verifyResetTokenOnServer(token: string): Promise<{
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ token }),
     });
-    return await res.json();
+    const json = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      return {
+        valid: false,
+        reason: json?.error?.code || 'invalid',
+        message: json?.error?.message || json?.message || 'Failed to verify reset token.',
+      };
+    }
+    return json;
   } catch (err: any) {
     return {
       valid: false,

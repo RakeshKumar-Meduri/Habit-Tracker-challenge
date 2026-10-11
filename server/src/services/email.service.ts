@@ -319,9 +319,11 @@ export async function sendPaymentReceiptEmail(
 export async function sendPasswordResetEmail(
   toEmail: string,
   toName: string,
-  rawToken: string
+  rawToken: string,
+  customFrontendUrl?: string
 ): Promise<SendEmailResult> {
-  const resetUrl = `${ENV.FRONTEND_URL}/reset-password?token=${encodeURIComponent(rawToken)}`;
+  const baseUrl = (customFrontendUrl || ENV.FRONTEND_URL).replace(/\/$/, '');
+  const resetUrl = `${baseUrl}/reset-password?token=${encodeURIComponent(rawToken)}`;
   const subject = 'Reset your password for PULSE';
 
   const htmlContent = `
@@ -352,11 +354,11 @@ export async function sendPasswordResetEmail(
                   <td style="padding: 32px; color: #CBD5E1; font-size: 15px; line-height: 1.6;">
                     <p style="margin: 0 0 16px 0;">Hello <strong style="color: #F8FAFC;">${toName || 'Athlete'}</strong>,</p>
                     <p style="margin: 0 0 24px 0;">
-                      We received a request to reset the password for your <strong>PULSE</strong> account. Click the secure button below to choose a new password:
+                      We received a request to reset the password for your <strong>PULSE</strong> account. You can use the button below or copy your security token directly:
                     </p>
 
                     <!-- Button -->
-                    <table width="100%" cellpadding="0" cellspacing="0" style="margin: 28px 0;">
+                    <table width="100%" cellpadding="0" cellspacing="0" style="margin: 24px 0 20px 0;">
                       <tr>
                         <td align="center">
                           <a href="${resetUrl}" target="_blank" style="display: inline-block; padding: 14px 32px; background: linear-gradient(135deg, #D98B4A 0%, #B45F1E 100%); color: #FFFFFF; text-decoration: none; font-weight: 700; font-size: 15px; border-radius: 10px; box-shadow: 0 4px 15px rgba(217, 139, 74, 0.4); text-transform: uppercase; letter-spacing: 0.5px;">
@@ -366,15 +368,32 @@ export async function sendPasswordResetEmail(
                       </tr>
                     </table>
 
-                    <p style="margin: 0 0 12px 0; font-size: 13px; color: #94A3B8;">
-                      Or copy and paste this link into your browser:
+                    <!-- Security Token Box (For manual copy/paste if link is mangled or blocked) -->
+                    <table width="100%" cellpadding="0" cellspacing="0" style="margin: 20px 0; background-color: #0F172A; border-radius: 12px; border: 1px solid #334155; padding: 18px;">
+                      <tr>
+                        <td>
+                          <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; color: #D98B4A; font-weight: 700; margin-bottom: 8px;">
+                            🔑 Password Reset Token (Security Code)
+                          </div>
+                          <div style="font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace; font-size: 13px; font-weight: 700; color: #F8FAFC; background-color: #1E293B; padding: 12px 14px; border-radius: 8px; border: 1px dashed #D98B4A; word-break: break-all; user-select: all; -webkit-user-select: all;">
+                            ${rawToken}
+                          </div>
+                          <div style="font-size: 12px; color: #94A3B8; margin-top: 10px; line-height: 1.4;">
+                            💡 <em>If clicking the button doesn't open the reset screen directly, you can copy the token above and paste it directly into the <strong>Reset Password</strong> screen in PULSE.</em>
+                          </div>
+                        </td>
+                      </tr>
+                    </table>
+
+                    <p style="margin: 0 0 10px 0; font-size: 13px; color: #94A3B8;">
+                      Direct reset link:
                     </p>
                     <p style="margin: 0 0 24px 0; font-size: 12px; color: #38BDF8; word-break: break-all; background-color: #0F172A; padding: 12px; border-radius: 8px; border: 1px solid #1E293B;">
                       <a href="${resetUrl}" style="color: #38BDF8; text-decoration: underline;">${resetUrl}</a>
                     </p>
 
                     <div style="background-color: #0F172A; border-left: 3px solid #D98B4A; padding: 12px 16px; border-radius: 4px; font-size: 13px; color: #94A3B8; margin-top: 24px;">
-                      ⏳ <strong>Security Notice:</strong> This password reset link expires in <strong>1 hour</strong> and can only be used once. If you did not request this reset, your account is safe and you can safely ignore this email.
+                      ⏳ <strong>Security Notice:</strong> This password reset link and token expire in <strong>1 hour</strong> and can only be used once. If you did not request this reset, your account is safe and you can safely ignore this email.
                     </div>
                   </td>
                 </tr>
@@ -399,7 +418,7 @@ export async function sendPasswordResetEmail(
     toName,
     subject,
     htmlContent,
-    textContent: `Reset your PULSE password: ${resetUrl} (link expires in 1 hour)`,
+    textContent: `Reset your PULSE password:\nLink: ${resetUrl}\n\nPassword Reset Security Token:\n${rawToken}\n\n(Token expires in 1 hour and can only be used once.)`,
   });
 }
 

@@ -13,6 +13,7 @@ interface AuthModalProps {
   isMandatory?: boolean;
   initialMode?: 'login' | 'register' | 'forgot';
   invitePreview?: InvitePreview | null;
+  onOpenResetPassword?: () => void;
 }
 
 export const AuthModal: React.FC<AuthModalProps> = ({
@@ -24,6 +25,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   isMandatory = false,
   initialMode = 'login',
   invitePreview,
+  onOpenResetPassword,
 }) => {
   const [mode, setMode] = useState<'login' | 'register' | 'forgot'>(initialMode);
   const [prevInitialMode, setPrevInitialMode] = useState(initialMode);
@@ -345,6 +347,19 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 </div>
 
                 <div className="space-y-2.5 pt-1">
+                  {onOpenResetPassword && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        onClose();
+                        onOpenResetPassword();
+                      }}
+                      className="w-full py-2.5 bg-amber-600 hover:bg-amber-500 text-white font-bold rounded-xl text-xs transition shadow-sm cursor-pointer border border-transparent"
+                    >
+                      Enter Password Reset Token Directly
+                    </button>
+                  )}
+
                   <button
                     type="button"
                     onClick={handleForgotPassword}
@@ -403,7 +418,23 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   {isSubmitting ? 'Sending Reset Link...' : 'Send Password Reset Link'}
                 </button>
 
-                <div className="text-center pt-2">
+                {onOpenResetPassword && (
+                  <div className="p-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl text-center">
+                    <p className="text-[11px] text-zinc-500 dark:text-zinc-400 mb-1">Already received a reset token or link?</p>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        onClose();
+                        onOpenResetPassword();
+                      }}
+                      className="text-xs font-bold text-amber-600 dark:text-amber-400 hover:underline cursor-pointer"
+                    >
+                      Enter Password Reset Token Directly →
+                    </button>
+                  </div>
+                )}
+
+                <div className="text-center pt-1">
                   <button
                     type="button"
                     onClick={() => {

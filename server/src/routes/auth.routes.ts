@@ -729,8 +729,12 @@ router.post('/api/auth/forgot-password', forgotPasswordLimiter, async (req, res,
           },
         });
 
+        // Determine frontend base URL from request origin if valid, fallback to ENV.FRONTEND_URL
+        const requestOrigin = (req.headers.origin || '').toString().trim();
+        const allowedOrigin = ENV.TRUSTED_DOMAINS.find(d => d.toLowerCase() === requestOrigin.toLowerCase()) || ENV.FRONTEND_URL;
+
         // Dispatch branded reset email asynchronously
-        sendPasswordResetEmail(user.email, user.name || user.username, rawToken).catch((err) => {
+        sendPasswordResetEmail(user.email, user.name || user.username, rawToken, allowedOrigin).catch((err) => {
           console.error('[Password Reset Email Error]', err.message);
         });
       }
@@ -754,9 +758,16 @@ router.post('/api/auth/forgot-password', forgotPasswordLimiter, async (req, res,
 // ----------------------------------------------------
 // Verify Password Reset Token (Validity & Expiry Check)
 // ----------------------------------------------------
-router.post('/api/auth/verify-reset-token', passwordResetLimiter, async (req, res, next) => {
+const handleVerifyResetToken = async (req: any, res: any, next: any) => {
   try {
-    const rawToken = (req.body?.token || req.query?.token || '') as string;
+    let rawToken = ((req.body?.token || req.query?.token || '') as string).trim().replace(/^["']|["']$/g, '');
+    
+    // Auto-extract token if the user pasted a full URL
+    if (rawToken.includes('token=')) {
+      const match = rawToken.match(/[?&](?:token|resetToken|reset_token)=([a-zA-Z0-9_-]+)/);
+      if (match && match[1]) rawToken = match[1];
+    }
+
     if (!rawToken || typeof rawToken !== 'string' || rawToken.trim().length < 10) {
       res.json({
         valid: false,
@@ -814,7 +825,10 @@ router.post('/api/auth/verify-reset-token', passwordResetLimiter, async (req, re
   } catch (err) {
     next(err);
   }
-});
+};
+
+router.post('/api/auth/verify-reset-token', passwordResetLimiter, handleVerifyResetToken);
+router.get('/api/auth/verify-reset-token', passwordResetLimiter, handleVerifyResetToken);
 
 // ----------------------------------------------------
 // Execute Password Reset
@@ -822,7 +836,14 @@ router.post('/api/auth/verify-reset-token', passwordResetLimiter, async (req, re
 router.post('/api/auth/reset-password', passwordResetLimiter, async (req, res, next) => {
   try {
     const validated = resetPasswordSchema.parse(req.body);
-    const rawToken = validated.token.trim();
+    let rawToken = validated.token.trim().replace(/^["']|["']$/g, '');
+    
+    // Auto-extract token if the user passed full URL
+    if (rawToken.includes('token=')) {
+      const match = rawToken.match(/[?&](?:token|resetToken|reset_token)=([a-zA-Z0-9_-]+)/);
+      if (match && match[1]) rawToken = match[1];
+    }
+
     const tokenHash = hashToken(rawToken);
 
     const tokenRecord = await prisma.passwordResetToken.findUnique({
