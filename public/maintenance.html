@@ -9,11 +9,11 @@
   <link rel="icon" type="image/svg+xml" href="favicon.svg">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     :root {
       --bg-dark: #070B14;
-      --card-bg: rgba(15, 23, 42, 0.75);
+      --card-bg: rgba(15, 23, 42, 0.78);
       --card-border: rgba(255, 255, 255, 0.08);
       --primary: #D98B4A;
       --primary-light: #F5A665;
@@ -48,14 +48,14 @@
       position: relative;
     }
 
-    /* Ambient animated glow balls */
+    /* Ambient animated background orb */
     .glow-orb {
       position: absolute;
-      width: 450px;
-      height: 450px;
+      width: 460px;
+      height: 460px;
       border-radius: 50%;
       background: radial-gradient(circle, var(--primary-glow) 0%, transparent 70%);
-      filter: blur(60px);
+      filter: blur(65px);
       z-index: 0;
       pointer-events: none;
       animation: floatOrb 12s ease-in-out infinite alternate;
@@ -69,7 +69,7 @@
     .container {
       position: relative;
       z-index: 10;
-      max-width: 680px;
+      max-width: 640px;
       width: 100%;
       background: var(--card-bg);
       border: 1px solid var(--card-border);
@@ -96,6 +96,31 @@
       }
     }
 
+    /* Icon Glow Header */
+    .icon-wrapper {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 72px;
+      height: 72px;
+      background: linear-gradient(135deg, rgba(217, 139, 74, 0.2) 0%, rgba(180, 95, 30, 0.25) 100%);
+      border: 1px solid rgba(217, 139, 74, 0.4);
+      border-radius: 20px;
+      margin-bottom: 24px;
+      box-shadow: 0 8px 25px rgba(217, 139, 74, 0.25);
+    }
+
+    .icon-wrapper svg {
+      color: var(--primary-light);
+      animation: gentleRotate 8s linear infinite;
+    }
+
+    @keyframes gentleRotate {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
     /* Brand Header */
     .brand-badge {
       display: inline-flex;
@@ -103,14 +128,14 @@
       gap: 10px;
       background: rgba(217, 139, 74, 0.12);
       border: 1px solid rgba(217, 139, 74, 0.3);
-      padding: 8px 18px;
+      padding: 7px 16px;
       border-radius: 999px;
-      margin-bottom: 24px;
+      margin-bottom: 20px;
     }
 
     .pulse-dot {
-      width: 9px;
-      height: 9px;
+      width: 8px;
+      height: 8px;
       background-color: var(--primary);
       border-radius: 50%;
       position: relative;
@@ -121,8 +146,8 @@
       position: absolute;
       top: -4px;
       left: -4px;
-      width: 17px;
-      height: 17px;
+      width: 16px;
+      height: 16px;
       background-color: var(--primary);
       border-radius: 50%;
       opacity: 0.5;
@@ -137,7 +162,7 @@
     }
 
     .brand-text {
-      font-size: 13px;
+      font-size: 12px;
       font-weight: 700;
       letter-spacing: 1.5px;
       color: var(--primary-light);
@@ -146,132 +171,86 @@
 
     /* Heading */
     h1 {
-      font-size: 36px;
+      font-size: 34px;
       font-weight: 800;
       letter-spacing: -0.8px;
-      line-height: 1.2;
-      margin-bottom: 16px;
+      line-height: 1.25;
+      margin-bottom: 14px;
       background: linear-gradient(135deg, #FFFFFF 30%, #CBD5E1 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
     }
 
     p.subtitle {
-      font-size: 16px;
+      font-size: 15px;
       line-height: 1.6;
       color: var(--text-muted);
-      margin-bottom: 36px;
-      max-width: 540px;
+      margin-bottom: 32px;
+      max-width: 520px;
       margin-left: auto;
       margin-right: auto;
     }
 
-    /* Live Countdown Grid */
-    .countdown-card {
-      background: rgba(11, 17, 33, 0.6);
+    /* System Status Overview Card */
+    .status-overview-card {
+      background: rgba(11, 17, 33, 0.65);
       border: 1px solid rgba(255, 255, 255, 0.06);
       border-radius: 20px;
-      padding: 24px 20px;
+      padding: 24px;
       margin-bottom: 32px;
+      text-align: left;
     }
 
-    .countdown-label {
-      font-size: 12px;
+    .status-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 18px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .status-card-title {
+      font-size: 13px;
       text-transform: uppercase;
       letter-spacing: 1px;
       color: var(--text-dim);
-      font-weight: 600;
-      margin-bottom: 16px;
-    }
-
-    .timer-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 12px;
-      max-width: 400px;
-      margin: 0 auto 20px auto;
-    }
-
-    .timer-slot {
-      background: rgba(30, 41, 59, 0.7);
-      border: 1px solid rgba(255, 255, 255, 0.05);
-      border-radius: 14px;
-      padding: 14px 8px;
-      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
-    }
-
-    .timer-value {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 32px;
       font-weight: 700;
-      color: var(--text-main);
-      display: block;
-      line-height: 1;
-      margin-bottom: 6px;
     }
 
-    .timer-sublabel {
-      font-size: 11px;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      color: var(--text-dim);
-      font-weight: 600;
-    }
-
-    /* Progress bar */
-    .progress-wrapper {
-      width: 100%;
-      background: rgba(255, 255, 255, 0.05);
-      height: 8px;
-      border-radius: 999px;
-      overflow: hidden;
-      position: relative;
-      margin-bottom: 10px;
-    }
-
-    .progress-bar {
-      height: 100%;
-      width: 85%;
-      background: linear-gradient(90deg, #B45F1E, var(--primary), #F5A665);
-      border-radius: 999px;
-      position: relative;
-      animation: shimmer 3s infinite linear;
-      background-size: 200% 100%;
-    }
-
-    @keyframes shimmer {
-      0% { background-position: 200% 0; }
-      100% { background-position: -200% 0; }
-    }
-
-    .progress-meta {
-      display: flex;
-      justify-content: space-between;
+    .live-status-pill {
+      display: inline-flex;
       align-items: center;
+      gap: 6px;
       font-size: 12px;
-      color: var(--text-dim);
+      font-weight: 700;
+      color: #F5A665;
+      background: rgba(217, 139, 74, 0.15);
+      border: 1px solid rgba(217, 139, 74, 0.3);
+      padding: 4px 10px;
+      border-radius: 999px;
     }
 
-    .progress-meta span:last-child {
-      color: var(--primary-light);
-      font-weight: 600;
+    .live-status-indicator {
+      width: 6px;
+      height: 6px;
+      background-color: #F5A665;
+      border-radius: 50%;
     }
 
     /* Status Items List */
-    .status-items {
+    .status-list {
       display: flex;
       flex-direction: column;
       gap: 10px;
-      margin-bottom: 32px;
-      text-align: left;
     }
 
     .status-row {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 12px 18px;
-      background: rgba(30, 41, 59, 0.35);
+      padding: 12px 16px;
+      background: rgba(30, 41, 59, 0.4);
       border: 1px solid rgba(255, 255, 255, 0.04);
       border-radius: 12px;
       font-size: 13px;
@@ -282,6 +261,7 @@
       align-items: center;
       gap: 12px;
       color: #E2E8F0;
+      font-weight: 500;
     }
 
     .status-tag {
@@ -301,6 +281,21 @@
       background: rgba(217, 139, 74, 0.15);
       color: #F5A665;
       border: 1px solid rgba(217, 139, 74, 0.3);
+    }
+
+    /* Notice Box */
+    .reassurance-box {
+      margin-top: 16px;
+      background: rgba(16, 185, 129, 0.08);
+      border: 1px solid rgba(16, 185, 129, 0.2);
+      border-radius: 12px;
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 12px;
+      color: #A7F3D0;
+      line-height: 1.5;
     }
 
     /* Action Buttons */
@@ -406,13 +401,10 @@
         border-radius: 20px;
       }
       h1 {
-        font-size: 28px;
+        font-size: 27px;
       }
       p.subtitle {
         font-size: 14px;
-      }
-      .timer-value {
-        font-size: 26px;
       }
       .actions-group {
         flex-direction: column;
@@ -431,71 +423,68 @@
   <div class="glow-orb"></div>
 
   <main class="container" role="main">
-    <!-- Brand Badge -->
-    <div class="brand-badge">
-      <div class="pulse-dot"></div>
-      <span class="brand-text">PULSE &bull; Scheduled Maintenance</span>
+    <!-- Spinning Gear Icon -->
+    <div class="icon-wrapper">
+      <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/>
+        <circle cx="12" cy="12" r="3"/>
+      </svg>
     </div>
 
-    <!-- Title -->
+    <!-- Brand Badge -->
+    <div>
+      <div class="brand-badge">
+        <div class="pulse-dot"></div>
+        <span class="brand-text">PULSE &bull; Scheduled Maintenance</span>
+      </div>
+    </div>
+
+    <!-- Title & Description -->
     <h1>We're Upgrading PULSE</h1>
     <p class="subtitle">
-      Our team is currently performing scheduled infrastructure and database optimizations. 
-      Please check back in a few hours — all your daily streaks, logs, and account data are fully safe and secured.
+      Our team is currently performing essential platform upgrades and database performance optimizations. 
+      Access is temporarily paused while we complete the changes. Please check back shortly.
     </p>
 
-    <!-- Countdown Timer Card -->
-    <section class="countdown-card" aria-label="Estimated completion timer">
-      <div class="countdown-label">Estimated Completion Time</div>
-      <div class="timer-grid">
-        <div class="timer-slot">
-          <span class="timer-value" id="hours">02</span>
-          <span class="timer-sublabel">Hours</span>
-        </div>
-        <div class="timer-slot">
-          <span class="timer-value" id="minutes">45</span>
-          <span class="timer-sublabel">Minutes</span>
-        </div>
-        <div class="timer-slot">
-          <span class="timer-value" id="seconds">00</span>
-          <span class="timer-sublabel">Seconds</span>
+    <!-- System Status Overview Card -->
+    <section class="status-overview-card" aria-label="Current upgrade status">
+      <div class="status-card-header">
+        <span class="status-card-title">Upgrade Overview</span>
+        <div class="live-status-pill">
+          <div class="live-status-indicator"></div>
+          Active In Progress
         </div>
       </div>
 
-      <!-- Progress -->
-      <div class="progress-wrapper">
-        <div class="progress-bar" id="progressBar"></div>
+      <div class="status-list">
+        <div class="status-row">
+          <div class="status-left">
+            <span>🛡️</span>
+            <span>Database & User Streaks Security</span>
+          </div>
+          <span class="status-tag tag-completed">✓ Backed Up</span>
+        </div>
+        <div class="status-row">
+          <div class="status-left">
+            <span>⚡</span>
+            <span>Backend Services & Mail Integration</span>
+          </div>
+          <span class="status-tag tag-progress">Updating</span>
+        </div>
+        <div class="status-row">
+          <div class="status-left">
+            <span>🚀</span>
+            <span>Platform Optimization & Cache Rebuild</span>
+          </div>
+          <span class="status-tag tag-progress">Updating</span>
+        </div>
       </div>
-      <div class="progress-meta">
-        <span>System Migration Status</span>
-        <span id="percentText">85% Complete</span>
+
+      <div class="reassurance-box">
+        <span>✓</span>
+        <span>All your workout history, habits, streaks, and account data are fully safe.</span>
       </div>
     </section>
-
-    <!-- Live Status Checklist -->
-    <div class="status-items">
-      <div class="status-row">
-        <div class="status-left">
-          <span>🛡️</span>
-          <span>Database & User Streaks Backup</span>
-        </div>
-        <span class="status-tag tag-completed">✓ Completed</span>
-      </div>
-      <div class="status-row">
-        <div class="status-left">
-          <span>⚡</span>
-          <span>Transactional Mail & Service Sync</span>
-        </div>
-        <span class="status-tag tag-progress">In Progress</span>
-      </div>
-      <div class="status-row">
-        <div class="status-left">
-          <span>🚀</span>
-          <span>Frontend Deployment & Cache Invalidation</span>
-        </div>
-        <span class="status-tag tag-progress">In Progress</span>
-      </div>
-    </div>
 
     <!-- Actions -->
     <div class="actions-group">
@@ -525,39 +514,6 @@
   <div id="toast">Checking system status...</div>
 
   <script>
-    // Countdown Timer Logic
-    const DURATION_KEY = 'pulse_maintenance_target_timestamp';
-    let targetTime = localStorage.getItem(DURATION_KEY);
-
-    // Default to 2 hours 45 mins from first visit if not set
-    if (!targetTime || targetTime < Date.now()) {
-      targetTime = Date.now() + (2 * 60 + 45) * 60 * 1000;
-      localStorage.setItem(DURATION_KEY, targetTime);
-    } else {
-      targetTime = parseInt(targetTime, 10);
-    }
-
-    function updateCountdown() {
-      const now = Date.now();
-      const diff = Math.max(0, targetTime - now);
-
-      const hours = Math.floor(diff / (1000 * 60 * 60));
-      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-      const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-
-      document.getElementById('hours').textContent = String(hours).padStart(2, '0');
-      document.getElementById('minutes').textContent = String(minutes).padStart(2, '0');
-      document.getElementById('seconds').textContent = String(seconds).padStart(2, '0');
-
-      if (diff === 0) {
-        document.getElementById('percentText').textContent = 'Finalizing updates...';
-        document.getElementById('progressBar').style.width = '100%';
-      }
-    }
-
-    setInterval(updateCountdown, 1000);
-    updateCountdown();
-
     // Check system status function
     async function checkStatus() {
       const btn = document.getElementById('refreshBtn');
@@ -569,7 +525,6 @@
       toast.classList.add('show');
 
       try {
-        // Try pinging the live backend health endpoint
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 4000);
         
@@ -588,11 +543,11 @@
           return;
         }
       } catch (e) {
-        // Fallback catch
+        // Fallback
       }
 
       setTimeout(() => {
-        toast.textContent = 'System upgrade is still in progress. Please check back shortly!';
+        toast.textContent = 'Updates are still in progress. Please check back shortly!';
         btn.style.opacity = '1';
         btn.style.pointerEvents = 'auto';
 
@@ -602,7 +557,7 @@
       }, 1000);
     }
 
-    // Auto-ping every 60 seconds
+    // Auto-ping in background every 60 seconds
     setInterval(async () => {
       try {
         const res = await fetch('https://habit-tracker-challenge.onrender.com/api/health');
