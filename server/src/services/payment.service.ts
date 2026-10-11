@@ -3,6 +3,7 @@ import crypto from 'crypto';
 import { prisma } from '../db/prisma';
 import { ENV } from '../config/env';
 import { AppError } from '../middleware/errorHandler';
+import { sendPaymentReceiptEmail } from './email.service';
 
 let razorpayClient: Razorpay | null = null;
 
@@ -139,6 +140,15 @@ export async function getUserPlanTier(userId: string): Promise<'none' | 'base' |
 export async function createPaymentOrder(userId: string, planId: string) {
   await ensureDefaultPlans();
 
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { id: true, email: true, email_verified: true, name: true, username: true },
+  });
+
+  if (!user) {
+    throw new AppError('User not found', 404, 'USER_NOT_FOUND');
+  }
+
   const plan = await prisma.plan.findUnique({
     where: { id: planId },
   });
@@ -147,11 +157,25 @@ export async function createPaymentOrder(userId: string, planId: string) {
     throw new AppError('Invalid or inactive subscription plan', 400, 'INVALID_PLAN');
   }
 
+  // Enforce verified email requirement for paid checkouts
+  if (plan.price > 0 && (!user.email || !user.email_verified)) {
+    throw new AppError('Please verify your email address before upgrading to a paid plan.', 403, 'EMAIL_NOT_VERIFIED');
+  }
+
   // Handle free plan directly without Razorpay
   if (plan.price <= 0) {
     const expiresAt = new Date(Date.now() + 10 * 365 * 24 * 60 * 60 * 1000); // 10 years / free forever
-    const subscription = await prisma.subscription.create({
-      data: {
+    const subscription = await prisma.subscription.upsert({
+      where: { id: `sub_${userId}` },
+      update: {
+        plan_id: plan.id,
+        status: 'active',
+        starts_at: new Date(),
+        expires_at: expiresAt,
+        cancelled_at: null,
+      },
+      create: {
+        id: `sub_${userId}`,
         user_id: userId,
         plan_id: plan.id,
         status: 'active',
@@ -179,29 +203,42 @@ export async function createPaymentOrder(userId: string, planId: string) {
     };
   }
 
+  const receiptNumber = `RCPT-${new Date().getFullYear()}-${Date.now().toString().slice(-6)}-${crypto.randomBytes(2).toString('hex').toUpperCase()}`;
   let razorpayOrderId: string;
 
   if (razorpay) {
-    const order = await razorpay.orders.create({
-      amount: plan.price,
-      currency: plan.currency,
-      receipt: `rcpt_${userId.slice(-6)}_${Date.now()}`,
-      notes: {
-        userId,
-        planId: plan.id,
-      },
-    });
-    razorpayOrderId = order.id;
+    try {
+      const order = await razorpay.orders.create({
+        amount: plan.price,
+        currency: plan.currency,
+        receipt: receiptNumber,
+        notes: {
+          userId,
+          planId: plan.id,
+          userEmail: user.email || '',
+        },
+      });
+      razorpayOrderId = order.id;
+    } catch (err: any) {
+      if (process.env.NODE_ENV === 'test' || !ENV.RAZORPAY_KEY_ID?.startsWith('rzp_live')) {
+        console.warn('[Razorpay] Order create via SDK fallback (test mode):', err?.error?.description || err?.message || err);
+        razorpayOrderId = `order_test_${Date.now()}_${crypto.randomBytes(4).toString('hex')}`;
+      } else {
+        throw new AppError(err?.error?.description || err?.message || 'Payment provider order creation failed', 500, 'PAYMENT_GATEWAY_ERROR');
+      }
+    }
   } else {
     // Development / test fallback order
     razorpayOrderId = `order_mock_${Date.now()}_${crypto.randomBytes(4).toString('hex')}`;
   }
 
-  // Record pending payment in PostgreSQL
+  // Record pending payment in PostgreSQL with receipt reference
   const payment = await prisma.payment.create({
     data: {
       user_id: userId,
       razorpay_order_id: razorpayOrderId,
+      receipt_number: receiptNumber,
+      plan_name: plan.name,
       amount: plan.price,
       currency: plan.currency,
       status: 'created',
@@ -212,6 +249,7 @@ export async function createPaymentOrder(userId: string, planId: string) {
     orderId: razorpayOrderId,
     amount: plan.price,
     currency: plan.currency,
+    receiptNumber,
     keyId: ENV.RAZORPAY_KEY_ID || 'rzp_test_placeholder',
     plan: {
       id: plan.id,
@@ -246,6 +284,7 @@ export async function verifyPaymentSignature(
 
   const payment = await prisma.payment.findUnique({
     where: { razorpay_order_id: orderId },
+    include: { user: true },
   });
 
   if (!payment) {
@@ -276,6 +315,7 @@ export async function verifyPaymentSignature(
         razorpay_payment_id: paymentId,
         razorpay_signature: signature,
         status: 'captured',
+        plan_name: payment.plan_name || plan.name,
       },
     });
 
@@ -309,6 +349,31 @@ export async function verifyPaymentSignature(
 
     return { payment: updatedPayment, subscription };
   });
+
+  // Asynchronously send payment receipt email if user has verified email
+  if (payment.user.email && payment.user.email_verified && !result.payment.email_sent) {
+    const receiptNum = result.payment.receipt_number || `RCPT-${result.payment.id.slice(-6).toUpperCase()}`;
+    sendPaymentReceiptEmail(payment.user.email, payment.user.name || payment.user.username, {
+      receiptNumber: receiptNum,
+      orderId,
+      paymentId,
+      planName: result.payment.plan_name || plan.name,
+      amount: result.payment.amount,
+      currency: result.payment.currency,
+      paidAt: result.payment.updated_at,
+    }).then(async (emailRes) => {
+      if (emailRes.success) {
+        await prisma.payment.update({
+          where: { id: result.payment.id },
+          data: { email_sent: true, email_sent_at: new Date() },
+        });
+      } else {
+        console.warn(`[Receipt Delivery Failed] Order ${orderId}:`, emailRes.error);
+      }
+    }).catch((err) => {
+      console.warn(`[Receipt Delivery Error] Order ${orderId}:`, err.message);
+    });
+  }
 
   return result;
 }
@@ -345,6 +410,8 @@ export async function processPaymentWebhook(rawBody: string, webhookSignature: s
     return { status: 'already_processed', eventId: providerEventId };
   }
 
+  let receiptToSend: { email: string; name: string; details: any; paymentDbId: string } | null = null;
+
   // Transactionally record event and process effects
   await prisma.$transaction(async (tx) => {
     // 1. Record event with unique constraint to prevent race conditions
@@ -372,10 +439,19 @@ export async function processPaymentWebhook(rawBody: string, webhookSignature: s
       if (orderId) {
         const payment = await tx.payment.findUnique({
           where: { razorpay_order_id: orderId },
+          include: { user: true },
         });
 
         if (payment) {
-          await tx.payment.update({
+          // Confirm amount and currency match server-created record
+          if (paymentEntity?.amount && payment.amount !== paymentEntity.amount) {
+            throw new AppError('Payment amount mismatch between order record and captured event', 400, 'PAYMENT_AMOUNT_MISMATCH');
+          }
+          if (paymentEntity?.currency && payment.currency !== paymentEntity.currency) {
+            throw new AppError('Payment currency mismatch between order record and captured event', 400, 'PAYMENT_CURRENCY_MISMATCH');
+          }
+
+          const updatedPayment = await tx.payment.update({
             where: { id: payment.id },
             data: {
               status: 'captured',
@@ -384,10 +460,16 @@ export async function processPaymentWebhook(rawBody: string, webhookSignature: s
           });
 
           // Activate subscription
-          const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+          const resolvedPlanId = payment.plan_name?.toLowerCase().includes('yearly')
+            ? 'plan_pro_yearly'
+            : 'plan_pro_monthly';
+          const durationDays = resolvedPlanId === 'plan_pro_yearly' ? 365 : 30;
+          const expiresAt = new Date(Date.now() + durationDays * 24 * 60 * 60 * 1000);
+
           await tx.subscription.upsert({
             where: { id: `sub_${payment.user_id}` },
             update: {
+              plan_id: resolvedPlanId,
               status: 'active',
               expires_at: expiresAt,
               cancelled_at: null,
@@ -395,25 +477,126 @@ export async function processPaymentWebhook(rawBody: string, webhookSignature: s
             create: {
               id: `sub_${payment.user_id}`,
               user_id: payment.user_id,
-              plan_id: 'plan_pro_monthly',
+              plan_id: resolvedPlanId,
               status: 'active',
               expires_at: expiresAt,
             },
           });
+
+          if (payment.user.email && payment.user.email_verified && !payment.email_sent) {
+            receiptToSend = {
+              email: payment.user.email,
+              name: payment.user.name || payment.user.username,
+              paymentDbId: updatedPayment.id,
+              details: {
+                receiptNumber: payment.receipt_number || `RCPT-${payment.id.slice(-6).toUpperCase()}`,
+                orderId: payment.razorpay_order_id,
+                paymentId: paymentId || payment.razorpay_payment_id || payment.id,
+                planName: payment.plan_name || 'PULSE Pro Monthly',
+                amount: payment.amount,
+                currency: payment.currency,
+                paidAt: new Date(),
+              },
+            };
+          }
         }
       }
     } else if (event.event === 'payment.failed') {
+      const paymentEntity = event.payload?.payment?.entity;
+      const orderId = paymentEntity?.order_id;
+      const errorReason = paymentEntity?.error_description || paymentEntity?.error_reason || 'Payment failed';
+
+      if (orderId) {
+        await tx.payment.updateMany({
+          where: { razorpay_order_id: orderId },
+          data: { status: 'failed', error_reason: errorReason },
+        });
+      }
+    } else if (event.event === 'payment.refunded' || event.event === 'refund.created') {
       const paymentEntity = event.payload?.payment?.entity;
       const orderId = paymentEntity?.order_id;
 
       if (orderId) {
         await tx.payment.updateMany({
           where: { razorpay_order_id: orderId },
-          data: { status: 'failed' },
+          data: { status: 'refunded', refunded_at: new Date() },
         });
+
+        const payment = await tx.payment.findUnique({
+          where: { razorpay_order_id: orderId },
+        });
+        if (payment) {
+          await tx.subscription.updateMany({
+            where: { user_id: payment.user_id },
+            data: { status: 'cancelled', cancelled_at: new Date() },
+          });
+        }
       }
     }
   });
 
+  // Asynchronously dispatch receipt email after transaction commits
+  if (receiptToSend) {
+    const r: any = receiptToSend;
+    sendPaymentReceiptEmail(r.email, r.name, r.details).then(async (res) => {
+      if (res.success) {
+        await prisma.payment.update({
+          where: { id: r.paymentDbId },
+          data: { email_sent: true, email_sent_at: new Date() },
+        });
+      }
+    }).catch((err) => {
+      console.warn(`[Webhook Receipt Send Error]`, err.message);
+    });
+  }
+
   return { status: 'processed', eventId: providerEventId };
 }
+
+/**
+ * Resend payment receipt for a captured payment
+ */
+export async function resendPaymentReceipt(userId: string, paymentId: string) {
+  const payment = await prisma.payment.findFirst({
+    where: {
+      id: paymentId,
+      user_id: userId,
+      status: 'captured',
+    },
+    include: { user: true },
+  });
+
+  if (!payment) {
+    throw new AppError('Captured payment record not found.', 404, 'PAYMENT_NOT_FOUND');
+  }
+
+  if (!payment.user.email || !payment.user.email_verified) {
+    throw new AppError('Your account email address must be verified before a receipt can be sent.', 400, 'EMAIL_NOT_VERIFIED');
+  }
+
+  const receiptNumber = payment.receipt_number || `RCPT-${payment.id.slice(-6).toUpperCase()}`;
+
+  const sendResult = await sendPaymentReceiptEmail(
+    payment.user.email,
+    payment.user.name || payment.user.username,
+    {
+      receiptNumber,
+      orderId: payment.razorpay_order_id,
+      paymentId: payment.razorpay_payment_id || payment.id,
+      planName: payment.plan_name || 'PULSE Pro Monthly',
+      amount: payment.amount,
+      currency: payment.currency,
+      paidAt: payment.updated_at,
+    }
+  );
+
+  if (sendResult.success) {
+    await prisma.payment.update({
+      where: { id: payment.id },
+      data: { email_sent: true, email_sent_at: new Date() },
+    });
+  }
+
+  return sendResult;
+}
+

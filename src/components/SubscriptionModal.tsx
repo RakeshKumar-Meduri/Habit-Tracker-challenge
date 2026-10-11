@@ -8,7 +8,9 @@ import {
   Sparkles, 
   ArrowRight,
   Loader2,
-  AlertCircle
+  AlertCircle,
+  Mail,
+  Send
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { 
@@ -17,6 +19,7 @@ import {
   type Plan, 
   type Subscription 
 } from '../services/paymentService';
+import { resendVerificationEmail, setUserEmail } from '../services/apiService';
 import type { User } from '../types';
 
 interface SubscriptionModalProps {
@@ -46,6 +49,56 @@ export const SubscriptionModal: React.FC<SubscriptionModalProps> = ({
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string>('');
 
+  const [resendNotice, setResendNotice] = useState<string>('');
+  const [isResending, setIsResending] = useState<boolean>(false);
+  const [cooldown, setCooldown] = useState<number>(0);
+  const [emailInput, setEmailInput] = useState<string>(currentUser.email || '');
+
+  useEffect(() => {
+    if (cooldown <= 0) return;
+    const timer = setInterval(() => setCooldown((c) => Math.max(0, c - 1)), 1000);
+    return () => clearInterval(timer);
+  }, [cooldown]);
+
+  const handleResendVerification = async () => {
+    if (cooldown > 0) return;
+    setIsResending(true);
+    setResendNotice('');
+    try {
+      const res = await resendVerificationEmail(currentUser.email || emailInput || undefined);
+      if (res.success) {
+        setResendNotice(res.message || 'Verification link sent to your email.');
+        setCooldown(60);
+      } else {
+        setResendNotice(res.message || 'Failed to send verification email.');
+      }
+    } catch (err: any) {
+      setResendNotice(err.message || 'Error sending email.');
+    } finally {
+      setIsResending(false);
+    }
+  };
+
+  const handleSetAndSendEmail = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!emailInput.trim()) return;
+    setIsResending(true);
+    setResendNotice('');
+    try {
+      const res = await setUserEmail(emailInput.trim().toLowerCase());
+      if (res.success) {
+        setResendNotice(res.message || 'Email saved and verification link sent.');
+        setCooldown(60);
+      } else {
+        setResendNotice(res.error || 'Failed to update email.');
+      }
+    } catch (err: any) {
+      setResendNotice(err.message || 'Error updating email.');
+    } finally {
+      setIsResending(false);
+    }
+  };
+
   useEffect(() => {
     if (isOpen) {
       setIsLoadingPlans(true);
@@ -72,6 +125,12 @@ export const SubscriptionModal: React.FC<SubscriptionModalProps> = ({
 
   const handleCheckout = async () => {
     if (!selectedPlanId) return;
+    const isPaid = selectedPlanId !== 'plan_base_monthly';
+    if (isPaid && !currentUser.email_verified) {
+      setErrorMessage('Email verification is required before purchasing PULSE Pro. Please verify your email.');
+      return;
+    }
+
     setIsProcessing(true);
     setErrorMessage('');
 
@@ -407,6 +466,66 @@ export const SubscriptionModal: React.FC<SubscriptionModalProps> = ({
 
               </div>
 
+              {/* Email Verification Requirement Banner */}
+              {selectedPlanId !== 'plan_base_monthly' && !currentUser.email_verified && (
+                <div className="mb-4 p-4 rounded-xl bg-amber-500/10 border border-amber-500/30 text-xs text-left">
+                  <div className="flex items-start gap-3">
+                    <Mail className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
+                    <div className="flex-1">
+                      <div className="font-bold text-amber-300 text-sm mb-1">
+                        Email Verification Required for PULSE Pro
+                      </div>
+                      <p className="text-amber-200/80 leading-relaxed mb-3">
+                        To enable paid checkouts, secure subscription access, and receive official transaction receipts, your email address must be verified.
+                      </p>
+
+                      {currentUser.email ? (
+                        <div className="flex flex-wrap items-center gap-3">
+                          <span className="text-[#F4F4F5] font-semibold bg-[#131316] px-2.5 py-1 rounded-lg border border-[#26262C]">
+                            {currentUser.email}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={handleResendVerification}
+                            disabled={isResending || cooldown > 0}
+                            className="px-3 py-1.5 bg-[#D98B4A] hover:bg-[#B45F1E] disabled:opacity-50 text-white font-bold rounded-lg transition flex items-center gap-1.5 cursor-pointer"
+                          >
+                            {isResending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Send className="w-3.5 h-3.5" />}
+                            <span>{cooldown > 0 ? `Resend in ${cooldown}s` : 'Resend Verification Link'}</span>
+                          </button>
+                        </div>
+                      ) : (
+                        <form onSubmit={handleSetAndSendEmail} className="flex flex-wrap items-center gap-2">
+                          <input
+                            type="email"
+                            value={emailInput}
+                            onChange={(e) => setEmailInput(e.target.value)}
+                            placeholder="Enter your email to verify"
+                            className="px-3 py-1.5 bg-[#1B1B20] border border-[#26262C] rounded-lg text-[#F4F4F5] text-xs focus:outline-none focus:border-[#D98B4A]"
+                            required
+                          />
+                          <button
+                            type="submit"
+                            disabled={isResending || !emailInput.trim()}
+                            className="px-3 py-1.5 bg-[#D98B4A] hover:bg-[#B45F1E] disabled:opacity-50 text-white font-bold rounded-lg transition flex items-center gap-1.5 cursor-pointer"
+                          >
+                            {isResending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Send className="w-3.5 h-3.5" />}
+                            <span>Save & Send Link</span>
+                          </button>
+                        </form>
+                      )}
+
+                      {resendNotice && (
+                        <div className="mt-2 text-emerald-400 font-semibold flex items-center gap-1.5">
+                          <Check className="w-3.5 h-3.5" />
+                          <span>{resendNotice}</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {/* Security & Payment Footer */}
               <div className="border-t border-[#26262C] pt-5 flex flex-col sm:flex-row items-center justify-between gap-4">
                 <div className="flex items-center gap-2 text-xs text-[#71717A]">
@@ -426,7 +545,7 @@ export const SubscriptionModal: React.FC<SubscriptionModalProps> = ({
                   ) : (
                     <button
                       onClick={handleCheckout}
-                      disabled={isProcessing || isLoadingPlans}
+                      disabled={isProcessing || isLoadingPlans || (selectedPlanId !== 'plan_base_monthly' && !currentUser.email_verified)}
                       className="w-full sm:w-auto px-7 py-3 min-h-[46px] bg-[#3157D5] hover:bg-[#2544B8] disabled:opacity-50 text-white font-semibold text-sm rounded-[10px] transition shadow-sm flex items-center justify-center gap-2 cursor-pointer active:scale-95"
                     >
                       {isProcessing ? (
@@ -437,7 +556,9 @@ export const SubscriptionModal: React.FC<SubscriptionModalProps> = ({
                       ) : (
                         <>
                           <span>
-                            {selectedPlanId === 'plan_base_monthly'
+                            {selectedPlanId !== 'plan_base_monthly' && !currentUser.email_verified
+                              ? 'Verify Email to Upgrade'
+                              : selectedPlanId === 'plan_base_monthly'
                               ? 'Start Free Solo Tracking'
                               : selectedPlanId === 'plan_pro_monthly'
                               ? (isBaseCurrent ? 'Upgrade to Pro Monthly (₹99/mo)' : 'Unlock Pro Groups (₹99/mo)')

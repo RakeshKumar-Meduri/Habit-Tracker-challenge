@@ -375,6 +375,41 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
     w => w.user_id === targetUser.id && w.date === selectedDate
   );
 
+  const isSelectedToday = selectedDate === todayStr;
+  const isSelectedFuture = selectedDate > todayStr;
+
+  const getGoalStatusBadge = (isDone: boolean, goalType: 'gym' | 'steps' | 'water' | 'sleep' | 'junk_food') => {
+    if (isDone) {
+      return {
+        label: '+10 pts Done',
+        className: 'bg-emerald-950/60 text-emerald-400 border-emerald-800/60',
+      };
+    }
+    const hasMissedReason = dayMissedReasons.some(r => r.goal_type === goalType);
+    if (hasMissedReason) {
+      return {
+        label: 'Marked Failed',
+        className: 'bg-rose-950/40 text-rose-400 border-rose-900/40',
+      };
+    }
+    if (isSelectedToday) {
+      return {
+        label: 'In Progress',
+        className: 'bg-amber-950/40 text-amber-300 border-amber-800/60',
+      };
+    }
+    if (isSelectedFuture) {
+      return {
+        label: 'Upcoming',
+        className: 'bg-[#131316] text-[#71717A] border-[#26262C]',
+      };
+    }
+    return {
+      label: goalType === 'junk_food' ? 'Cheat / Missed' : 'Missed',
+      className: 'bg-rose-950/40 text-rose-400 border-rose-900/40',
+    };
+  };
+
   return (
     <div className="space-y-4 sm:space-y-6 animate-fadeIn pb-12 font-sans">
       
@@ -785,6 +820,8 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
                       ? 'bg-amber-950/60 text-amber-300 border-amber-800/60'
                       : selectedStats.coreTasksDone >= 3
                       ? 'bg-emerald-950/60 text-emerald-300 border-emerald-800/60'
+                      : isSelectedToday
+                      ? 'bg-amber-950/40 text-amber-300 border-amber-800/40'
                       : 'bg-[#131316] text-[#A1A1AA] border-[#26262C]'
                   }`}
                 >
@@ -792,6 +829,8 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
                     ? '🌟 Perfect Day!'
                     : selectedStats.coreTasksDone >= 3
                     ? '💪 Strong Effort'
+                    : isSelectedToday
+                    ? '⏳ In Progress'
                     : '🌱 Active Day'}
                 </span>
               </div>
@@ -847,11 +886,11 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
                   <span className={`text-[10px] font-bold px-1.5 py-0.2 rounded border ${
                     isSelectedDateSunday
                       ? 'bg-emerald-950/60 text-emerald-400 border-emerald-800/60'
-                      : selectedStats.log?.gym_done
-                      ? 'bg-emerald-950/60 text-emerald-400 border-emerald-800/60'
-                      : 'bg-rose-950/40 text-rose-400 border-rose-900/40'
+                      : getGoalStatusBadge(!!selectedStats.log?.gym_done, 'gym').className
                   }`}>
-                    {isSelectedDateSunday ? 'Healing Mode' : selectedStats.log?.gym_done ? '+10 pts Done' : 'Missed'}
+                    {isSelectedDateSunday
+                      ? 'Healing Mode'
+                      : getGoalStatusBadge(!!selectedStats.log?.gym_done, 'gym').label}
                   </span>
                 </div>
                 <p className="text-[11px] text-[#A1A1AA] mt-0.5">
@@ -861,6 +900,10 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
                     ? `${selectedStats.workouts.length} workout(s) recorded`
                     : selectedStats.log?.gym_done
                     ? 'Marked as completed'
+                    : isSelectedToday
+                    ? 'In progress — log workout or check off'
+                    : isSelectedFuture
+                    ? 'Scheduled workout'
                     : 'No workout logged'}
                 </p>
               </div>
@@ -883,18 +926,20 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
                 <div className="flex items-center justify-between gap-1">
                   <h5 className="text-xs font-bold text-[#F4F4F5] truncate">Daily Steps</h5>
                   <span className={`text-[10px] font-bold px-1.5 py-0.2 rounded border ${
-                    selectedStats.log?.steps_done
-                      ? 'bg-emerald-950/60 text-emerald-400 border-emerald-800/60'
-                      : 'bg-rose-950/40 text-rose-400 border-rose-900/40'
+                    getGoalStatusBadge(!!selectedStats.log?.steps_done, 'steps').className
                   }`}>
-                    {selectedStats.log?.steps_done ? '+10 pts Done' : 'Missed'}
+                    {getGoalStatusBadge(!!selectedStats.log?.steps_done, 'steps').label}
                   </span>
                 </div>
                 <p className="text-[11px] text-[#A1A1AA] mt-0.5">
                   {selectedStats.log?.steps_value
-                    ? `${selectedStats.log.steps_value.toLocaleString()} / ${selectedStats.log.steps_target?.toLocaleString() || '10,000'} steps`
+                    ? `${selectedStats.log.steps_value.toLocaleString()} / ${(selectedStats.log.steps_target || 10000).toLocaleString()} steps`
                     : selectedStats.log?.steps_done
                     ? 'Target met'
+                    : isSelectedToday
+                    ? 'Accumulating steps today'
+                    : isSelectedFuture
+                    ? 'Goal upcoming'
                     : 'Target not reached'}
                 </p>
               </div>
@@ -917,11 +962,9 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
                 <div className="flex items-center justify-between gap-1">
                   <h5 className="text-xs font-bold text-[#F4F4F5] truncate">Water Hydration</h5>
                   <span className={`text-[10px] font-bold px-1.5 py-0.2 rounded border ${
-                    selectedStats.log?.water_done
-                      ? 'bg-emerald-950/60 text-emerald-400 border-emerald-800/60'
-                      : 'bg-rose-950/40 text-rose-400 border-rose-900/40'
+                    getGoalStatusBadge(!!selectedStats.log?.water_done, 'water').className
                   }`}>
-                    {selectedStats.log?.water_done ? '+10 pts Done' : 'Missed'}
+                    {getGoalStatusBadge(!!selectedStats.log?.water_done, 'water').label}
                   </span>
                 </div>
                 <p className="text-[11px] text-[#A1A1AA] mt-0.5">
@@ -929,6 +972,10 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
                     ? `${selectedStats.log.water_intake_ml.toLocaleString()} / ${selectedStats.log.water_target_ml || 2500} ml`
                     : selectedStats.log?.water_done
                     ? 'Hydration goal met'
+                    : isSelectedToday
+                    ? 'Logging hydration today'
+                    : isSelectedFuture
+                    ? 'Goal upcoming'
                     : 'Goal not reached'}
                 </p>
               </div>
@@ -951,11 +998,9 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
                 <div className="flex items-center justify-between gap-1">
                   <h5 className="text-xs font-bold text-[#F4F4F5] truncate">Sleep Schedule</h5>
                   <span className={`text-[10px] font-bold px-1.5 py-0.2 rounded border ${
-                    selectedStats.log?.sleep_done
-                      ? 'bg-emerald-950/60 text-emerald-400 border-emerald-800/60'
-                      : 'bg-rose-950/40 text-rose-400 border-rose-900/40'
+                    getGoalStatusBadge(!!selectedStats.log?.sleep_done, 'sleep').className
                   }`}>
-                    {selectedStats.log?.sleep_done ? '+10 pts Done' : 'Missed'}
+                    {getGoalStatusBadge(!!selectedStats.log?.sleep_done, 'sleep').label}
                   </span>
                 </div>
                 <p className="text-[11px] text-[#A1A1AA] mt-0.5">
@@ -963,6 +1008,10 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
                     ? `${selectedStats.log.sleep_duration} hrs (${selectedStats.log.sleep_start || '23:00'} - ${selectedStats.log.sleep_end || '07:00'})`
                     : selectedStats.log?.sleep_done
                     ? 'Target met'
+                    : isSelectedToday
+                    ? 'Log tonight or morning schedule'
+                    : isSelectedFuture
+                    ? 'Goal upcoming'
                     : 'Target missed'}
                 </p>
               </div>
@@ -985,15 +1034,19 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
                 <div className="flex items-center justify-between gap-1">
                   <h5 className="text-xs font-bold text-[#F4F4F5] truncate">Clean Nutrition</h5>
                   <span className={`text-[10px] font-bold px-1.5 py-0.2 rounded border ${
-                    selectedStats.log?.junk_food_avoided
-                      ? 'bg-emerald-950/60 text-emerald-400 border-emerald-800/60'
-                      : 'bg-rose-950/40 text-rose-400 border-rose-900/40'
+                    getGoalStatusBadge(!!selectedStats.log?.junk_food_avoided, 'junk_food').className
                   }`}>
-                    {selectedStats.log?.junk_food_avoided ? '+10 pts Done' : 'Cheat / Missed'}
+                    {getGoalStatusBadge(!!selectedStats.log?.junk_food_avoided, 'junk_food').label}
                   </span>
                 </div>
                 <p className="text-[11px] text-[#A1A1AA] mt-0.5">
-                  {selectedStats.log?.junk_food_avoided ? 'Avoided junk food successfully' : 'Had cheat snack or cravings'}
+                  {selectedStats.log?.junk_food_avoided
+                    ? 'Avoided junk food successfully'
+                    : isSelectedToday
+                    ? 'Tracking clean eating today'
+                    : isSelectedFuture
+                    ? 'Goal upcoming'
+                    : 'Had cheat snack or cravings'}
                 </p>
               </div>
             </div>

@@ -50,12 +50,17 @@ app.use(cors({
   },
   credentials: true, // Allow cookies and auth headers
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Cache-Control', 'Pragma'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Cache-Control', 'Pragma', 'x-razorpay-signature', 'X-Razorpay-Signature'],
 }));
 
 // Parsers & Security Middleware
 app.use(cookieParser(ENV.SESSION_SECRET));
-app.use(express.json({ limit: '10mb' }));
+app.use(express.json({
+  limit: '10mb',
+  verify: (req: any, _res, buf) => {
+    req.rawBody = buf.toString('utf8');
+  },
+}));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Anti-caching headers for API responses

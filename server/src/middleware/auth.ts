@@ -20,6 +20,9 @@ export interface AuthenticatedUser {
   must_change_password: boolean;
   groupId: string | null;
   groupRole: 'owner' | 'member' | null;
+  email: string | null;
+  email_verified: boolean;
+  email_verified_at: Date | null;
 }
 
 declare global {
@@ -106,12 +109,25 @@ export async function requireAuth(req: Request, res: Response, next: NextFunctio
       must_change_password: session.user.must_change_password,
       groupId: membership ? membership.group_id : null,
       groupRole: membership ? (membership.role as 'owner' | 'member') : null,
+      email: session.user.email,
+      email_verified: session.user.email_verified,
+      email_verified_at: session.user.email_verified_at,
     };
 
     next();
   } catch (err) {
     next(err);
   }
+}
+
+export async function requireVerifiedEmail(req: Request, res: Response, next: NextFunction) {
+  if (!req.user) {
+    return next(new AppError('Unauthorized: Please log in', 401, 'UNAUTHORIZED'));
+  }
+  if (!req.user.email_verified) {
+    return next(new AppError('Email verification required. Please verify your email address to continue.', 403, 'EMAIL_NOT_VERIFIED'));
+  }
+  next();
 }
 
 export async function requireGroupOwner(req: Request, res: Response, next: NextFunction) {
@@ -123,3 +139,4 @@ export async function requireGroupOwner(req: Request, res: Response, next: NextF
   }
   next();
 }
+

@@ -166,10 +166,10 @@ async function runAllTests() {
   // ----------------------------------------------------
   console.log('\n--- 3. Input Validation (Zod) ---');
 
-  await test('registerSchema validates correct inputs and rejects short passwords', () => {
+  await test('registerSchema validates correct inputs and rejects weak or matching passwords', () => {
     const valid = registerSchema.safeParse({
       username: 'johndoe',
-      password: 'password123',
+      password: 'Password123!',
       name: 'John Doe',
       height: 180,
       weight: 75,
@@ -180,7 +180,25 @@ async function runAllTests() {
       username: 'jd', // too short (<3)
       password: '123', // too short (<6)
     });
-    assert.strictEqual(invalid.success, false, 'Invalid registration payload should fail');
+    assert.strictEqual(invalid.success, false, 'Short password should fail');
+
+    const noUpper = registerSchema.safeParse({
+      username: 'johndoe',
+      password: 'password123!',
+    });
+    assert.strictEqual(noUpper.success, false, 'Password without uppercase should fail');
+
+    const noSpecial = registerSchema.safeParse({
+      username: 'johndoe',
+      password: 'Password123',
+    });
+    assert.strictEqual(noSpecial.success, false, 'Password without special char should fail');
+
+    const matchesUser = registerSchema.safeParse({
+      username: 'Password123!',
+      password: 'Password123!',
+    });
+    assert.strictEqual(matchesUser.success, false, 'Password matching username should fail');
   });
 
   await test('groupUpdateSchema enforces valid step target bounds', () => {

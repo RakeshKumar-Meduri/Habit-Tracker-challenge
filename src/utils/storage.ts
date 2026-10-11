@@ -18,6 +18,7 @@ const STORAGE_KEYS = {
   CUSTOM_HABITS: 'pulse_fitness_custom_habits',
   CUSTOM_HABIT_LOGS: 'pulse_fitness_custom_habit_logs',
   WEIGHT_ANNOUNCEMENTS: 'pulse_fitness_weight_announcements',
+  CURRENT_GROUP: 'pulse_fitness_current_group',
 };
 
 export const DEFAULT_ADMIN_SETTINGS: AdminSettings = {

@@ -22,6 +22,9 @@ export interface User {
   must_change_password?: boolean;
   plan?: string;
   planTier?: 'none' | 'base' | 'pro';
+  email?: string | null;
+  email_verified?: boolean;
+  email_verified_at?: string | null;
 }
 
 export interface AuthSession {

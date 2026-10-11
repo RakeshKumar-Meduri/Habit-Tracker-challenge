@@ -8,6 +8,7 @@ import {
   verifyPaymentSignature,
   processPaymentWebhook,
   ensureDefaultPlans,
+  resendPaymentReceipt,
 } from '../services/payment.service';
 import { AppError } from '../middleware/errorHandler';
 
@@ -80,7 +81,7 @@ router.post('/api/payments/verify', requireAuth, paymentLimiter, async (req, res
 router.post('/api/payments/webhook', async (req, res, next) => {
   try {
     const signature = (req.headers['x-razorpay-signature'] as string) || '';
-    const rawBody = typeof req.body === 'string' ? req.body : JSON.stringify(req.body);
+    const rawBody = (req as any).rawBody || (typeof req.body === 'string' ? req.body : JSON.stringify(req.body));
 
     const result = await processPaymentWebhook(rawBody, signature);
 
@@ -158,7 +159,7 @@ router.post('/api/subscription/cancel', requireAuth, async (req, res, next) => {
 });
 
 // ----------------------------------------------------
-// Payment Status Check
+// Payment Status Check (Recent Payments for User)
 // ----------------------------------------------------
 router.get('/api/payments/status', requireAuth, async (req, res, next) => {
   try {
@@ -178,4 +179,56 @@ router.get('/api/payments/status', requireAuth, async (req, res, next) => {
   }
 });
 
+// ----------------------------------------------------
+// Payment Status Check for a Specific Order (Status Page)
+// ----------------------------------------------------
+router.get('/api/payments/order/:orderId', requireAuth, async (req, res, next) => {
+  try {
+    const userId = req.user!.id;
+    const orderId = String(req.params.orderId);
+
+    const payment = await prisma.payment.findFirst({
+      where: {
+        razorpay_order_id: orderId,
+        user_id: userId,
+      },
+    });
+
+    if (!payment) {
+      throw new AppError('Payment order not found', 404, 'ORDER_NOT_FOUND');
+    }
+
+    res.json({
+      success: true,
+      payment,
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// ----------------------------------------------------
+// Resend Payment Receipt to Verified Email
+// ----------------------------------------------------
+router.post('/api/payments/resend-receipt/:paymentId', requireAuth, paymentLimiter, async (req, res, next) => {
+  try {
+    const userId = req.user!.id;
+    const paymentId = String(req.params.paymentId);
+
+    const result = await resendPaymentReceipt(userId, paymentId);
+
+    if (!result.success) {
+      throw new AppError(result.error || 'Failed to dispatch receipt email', 500, 'RECEIPT_EMAIL_FAILED');
+    }
+
+    res.json({
+      success: true,
+      message: 'Payment receipt has been resent to your verified email address.',
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
 export default router;
+

@@ -311,27 +311,40 @@ export const WorkoutHistory: React.FC<WorkoutHistoryProps> = ({
                   </div>
 
                   {/* Metric Chips */}
-                  <div className="grid grid-cols-3 gap-2 bg-[#1B1B20] p-2.5 rounded-lg border border-[#26262C] text-center mb-3">
-                    <div>
-                      <span className="block text-[10px] text-[#71717A] font-medium uppercase">Sets</span>
-                      <strong className="text-sm font-bold text-[#F4F4F5] tabular-nums">{w.sets}</strong>
+                  {w.exercise_type === 'cardio' ? (
+                    <div className="grid grid-cols-2 gap-2 bg-[#1B1B20] p-2.5 rounded-lg border border-[#26262C] text-center mb-3">
+                      <div>
+                        <span className="block text-[10px] text-[#71717A] font-medium uppercase">Duration</span>
+                        <strong className="text-sm font-bold text-[#D98B4A] tabular-nums">{w.duration || 30} mins</strong>
+                      </div>
+                      <div>
+                        <span className="block text-[10px] text-[#71717A] font-medium uppercase">Type</span>
+                        <strong className="text-sm font-bold text-[#F4F4F5] tabular-nums">Cardio Session</strong>
+                      </div>
                     </div>
-                    <div>
-                      <span className="block text-[10px] text-[#71717A] font-medium uppercase">Reps</span>
-                      <strong className="text-sm font-bold text-[#F4F4F5] tabular-nums">{w.reps}</strong>
+                  ) : (
+                    <div className="grid grid-cols-3 gap-2 bg-[#1B1B20] p-2.5 rounded-lg border border-[#26262C] text-center mb-3">
+                      <div>
+                        <span className="block text-[10px] text-[#71717A] font-medium uppercase">Sets</span>
+                        <strong className="text-sm font-bold text-[#F4F4F5] tabular-nums">{w.sets}</strong>
+                      </div>
+                      <div>
+                        <span className="block text-[10px] text-[#71717A] font-medium uppercase">Reps</span>
+                        <strong className="text-sm font-bold text-[#F4F4F5] tabular-nums">{w.reps}</strong>
+                      </div>
+                      <div>
+                        <span className="block text-[10px] text-[#71717A] font-medium uppercase">Weight</span>
+                        <strong className="text-sm font-bold text-[#D98B4A] tabular-nums">
+                          {w.weight ? `${w.weight} kg` : 'Bodyweight'}
+                        </strong>
+                      </div>
                     </div>
-                    <div>
-                      <span className="block text-[10px] text-[#71717A] font-medium uppercase">Weight</span>
-                      <strong className="text-sm font-bold text-[#D98B4A] tabular-nums">
-                        {w.weight ? `${w.weight} kg` : 'Bodyweight'}
-                      </strong>
-                    </div>
-                  </div>
+                  )}
 
                   {/* Notes / Duration */}
                   <div className="flex items-center justify-between text-xs text-[#A1A1AA] mb-2">
                     <span className="flex items-center gap-1 text-[11px]">
-                      <Clock className="w-3.5 h-3.5 text-[#D98B4A]" /> Duration: <strong className="text-[#F4F4F5] tabular-nums">{w.duration} mins</strong>
+                      <Clock className="w-3.5 h-3.5 text-[#D98B4A]" /> Total Session Time: <strong className="text-[#F4F4F5] tabular-nums">{w.duration} mins</strong>
                     </span>
                   </div>
 

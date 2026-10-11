@@ -272,9 +272,9 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
             <div>
               <h3 className="text-sm sm:text-base font-bold text-[#F4F4F5] flex items-center gap-2">
                 <Moon className="w-4 h-4 sm:w-5 sm:h-5 text-[#3157D5]" />
-                Nightly Sleep Duration (7–8h Target)
+                Nightly Sleep Duration (7–9h Target)
               </h3>
-              <p className="text-xs text-[#A1A1AA]">Blue = target met (7–8.5 hrs)</p>
+              <p className="text-xs text-[#A1A1AA]">Blue = target met (7–9 hrs)</p>
             </div>
           </div>
 

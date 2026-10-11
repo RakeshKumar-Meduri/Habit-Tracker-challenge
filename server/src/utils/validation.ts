@@ -2,17 +2,48 @@ import { z } from 'zod';
 
 export const registerSchema = z.object({
   username: z.string().min(3, 'Username must be at least 3 characters long').max(30),
+  email: z.string().trim().email('Please enter a valid email address').optional(),
   name: z.string().min(1, 'Name is required').max(50).optional(),
-  password: z.string().min(6, 'Password must be at least 6 characters long').optional(),
-  passwordPlain: z.string().min(6, 'Password must be at least 6 characters long').optional(),
+  password: z.string().optional(),
+  passwordPlain: z.string().optional(),
   height: z.coerce.number().min(50).max(300).optional(),
   weight: z.coerce.number().min(20).max(500).optional(),
   age: z.coerce.number().min(10).max(120).optional(),
   gender: z.string().optional(),
   inviteToken: z.string().optional(),
-}).refine(data => data.password || data.passwordPlain, {
-  message: 'Password must be at least 6 characters long',
-  path: ['password'],
+}).superRefine((data, ctx) => {
+  const pass = (data.password || data.passwordPlain || '').trim();
+  const cleanUsername = data.username.trim().replace(/^@+/, '').toLowerCase();
+
+  if (!pass || pass.length < 6) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: 'Password must be at least 6 characters long',
+      path: ['password'],
+    });
+    return;
+  }
+  if (!/[A-Z]/.test(pass)) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: 'Password must contain at least one uppercase letter',
+      path: ['password'],
+    });
+  }
+  if (!/[^A-Za-z0-9]/.test(pass)) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: 'Password must contain at least one special character',
+      path: ['password'],
+    });
+  }
+  if (pass.toLowerCase() === cleanUsername) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: 'Password cannot match your username',
+      path: ['password'],
+    });
+  }
 });
 
 export const loginSchema = z.object({
@@ -82,3 +113,12 @@ export const verifyPaymentSchema = z.object({
   paymentId: z.string().min(1, 'Payment ID is required'),
   signature: z.string().min(1, 'Signature is required'),
 });
+
+export const setEmailSchema = z.object({
+  email: z.string().trim().email('Please enter a valid email address'),
+});
+
+export const resendVerificationSchema = z.object({
+  email: z.string().trim().email('Please enter a valid email address').optional(),
+});
+

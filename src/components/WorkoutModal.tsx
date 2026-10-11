@@ -19,6 +19,8 @@ interface RoutineItem {
   reps: number;
   weight: string;
   duration: number;
+  distance?: string;
+  intervals?: string;
   notes: string;
 }
 
@@ -48,6 +50,8 @@ export const WorkoutModal: React.FC<WorkoutModalProps> = ({
       reps: 10,
       weight: '',
       duration: 30,
+      distance: '',
+      intervals: '',
       notes: '',
     },
   ]);
@@ -65,11 +69,13 @@ export const WorkoutModal: React.FC<WorkoutModalProps> = ({
       {
         id: `ex_${Date.now()}_${prev.length}`,
         exercise_name: '',
-        exercise_type: activeCategory === 'cardio' ? 'cardio' : 'strength',
-        sets: 3,
-        reps: 10,
+        exercise_type: activeCategory === 'cardio' ? 'cardio' : activeCategory === 'strength' ? 'strength' : 'other',
+        sets: activeCategory === 'strength' ? 3 : (activeCategory === 'hiit' ? 4 : 1),
+        reps: activeCategory === 'strength' ? 10 : 1,
         weight: '',
-        duration: 15,
+        duration: activeCategory === 'cardio' ? 30 : (activeCategory === 'hiit' ? 20 : 15),
+        distance: '',
+        intervals: '',
         notes: '',
       },
     ]);
@@ -101,21 +107,31 @@ export const WorkoutModal: React.FC<WorkoutModalProps> = ({
     }
 
     const timestamp = Date.now();
-    const newWorkouts: Workout[] = valid.map((item, idx) => ({
-      id: `wo_${currentUser.id}_${timestamp}_${idx}`,
-      user_id: currentUser.id,
-      date: selectedDate,
-      exercise_name: item.exercise_name.trim(),
-      exercise_type: item.exercise_type || 'strength',
-      sets: Math.max(1, Number(item.sets) || 1),
-      reps: Math.max(1, Number(item.reps) || 1),
-      weight: item.weight ? parseFloat(item.weight) : undefined,
-      weight_unit: 'kg',
-      duration: Math.max(1, Number(item.duration) || 15),
-      notes: item.notes.trim(),
-      is_private: isPrivate,
-      created_at: new Date().toISOString(),
-    }));
+    const newWorkouts: Workout[] = valid.map((item, idx) => {
+      let finalNotes = item.notes.trim();
+      if (item.distance && item.distance.trim()) {
+        finalNotes = finalNotes ? `${item.distance.trim()} · ${finalNotes}` : item.distance.trim();
+      }
+      if (item.intervals && item.intervals.trim()) {
+        finalNotes = finalNotes ? `[${item.intervals.trim()}] ${finalNotes}` : `[${item.intervals.trim()}]`;
+      }
+
+      return {
+        id: `wo_${currentUser.id}_${timestamp}_${idx}`,
+        user_id: currentUser.id,
+        date: selectedDate,
+        exercise_name: item.exercise_name.trim(),
+        exercise_type: item.exercise_type || (activeCategory === 'cardio' ? 'cardio' : activeCategory === 'strength' ? 'strength' : 'other'),
+        sets: Math.max(1, Number(item.sets) || 1),
+        reps: Math.max(1, Number(item.reps) || 1),
+        weight: item.weight ? parseFloat(item.weight) : undefined,
+        weight_unit: 'kg',
+        duration: Math.max(1, Number(item.duration) || 15),
+        notes: finalNotes,
+        is_private: isPrivate,
+        created_at: new Date().toISOString(),
+      };
+    });
 
     onSaveWorkouts(newWorkouts);
     onClose();
@@ -226,7 +242,7 @@ export const WorkoutModal: React.FC<WorkoutModalProps> = ({
                     const emptyIdx = exercises.findIndex(e => !e.exercise_name);
                     const targetId = emptyIdx >= 0 ? exercises[emptyIdx].id : exercises[exercises.length - 1].id;
                     handleUpdateRow(targetId, 'exercise_name', ex);
-                    handleUpdateRow(targetId, 'exercise_type', activeCategory === 'cardio' ? 'cardio' : 'strength');
+                    handleUpdateRow(targetId, 'exercise_type', activeCategory === 'cardio' ? 'cardio' : activeCategory === 'strength' ? 'strength' : 'other');
                   }}
                   className="px-2.5 py-1 rounded-md bg-[#1B1B20] hover:bg-[#26262C] text-xs text-[#A1A1AA] hover:text-[#F4F4F5] border border-[#26262C] hover:border-[#D98B4A]/40 transition cursor-pointer"
                 >
@@ -248,7 +264,7 @@ export const WorkoutModal: React.FC<WorkoutModalProps> = ({
                     <span className="w-5 h-5 rounded-md bg-[#131316] border border-[#26262C] flex items-center justify-center text-[10px] text-[#A1A1AA] tabular-nums">
                       {index + 1}
                     </span>
-                    Exercise Item
+                    {activeCategory === 'cardio' ? 'Cardio Activity' : activeCategory === 'hiit' ? 'HIIT / Circuit Drill' : activeCategory === 'mobility' ? 'Mobility / Recovery' : 'Strength Exercise'}
                   </span>
                   {exercises.length > 1 && (
                     <button
@@ -264,52 +280,146 @@ export const WorkoutModal: React.FC<WorkoutModalProps> = ({
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                   <div>
-                    <label className="block text-[10px] font-semibold text-[#71717A] mb-1">Exercise Name</label>
+                    <label className="block text-[10px] font-semibold text-[#71717A] mb-1">
+                      {activeCategory === 'cardio' ? 'Activity Name' : activeCategory === 'hiit' ? 'Exercise / Circuit Drill' : activeCategory === 'mobility' ? 'Routine / Pose Name' : 'Exercise Name'}
+                    </label>
                     <input
                       type="text"
                       value={item.exercise_name}
                       onChange={(e) => handleUpdateRow(item.id, 'exercise_name', e.target.value)}
-                      placeholder="e.g. Bench Press, Treadmill..."
+                      placeholder={activeCategory === 'cardio' ? 'e.g. Treadmill Run, Outdoor Jog...' : activeCategory === 'hiit' ? 'e.g. Burpees, Kettlebell Circuit...' : activeCategory === 'mobility' ? 'e.g. Full Body Yoga, Foam Rolling...' : 'e.g. Bench Press, Squats...'}
                       className="w-full px-3 py-2 bg-[#131316] border border-[#26262C] rounded-lg text-[#F4F4F5] text-xs focus:outline-none focus:border-[#D98B4A]"
                     />
                   </div>
 
-                  <div className="grid grid-cols-3 gap-2">
-                    <div>
-                      <label className="block text-[10px] font-semibold text-[#71717A] mb-1">Sets</label>
-                      <input
-                        type="number"
-                        min="1"
-                        max="99"
-                        placeholder="3"
-                        value={item.sets === 0 || !item.sets ? '' : item.sets}
-                        onChange={(e) => handleUpdateRow(item.id, 'sets', e.target.value === '' ? '' : Number(e.target.value))}
-                        className="w-full px-2.5 py-2 bg-[#131316] border border-[#26262C] rounded-lg text-[#F4F4F5] text-xs text-center tabular-nums focus:outline-none focus:border-[#D98B4A]"
-                      />
+                  {/* Category-Specific Right Side Inputs */}
+                  {activeCategory === 'cardio' ? (
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <label className="block text-[10px] font-semibold text-[#D98B4A] mb-1">Duration (mins) *</label>
+                        <input
+                          type="number"
+                          min="1"
+                          max="360"
+                          placeholder="30"
+                          value={item.duration === 0 || !item.duration ? '' : item.duration}
+                          onChange={(e) => handleUpdateRow(item.id, 'duration', e.target.value === '' ? '' : Number(e.target.value))}
+                          className="w-full px-2.5 py-2 bg-[#131316] border border-[#26262C] rounded-lg text-[#F4F4F5] text-xs text-center tabular-nums focus:outline-none focus:border-[#D98B4A]"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] font-semibold text-[#71717A] mb-1">Distance (km/mi)</label>
+                        <input
+                          type="text"
+                          value={item.distance || ''}
+                          onChange={(e) => handleUpdateRow(item.id, 'distance', e.target.value)}
+                          placeholder="e.g. 5.0 km"
+                          className="w-full px-2 py-2 bg-[#131316] border border-[#26262C] rounded-lg text-[#F4F4F5] text-xs text-center tabular-nums focus:outline-none focus:border-[#D98B4A]"
+                        />
+                      </div>
                     </div>
-                    <div>
-                      <label className="block text-[10px] font-semibold text-[#71717A] mb-1">Reps</label>
-                      <input
-                        type="number"
-                        min="1"
-                        max="999"
-                        placeholder="10"
-                        value={item.reps === 0 || !item.reps ? '' : item.reps}
-                        onChange={(e) => handleUpdateRow(item.id, 'reps', e.target.value === '' ? '' : Number(e.target.value))}
-                        className="w-full px-2.5 py-2 bg-[#131316] border border-[#26262C] rounded-lg text-[#F4F4F5] text-xs text-center tabular-nums focus:outline-none focus:border-[#D98B4A]"
-                      />
+                  ) : activeCategory === 'hiit' ? (
+                    <div className="grid grid-cols-3 gap-2">
+                      <div>
+                        <label className="block text-[10px] font-semibold text-[#D98B4A] mb-1">Duration (mins) *</label>
+                        <input
+                          type="number"
+                          min="1"
+                          max="180"
+                          placeholder="20"
+                          value={item.duration === 0 || !item.duration ? '' : item.duration}
+                          onChange={(e) => handleUpdateRow(item.id, 'duration', e.target.value === '' ? '' : Number(e.target.value))}
+                          className="w-full px-2.5 py-2 bg-[#131316] border border-[#26262C] rounded-lg text-[#F4F4F5] text-xs text-center tabular-nums focus:outline-none focus:border-[#D98B4A]"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] font-semibold text-[#71717A] mb-1">Rounds</label>
+                        <input
+                          type="number"
+                          min="1"
+                          max="50"
+                          placeholder="4"
+                          value={item.sets === 0 || !item.sets ? '' : item.sets}
+                          onChange={(e) => handleUpdateRow(item.id, 'sets', e.target.value === '' ? '' : Number(e.target.value))}
+                          className="w-full px-2.5 py-2 bg-[#131316] border border-[#26262C] rounded-lg text-[#F4F4F5] text-xs text-center tabular-nums focus:outline-none focus:border-[#D98B4A]"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] font-semibold text-[#71717A] mb-1">Work / Rest</label>
+                        <input
+                          type="text"
+                          value={item.intervals || ''}
+                          onChange={(e) => handleUpdateRow(item.id, 'intervals', e.target.value)}
+                          placeholder="45s / 15s"
+                          className="w-full px-2 py-2 bg-[#131316] border border-[#26262C] rounded-lg text-[#F4F4F5] text-xs text-center tabular-nums focus:outline-none focus:border-[#D98B4A]"
+                        />
+                      </div>
                     </div>
-                    <div>
-                      <label className="block text-[10px] font-semibold text-[#71717A] mb-1">Kg / Lbs</label>
-                      <input
-                        type="text"
-                        value={item.weight}
-                        onChange={(e) => handleUpdateRow(item.id, 'weight', e.target.value)}
-                        placeholder="Optional"
-                        className="w-full px-2 py-2 bg-[#131316] border border-[#26262C] rounded-lg text-[#F4F4F5] text-xs text-center tabular-nums focus:outline-none focus:border-[#D98B4A]"
-                      />
+                  ) : activeCategory === 'mobility' ? (
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <label className="block text-[10px] font-semibold text-[#D98B4A] mb-1">Duration (mins) *</label>
+                        <input
+                          type="number"
+                          min="1"
+                          max="180"
+                          placeholder="20"
+                          value={item.duration === 0 || !item.duration ? '' : item.duration}
+                          onChange={(e) => handleUpdateRow(item.id, 'duration', e.target.value === '' ? '' : Number(e.target.value))}
+                          className="w-full px-2.5 py-2 bg-[#131316] border border-[#26262C] rounded-lg text-[#F4F4F5] text-xs text-center tabular-nums focus:outline-none focus:border-[#D98B4A]"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] font-semibold text-[#71717A] mb-1">Sets / Hold</label>
+                        <input
+                          type="number"
+                          min="1"
+                          max="20"
+                          placeholder="1"
+                          value={item.sets === 0 || !item.sets ? '' : item.sets}
+                          onChange={(e) => handleUpdateRow(item.id, 'sets', e.target.value === '' ? '' : Number(e.target.value))}
+                          className="w-full px-2.5 py-2 bg-[#131316] border border-[#26262C] rounded-lg text-[#F4F4F5] text-xs text-center tabular-nums focus:outline-none focus:border-[#D98B4A]"
+                        />
+                      </div>
                     </div>
-                  </div>
+                  ) : (
+                    <div className="grid grid-cols-3 gap-2">
+                      <div>
+                        <label className="block text-[10px] font-semibold text-[#71717A] mb-1">Sets</label>
+                        <input
+                          type="number"
+                          min="1"
+                          max="99"
+                          placeholder="3"
+                          value={item.sets === 0 || !item.sets ? '' : item.sets}
+                          onChange={(e) => handleUpdateRow(item.id, 'sets', e.target.value === '' ? '' : Number(e.target.value))}
+                          className="w-full px-2.5 py-2 bg-[#131316] border border-[#26262C] rounded-lg text-[#F4F4F5] text-xs text-center tabular-nums focus:outline-none focus:border-[#D98B4A]"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] font-semibold text-[#71717A] mb-1">Reps</label>
+                        <input
+                          type="number"
+                          min="1"
+                          max="999"
+                          placeholder="10"
+                          value={item.reps === 0 || !item.reps ? '' : item.reps}
+                          onChange={(e) => handleUpdateRow(item.id, 'reps', e.target.value === '' ? '' : Number(e.target.value))}
+                          className="w-full px-2.5 py-2 bg-[#131316] border border-[#26262C] rounded-lg text-[#F4F4F5] text-xs text-center tabular-nums focus:outline-none focus:border-[#D98B4A]"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] font-semibold text-[#71717A] mb-1">Kg / Lbs</label>
+                        <input
+                          type="text"
+                          value={item.weight}
+                          onChange={(e) => handleUpdateRow(item.id, 'weight', e.target.value)}
+                          placeholder="Optional"
+                          className="w-full px-2 py-2 bg-[#131316] border border-[#26262C] rounded-lg text-[#F4F4F5] text-xs text-center tabular-nums focus:outline-none focus:border-[#D98B4A]"
+                        />
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 <div>
@@ -317,7 +427,7 @@ export const WorkoutModal: React.FC<WorkoutModalProps> = ({
                     type="text"
                     value={item.notes}
                     onChange={(e) => handleUpdateRow(item.id, 'notes', e.target.value)}
-                    placeholder="Optional notes e.g. Felt strong on 3rd set, good form..."
+                    placeholder={activeCategory === 'cardio' ? 'Optional pace, incline, machine, or heart rate notes...' : activeCategory === 'hiit' ? 'Optional round notes, target heart rate...' : 'Optional notes e.g. Felt strong on 3rd set, good form...'}
                     className="w-full px-3 py-1.5 bg-[#131316] border border-[#26262C] rounded-lg text-[#F4F4F5] text-xs focus:outline-none focus:border-[#D98B4A]"
                   />
                 </div>
@@ -345,12 +455,12 @@ export const WorkoutModal: React.FC<WorkoutModalProps> = ({
               {isPrivate ? (
                 <>
                   <Lock className="w-4 h-4 text-[#FBBF24]" />
-                  <span>Private (Only you can see this workout)</span>
+                  <span>Private to Me (Hidden from group feed)</span>
                 </>
               ) : (
                 <>
                   <Globe className="w-4 h-4 text-[#D98B4A]" />
-                  <span>Public (Shared with your fitness challenge group)</span>
+                  <span>Visible to This Group (Shared with teammates)</span>
                 </>
               )}
             </button>

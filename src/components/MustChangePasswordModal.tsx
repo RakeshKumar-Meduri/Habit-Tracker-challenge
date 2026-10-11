@@ -25,6 +25,18 @@ export const MustChangePasswordModal: React.FC<MustChangePasswordModalProps> = (
       setError('Password must be at least 6 characters long.');
       return;
     }
+    if (!/[A-Z]/.test(newPassword)) {
+      setError('Password must contain at least one uppercase letter.');
+      return;
+    }
+    if (!/[^A-Za-z0-9]/.test(newPassword)) {
+      setError('Password must contain at least one special character.');
+      return;
+    }
+    if (newPassword.toLowerCase() === currentUser.username.toLowerCase()) {
+      setError('Password cannot match your username.');
+      return;
+    }
 
     if (newPassword !== confirmPassword) {
       setError('Passwords do not match.');

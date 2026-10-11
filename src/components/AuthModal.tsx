@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import type { User, Gender, InvitePreview } from '../types';
 import { authorizeCredentials, createAuthSession } from '../services/authService';
 import { loginUserOnServer, registerUserOnServer, redeemInvite } from '../services/apiService';
-import { Lock, User as UserIcon, X, Clock, AlertTriangle, Scale, Ruler, Calendar, Ticket } from 'lucide-react';
+import { Lock, User as UserIcon, X, Clock, AlertTriangle, Scale, Ruler, Calendar, Ticket, Mail } from 'lucide-react';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -40,10 +40,11 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   // Register form state
   const [fullName, setFullName] = useState('');
   const [regUsername, setRegUsername] = useState('');
+  const [regEmail, setRegEmail] = useState('');
   const [regPassword, setRegPassword] = useState('');
-  const [height, setHeight] = useState<number>(175);
-  const [weight, setWeight] = useState<number>(70);
-  const [age, setAge] = useState<number>(25);
+  const [height, setHeight] = useState('');
+  const [weight, setWeight] = useState('');
+  const [age, setAge] = useState('');
   const [gender, setGender] = useState<Gender>('male');
 
   const [error, setError] = useState('');
@@ -135,6 +136,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     setError('');
 
     const cleanUsername = regUsername.trim().replace(/^@+/, '').toLowerCase();
+    const cleanEmail = regEmail.trim().toLowerCase();
     const cleanPassword = regPassword.trim();
 
     if (!cleanUsername) {
@@ -145,8 +147,45 @@ export const AuthModal: React.FC<AuthModalProps> = ({
       setError('Username must be at least 3 characters long.');
       return;
     }
+    if (!cleanEmail) {
+      setError('Please enter your email address.');
+      return;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)) {
+      setError('Please enter a valid email address.');
+      return;
+    }
     if (!cleanPassword || cleanPassword.length < 6) {
       setError('Password must be at least 6 characters long.');
+      return;
+    }
+    if (!/[A-Z]/.test(cleanPassword)) {
+      setError('Password must contain at least one uppercase letter.');
+      return;
+    }
+    if (!/[^A-Za-z0-9]/.test(cleanPassword)) {
+      setError('Password must contain at least one special character (e.g. !@#$%^&*).');
+      return;
+    }
+    if (cleanPassword.toLowerCase() === cleanUsername) {
+      setError('Password cannot match your username.');
+      return;
+    }
+
+    const parsedHeight = height.trim() ? Number(height) : undefined;
+    const parsedWeight = weight.trim() ? Number(weight) : undefined;
+    const parsedAge = age.trim() ? Number(age) : undefined;
+
+    if (parsedHeight !== undefined && (isNaN(parsedHeight) || parsedHeight < 50 || parsedHeight > 300)) {
+      setError('Please enter a valid height between 50 and 300 cm.');
+      return;
+    }
+    if (parsedWeight !== undefined && (isNaN(parsedWeight) || parsedWeight < 20 || parsedWeight > 500)) {
+      setError('Please enter a valid weight between 20 and 500 kg.');
+      return;
+    }
+    if (parsedAge !== undefined && (isNaN(parsedAge) || parsedAge < 10 || parsedAge > 120)) {
+      setError('Please enter a valid age between 10 and 120.');
       return;
     }
 
@@ -158,10 +197,11 @@ export const AuthModal: React.FC<AuthModalProps> = ({
       const serverRes = await registerUserOnServer({
         name: fullName.trim() || cleanUsername,
         username: cleanUsername,
+        email: cleanEmail,
         passwordPlain: cleanPassword,
-        height,
-        weight,
-        age,
+        height: parsedHeight,
+        weight: parsedWeight,
+        age: parsedAge,
         gender,
         inviteToken,
       });
@@ -300,20 +340,38 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               </div>
             </div>
 
-            <div>
-              <label className="block text-xs font-semibold text-[#A1A1AA] mb-1">Username</label>
-              <div className="relative">
-                <UserIcon className="w-4 h-4 text-[#A1A1AA] absolute left-3.5 top-3" />
-                <input
-                  type="text"
-                  value={regUsername}
-                  onChange={(e) => setRegUsername(e.target.value)}
-                  placeholder="Choose unique username (e.g. johndoe)"
-                  className="w-full pl-10 pr-3 py-2 bg-[#1B1B20] border border-[#26262C] rounded-xl text-[#F4F4F5] text-sm focus:outline-none focus:border-[#D98B4A]"
-                  required
-                />
+              <div>
+                <label className="block text-xs font-semibold text-[#A1A1AA] mb-1">Username</label>
+                <div className="relative">
+                  <UserIcon className="w-4 h-4 text-[#A1A1AA] absolute left-3.5 top-3" />
+                  <input
+                    type="text"
+                    value={regUsername}
+                    onChange={(e) => setRegUsername(e.target.value)}
+                    placeholder="Choose unique username (e.g. johndoe)"
+                    className="w-full pl-10 pr-3 py-2 bg-[#1B1B20] border border-[#26262C] rounded-xl text-[#F4F4F5] text-sm focus:outline-none focus:border-[#D98B4A]"
+                    required
+                  />
+                </div>
               </div>
-            </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-[#A1A1AA] mb-1">Email Address</label>
+                <div className="relative">
+                  <Mail className="w-4 h-4 text-[#A1A1AA] absolute left-3.5 top-3" />
+                  <input
+                    type="email"
+                    value={regEmail}
+                    onChange={(e) => setRegEmail(e.target.value)}
+                    placeholder="e.g. athlete@example.com"
+                    className="w-full pl-10 pr-3 py-2 bg-[#1B1B20] border border-[#26262C] rounded-xl text-[#F4F4F5] text-sm focus:outline-none focus:border-[#D98B4A]"
+                    required
+                  />
+                </div>
+                <p className="text-[10px] text-[#A1A1AA] mt-1">
+                  Required for verification, paid upgrades, and receipt delivery.
+                </p>
+              </div>
 
             <div>
               <label className="block text-xs font-semibold text-[#A1A1AA] mb-1">Password</label>
@@ -323,11 +381,14 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   type="password"
                   value={regPassword}
                   onChange={(e) => setRegPassword(e.target.value)}
-                  placeholder="At least 6 characters"
+                  placeholder="Min 6 chars, 1 uppercase, 1 special char"
                   className="w-full pl-10 pr-3 py-2 bg-[#1B1B20] border border-[#26262C] rounded-xl text-[#F4F4F5] text-sm focus:outline-none focus:border-[#D98B4A]"
                   required
                 />
               </div>
+              <p className="text-[10px] text-[#A1A1AA] mt-1">
+                Min 6 chars, at least 1 uppercase & 1 special symbol, cannot match username.
+              </p>
             </div>
 
             {/* Profile Metrics (Height, Weight, Age, Gender) */}
@@ -339,9 +400,10 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   <input
                     type="number"
                     value={height}
-                    onChange={(e) => setHeight(Number(e.target.value))}
-                    min="100"
-                    max="250"
+                    onChange={(e) => setHeight(e.target.value)}
+                    placeholder="e.g. 175"
+                    min="50"
+                    max="300"
                     className="w-full pl-8 pr-2 py-2 bg-[#1B1B20] border border-[#26262C] rounded-xl text-[#F4F4F5] text-xs focus:outline-none focus:border-[#D98B4A]"
                   />
                 </div>
@@ -355,9 +417,10 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                     type="number"
                     step="0.1"
                     value={weight}
-                    onChange={(e) => setWeight(Number(e.target.value))}
-                    min="30"
-                    max="300"
+                    onChange={(e) => setWeight(e.target.value)}
+                    placeholder="e.g. 70"
+                    min="20"
+                    max="500"
                     className="w-full pl-8 pr-2 py-2 bg-[#1B1B20] border border-[#26262C] rounded-xl text-[#F4F4F5] text-xs focus:outline-none focus:border-[#D98B4A]"
                   />
                 </div>
@@ -370,9 +433,10 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   <input
                     type="number"
                     value={age}
-                    onChange={(e) => setAge(Number(e.target.value))}
+                    onChange={(e) => setAge(e.target.value)}
+                    placeholder="e.g. 25"
                     min="10"
-                    max="100"
+                    max="120"
                     className="w-full pl-8 pr-2 py-2 bg-[#1B1B20] border border-[#26262C] rounded-xl text-[#F4F4F5] text-xs focus:outline-none focus:border-[#D98B4A]"
                   />
                 </div>

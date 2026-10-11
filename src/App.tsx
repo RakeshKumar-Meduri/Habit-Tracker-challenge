@@ -74,6 +74,8 @@ import { WeeklyRecapModal } from './components/WeeklyRecapModal';
 import { InviteModal } from './components/InviteModal';
 import { JoinGroupModal } from './components/JoinGroupModal';
 import { SubscriptionModal } from './components/SubscriptionModal';
+import { EmailVerificationModal } from './components/EmailVerificationModal';
+import { PaymentStatusModal } from './components/PaymentStatusModal';
 import { Trophy, Swords, Award } from 'lucide-react';
 
 export function App() {
@@ -217,17 +219,32 @@ export function App() {
   const [isRecapModalOpen, setIsRecapModalOpen] = useState<boolean>(false);
 
   // Group & Invites state
-  const [currentGroup, setCurrentGroup] = useState<Group | null>(null);
+  const [currentGroup, setCurrentGroup] = useState<Group | null>(() => {
+    try {
+      const raw = localStorage.getItem('pulse_fitness_current_group');
+      return raw ? JSON.parse(raw) : null;
+    } catch {
+      return null;
+    }
+  });
   const [myRole, setMyRole] = useState<'owner' | 'member'>('member');
   const [groupInvites, setGroupInvites] = useState<Invite[]>([]);
   const [isInviteModalOpen, setIsInviteModalOpen] = useState<boolean>(false);
   const [joinToken, setJoinToken] = useState<string | null>(null);
   const [isJoinModalOpen, setIsJoinModalOpen] = useState<boolean>(false);
 
-  // Detect /join/:token on mount and popstate
+  // Email verification and payment status states
+  const [isVerificationModalOpen, setIsVerificationModalOpen] = useState<boolean>(false);
+  const [emailVerifyToken, setEmailVerifyToken] = useState<string | null>(null);
+  const [isPaymentStatusModalOpen, setIsPaymentStatusModalOpen] = useState<boolean>(false);
+  const [paymentOrderId, setPaymentOrderId] = useState<string | null>(null);
+
+  // Detect /join/:token, /verify-email, and /payment-status on mount and popstate
   useEffect(() => {
-    const checkJoinUrl = () => {
+    const checkAppUrls = () => {
       if (typeof window === 'undefined') return;
+
+      // 1. /join/:token
       const match = window.location.pathname.match(/^\/join\/([^/?#]+)/);
       if (match && match[1]) {
         const token = match[1].trim();
@@ -237,12 +254,37 @@ export function App() {
           sessionStorage.setItem('pulse_invite_token', token);
         } catch {}
       }
+
+      // 2. /verify-email or ?token=...
+      const urlParams = new URLSearchParams(window.location.search);
+      const verifyTokenParam = urlParams.get('token');
+      const isVerifyPath = window.location.pathname.includes('verify-email');
+      if (verifyTokenParam || isVerifyPath) {
+        if (verifyTokenParam) {
+          setEmailVerifyToken(verifyTokenParam.trim());
+        }
+        setIsVerificationModalOpen(true);
+        // Clean URL to prevent token leakage in history/logs
+        try {
+          window.history.replaceState({}, document.title, window.location.pathname);
+        } catch {}
+      }
+
+      // 3. /payment-status or ?orderId=...
+      const orderIdParam = urlParams.get('orderId') || urlParams.get('order_id');
+      const isPaymentPath = window.location.pathname.includes('payment-status');
+      if (orderIdParam || isPaymentPath) {
+        if (orderIdParam) {
+          setPaymentOrderId(orderIdParam.trim());
+        }
+        setIsPaymentStatusModalOpen(true);
+      }
     };
 
-    checkJoinUrl();
-    window.addEventListener('popstate', checkJoinUrl);
+    checkAppUrls();
+    window.addEventListener('popstate', checkAppUrls);
     return () => {
-      window.removeEventListener('popstate', checkJoinUrl);
+      window.removeEventListener('popstate', checkAppUrls);
     };
   }, []);
 
@@ -259,6 +301,9 @@ export function App() {
 
     if (serverData.group) {
       setCurrentGroup(serverData.group);
+      try {
+        localStorage.setItem('pulse_fitness_current_group', JSON.stringify(serverData.group));
+      } catch {}
     }
     if (serverData.myRole) {
       setMyRole(serverData.myRole);
@@ -1377,6 +1422,24 @@ export function App() {
         }}
       />
 
+      {/* Unverified Email Warning Banner */}
+      {currentUser && !currentUser.email_verified && (
+        <div className="bg-gradient-to-r from-amber-500/15 via-[#D98B4A]/15 to-amber-500/15 border-b border-[#D98B4A]/30 px-4 py-2.5 text-xs text-amber-200 flex flex-wrap items-center justify-between gap-2 shadow-sm">
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse shrink-0" />
+            <span>
+              Your account email ({currentUser.email || 'not set'}) is unverified. Verify your email to enable Pro upgrades and receipt delivery.
+            </span>
+          </div>
+          <button
+            onClick={() => setIsVerificationModalOpen(true)}
+            className="px-3 py-1 bg-[#D98B4A] hover:bg-[#B45F1E] text-white font-bold rounded-lg transition shadow-sm text-xs cursor-pointer"
+          >
+            Verify Email Now
+          </button>
+        </div>
+      )}
+
       {/* Main Container */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6 pb-28 md:pb-8">
         
@@ -1610,6 +1673,7 @@ export function App() {
               setHighlightProInModal(!!highlightPro);
               setIsSubscriptionModalOpen(true);
             }}
+            onOpenVerificationModal={() => setIsVerificationModalOpen(true)}
           />
         )}
       </main>
@@ -1714,6 +1778,34 @@ export function App() {
           }}
         />
       )}
+
+      {/* Email Verification Modal */}
+      <EmailVerificationModal
+        isOpen={isVerificationModalOpen}
+        onClose={() => {
+          setIsVerificationModalOpen(false);
+          setEmailVerifyToken(null);
+        }}
+        currentUser={currentUser}
+        initialToken={emailVerifyToken}
+        onEmailVerified={(updated) => {
+          if (currentUser) {
+            const updatedUser = { ...currentUser, ...updated, email_verified: true };
+            setUsers((prev) => prev.map((u) => (u.id === updatedUser.id ? updatedUser : u)));
+            handleUpdateProfile(updatedUser);
+          }
+        }}
+      />
+
+      {/* Payment Status Modal */}
+      <PaymentStatusModal
+        isOpen={isPaymentStatusModalOpen}
+        onClose={() => {
+          setIsPaymentStatusModalOpen(false);
+          setPaymentOrderId(null);
+        }}
+        orderId={paymentOrderId}
+      />
 
       {/* Footer */}
       <footer className="border-t border-[#26262C] bg-[#131316] py-6 pb-24 md:pb-6 text-center text-xs text-[#A1A1AA]">

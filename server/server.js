@@ -532,13 +532,23 @@ app.post('/api/auth/register', async (req, res) => {
   if (!username) {
     return res.status(400).json({ success: false, error: 'Username is required.' });
   }
-  if (!pass || String(pass).trim().length < 6) {
-    return res.status(400).json({ success: false, error: 'Password must be at least 6 characters long.' });
-  }
-
   const cleanUsername = String(username).trim().replace(/^@+/, '').toLowerCase();
   if (cleanUsername.length < 3) {
     return res.status(400).json({ success: false, error: 'Username must be at least 3 characters long.' });
+  }
+
+  const passStr = String(pass || '').trim();
+  if (!passStr || passStr.length < 6) {
+    return res.status(400).json({ success: false, error: 'Password must be at least 6 characters long.' });
+  }
+  if (!/[A-Z]/.test(passStr)) {
+    return res.status(400).json({ success: false, error: 'Password must contain at least one uppercase letter.' });
+  }
+  if (!/[^A-Za-z0-9]/.test(passStr)) {
+    return res.status(400).json({ success: false, error: 'Password must contain at least one special character.' });
+  }
+  if (passStr.toLowerCase() === cleanUsername) {
+    return res.status(400).json({ success: false, error: 'Password cannot match your username.' });
   }
 
   const cleanName = String(name || cleanUsername).trim();

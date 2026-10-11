@@ -61,7 +61,7 @@ async function runTests() {
     const reg1 = await request('/api/auth/register', { method: 'POST' }, {
       name: user1Name,
       username: user1Username,
-      passwordPlain: 'password123',
+      passwordPlain: 'Password123!',
       height: 165,
       weight: 60,
       age: 26,
@@ -105,7 +105,7 @@ async function runTests() {
     const reg2 = await request('/api/auth/register', { method: 'POST' }, {
       name: user2Name,
       username: user2Username,
-      passwordPlain: 'password123',
+      passwordPlain: 'Password123!',
       height: 180,
       weight: 75,
       age: 28,
@@ -132,7 +132,7 @@ async function runTests() {
     const reg3 = await request('/api/auth/register', { method: 'POST' }, {
       name: user3Name,
       username: user3Username,
-      passwordPlain: 'password123',
+      passwordPlain: 'Password123!',
       height: 175,
       weight: 70,
       age: 25,
@@ -166,7 +166,7 @@ async function runTests() {
     const reg4 = await request('/api/auth/register', { method: 'POST' }, {
       name: `David_${timestamp}`,
       username: `david_${timestamp}`,
-      passwordPlain: 'password123',
+      passwordPlain: 'Password123!',
       height: 170,
       weight: 68,
       age: 24,
@@ -200,7 +200,7 @@ async function runTests() {
     const regExp = await request('/api/auth/register', { method: 'POST' }, {
       name: `ExpUser_${timestamp}`,
       username: `expuser_${timestamp}`,
-      passwordPlain: 'password123',
+      passwordPlain: 'Password123!',
       inviteToken: expToken
     });
     assert(regExp.status === 400, `Expired invite registration rejected with 400 (got ${regExp.status})`);
@@ -221,7 +221,7 @@ async function runTests() {
     const regRev = await request('/api/auth/register', { method: 'POST' }, {
       name: `RevUser_${timestamp}`,
       username: `revuser_${timestamp}`,
-      passwordPlain: 'password123',
+      passwordPlain: 'Password123!',
       inviteToken: revToken
     });
     assert(regRev.status === 400, `Revoked invite registration rejected with 400`);
@@ -237,7 +237,7 @@ async function runTests() {
     const regMax1 = await request('/api/auth/register', { method: 'POST' }, {
       name: `MaxUser1_${timestamp}`,
       username: `maxuser1_${timestamp}`,
-      passwordPlain: 'password123',
+      passwordPlain: 'Password123!',
       inviteToken: maxToken
     });
     assert(regMax1.status === 200 || regMax1.status === 201, `First use of max-used invite succeeded (got ${regMax1.status})`);
@@ -246,7 +246,7 @@ async function runTests() {
     const regMax2 = await request('/api/auth/register', { method: 'POST' }, {
       name: `MaxUser2_${timestamp}`,
       username: `maxuser2_${timestamp}`,
-      passwordPlain: 'password123',
+      passwordPlain: 'Password123!',
       inviteToken: maxToken
     });
     assert(regMax2.status === 400, `Second use of max-used invite rejected with 400`);

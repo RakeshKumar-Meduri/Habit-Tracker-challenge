@@ -262,6 +262,15 @@ export async function registerNewUser(
   if (!cleanPassword || cleanPassword.length < 6) {
     return { success: false, error: 'Password must be at least 6 characters long.' };
   }
+  if (!/[A-Z]/.test(cleanPassword)) {
+    return { success: false, error: 'Password must contain at least one uppercase letter.' };
+  }
+  if (!/[^A-Za-z0-9]/.test(cleanPassword)) {
+    return { success: false, error: 'Password must contain at least one special character.' };
+  }
+  if (cleanPassword.toLowerCase() === cleanUsername) {
+    return { success: false, error: 'Password cannot match your username.' };
+  }
 
   // Cross check with in-memory users
   if (checkUsernameExists(existingUsers, cleanUsername)) {
@@ -312,6 +321,16 @@ export async function changeUserPassword(
 ): Promise<{ success: boolean; error?: string; updatedUser?: User }> {
   if (!newPasswordPlain || newPasswordPlain.trim().length < 6) {
     return { success: false, error: 'Password must be at least 6 characters long.' };
+  }
+  const cleanPass = newPasswordPlain.trim();
+  if (!/[A-Z]/.test(cleanPass)) {
+    return { success: false, error: 'Password must contain at least one uppercase letter.' };
+  }
+  if (!/[^A-Za-z0-9]/.test(cleanPass)) {
+    return { success: false, error: 'Password must contain at least one special character.' };
+  }
+  if (cleanPass.toLowerCase() === user.username.toLowerCase()) {
+    return { success: false, error: 'Password cannot match your username.' };
   }
 
   const newHash = await hashPassword(newPasswordPlain.trim());

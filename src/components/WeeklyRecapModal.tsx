@@ -51,6 +51,12 @@ export const WeeklyRecapModal: React.FC<WeeklyRecapModalProps> = ({
   if (userWeights.length >= 2) {
     weightDelta = parseFloat((userWeights[0].weight - userWeights[userWeights.length - 1].weight).toFixed(1));
   }
+  const absWeightDelta = Math.abs(weightDelta);
+  const formattedWeightDelta = absWeightDelta < 0.05
+    ? '0.0 kg (Maintained)'
+    : weightDelta > 0
+    ? `-${weightDelta.toFixed(1)} kg`
+    : `+${absWeightDelta.toFixed(1)} kg`;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/85 backdrop-blur-md animate-fadeIn font-sans">
@@ -88,9 +94,9 @@ export const WeeklyRecapModal: React.FC<WeeklyRecapModalProps> = ({
 
           <div className="flex items-center justify-between p-3.5 bg-[#1B1B20] rounded-xl border border-[#26262C]">
             <span className="text-xs font-bold text-[#F4F4F5] flex items-center gap-2">
-              <Flame className="w-4 h-4 text-rose-400" /> 5/5 Clean Sweeps
+              <Flame className="w-4 h-4 text-rose-400" /> Perfect 5-of-5 Days
             </span>
-            <strong className="text-base sm:text-lg font-black text-rose-400 font-mono">{cleanSweeps} days</strong>
+            <strong className="text-base sm:text-lg font-black text-rose-400 font-mono">{cleanSweeps} day{cleanSweeps === 1 ? '' : 's'}</strong>
           </div>
 
           <div className="flex items-center justify-between p-3.5 bg-[#1B1B20] rounded-xl border border-[#26262C]">
@@ -98,7 +104,7 @@ export const WeeklyRecapModal: React.FC<WeeklyRecapModalProps> = ({
               <TrendingDown className="w-4 h-4 text-emerald-400" /> Net Weight Progress
             </span>
             <strong className="text-base sm:text-lg font-black text-emerald-400 font-mono">
-              {weightDelta >= 0 ? `-${weightDelta} kg` : `+${Math.abs(weightDelta)} kg`}
+              {userWeights.length >= 2 ? formattedWeightDelta : '0.0 kg (Maintained)'}
             </strong>
           </div>
 

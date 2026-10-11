@@ -131,7 +131,15 @@ export const DailyChecklist: React.FC<DailyChecklistProps> = ({
   const [inlineHabitTitle, setInlineHabitTitle] = useState('');
   const [inlineHabitDesc, setInlineHabitDesc] = useState('');
 
-  const stepTarget = currentGroup?.step_target || adminSettings?.step_target || 10000;
+  const cachedStepTarget = (() => {
+    try {
+      const raw = localStorage.getItem('pulse_fitness_current_group');
+      return raw ? JSON.parse(raw)?.step_target : undefined;
+    } catch {
+      return undefined;
+    }
+  })();
+  const stepTarget = currentGroup?.step_target || cachedStepTarget || adminSettings?.step_target || 10000;
   const sleepMin = adminSettings?.sleep_min_hours || 7.0;
   const sleepMax = adminSettings?.sleep_max_hours || 9.0;
   const waterTarget = adminSettings?.water_target_ml || 2500;

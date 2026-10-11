@@ -170,6 +170,7 @@ export async function fetchServerUserById(id: string): Promise<User | null> {
 export async function registerUserOnServer(data: {
   name?: string;
   username: string;
+  email?: string;
   password?: string;
   passwordPlain?: string;
   height?: number;
@@ -182,6 +183,7 @@ export async function registerUserOnServer(data: {
     const payload = {
       name: data.name,
       username: data.username,
+      email: data.email,
       password: data.password || data.passwordPlain,
       height: data.height,
       weight: data.weight,
@@ -638,3 +640,124 @@ export async function updateGroupSettings(
     return { success: false, error: err.message || 'Failed to update group settings' };
   }
 }
+
+/**
+ * Verify email address with single-use expiring token
+ */
+export async function verifyEmailOnServer(token: string): Promise<{
+  success: boolean;
+  status?: 'verified' | 'already_used' | 'expired' | 'invalid';
+  message?: string;
+  user?: Partial<User>;
+}> {
+  try {
+    const res = await fetch(`${API_BASE}/api/auth/verify-email`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token }),
+    });
+    return await res.json();
+  } catch (err: any) {
+    return {
+      success: false,
+      status: 'invalid',
+      message: err.message || 'Network error verifying email link.',
+    };
+  }
+}
+
+/**
+ * Request a new email verification link (rate limited)
+ */
+export async function resendVerificationEmail(email?: string): Promise<{
+  success: boolean;
+  message?: string;
+  alreadyVerified?: boolean;
+}> {
+  try {
+    const res = await apiFetch('/api/auth/resend-verification', {
+      method: 'POST',
+      body: JSON.stringify({ email }),
+    });
+    return await res.json();
+  } catch (err: any) {
+    return {
+      success: false,
+      message: err.message || 'Failed to request verification email.',
+    };
+  }
+}
+
+/**
+ * Set or update email address on existing account
+ */
+export async function setUserEmail(email: string): Promise<{
+  success: boolean;
+  message?: string;
+  user?: User;
+  error?: string;
+}> {
+  try {
+    const res = await apiFetch('/api/auth/set-email', {
+      method: 'POST',
+      body: JSON.stringify({ email }),
+    });
+    return await res.json();
+  } catch (err: any) {
+    return {
+      success: false,
+      error: err.message || 'Failed to update email address.',
+    };
+  }
+}
+
+/**
+ * Fetch user payment transaction history and status
+ */
+export async function fetchUserPaymentHistory(): Promise<{
+  success: boolean;
+  payments?: any[];
+  error?: string;
+}> {
+  try {
+    const res = await apiFetch('/api/payments/status');
+    return await res.json();
+  } catch (err: any) {
+    return { success: false, error: err.message || 'Failed to fetch payments.' };
+  }
+}
+
+/**
+ * Fetch specific payment order status (for status page)
+ */
+export async function fetchPaymentOrderByOrderId(orderId: string): Promise<{
+  success: boolean;
+  payment?: any;
+  error?: string;
+}> {
+  try {
+    const res = await apiFetch(`/api/payments/order/${encodeURIComponent(orderId)}`);
+    return await res.json();
+  } catch (err: any) {
+    return { success: false, error: err.message || 'Failed to fetch order status.' };
+  }
+}
+
+/**
+ * Request receipt email resend for captured transaction
+ */
+export async function resendPaymentReceiptOnServer(paymentId: string): Promise<{
+  success: boolean;
+  message?: string;
+  error?: string;
+}> {
+  try {
+    const res = await apiFetch(`/api/payments/resend-receipt/${encodeURIComponent(paymentId)}`, {
+      method: 'POST',
+    });
+    return await res.json();
+  } catch (err: any) {
+    return { success: false, error: err.message || 'Failed to resend receipt.' };
+  }
+}
+

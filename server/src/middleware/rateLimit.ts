@@ -59,3 +59,19 @@ export const inviteLimiter = rateLimit({
     },
   },
 });
+
+// Email verification resend rate limit: 5 requests per 15 minutes per IP
+export const emailResendLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    success: false,
+    error: {
+      code: 'RESEND_RATE_LIMIT_EXCEEDED',
+      message: 'Too many verification email requests. Please wait a few minutes before trying again.',
+    },
+  },
+});
+
