@@ -386,7 +386,7 @@ export const ProfileSection: React.FC<ProfileSectionProps> = ({
         </div>
 
         {/* Live Updating BMI Gauge Card */}
-        <div className="w-full md:w-auto bg-zinc-50 dark:bg-zinc-850 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-4 sm:p-5 text-center min-w-[170px] shadow-sm">
+        <div className="w-full md:w-auto bg-zinc-50 dark:bg-zinc-800/80 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-4 sm:p-5 text-center min-w-[170px] shadow-sm">
           <span className="text-[10px] sm:text-[11px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider block">Live BMI Gauge</span>
           <div className="text-2xl sm:text-3xl font-black text-zinc-900 dark:text-zinc-100 mt-0.5">{bmi}</div>
           <span className={`text-xs mt-1 inline-block ${color}`}>
@@ -412,7 +412,7 @@ export const ProfileSection: React.FC<ProfileSectionProps> = ({
                 </p>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="p-4 bg-zinc-50 dark:bg-zinc-850 rounded-xl border border-zinc-200 dark:border-zinc-800">
+                  <div className="p-4 bg-zinc-50 dark:bg-zinc-800/80 rounded-xl border border-zinc-200 dark:border-zinc-800">
                     <span className="text-xs text-zinc-500 dark:text-zinc-400 block mb-1">Age & Date of Birth</span>
                     <strong className="text-sm text-zinc-900 dark:text-zinc-100">
                       {targetUser.age ? `${targetUser.age} years old` : 'Not specified'}
@@ -420,17 +420,17 @@ export const ProfileSection: React.FC<ProfileSectionProps> = ({
                     </strong>
                   </div>
 
-                  <div className="p-4 bg-zinc-50 dark:bg-zinc-850 rounded-xl border border-zinc-200 dark:border-zinc-800">
+                  <div className="p-4 bg-zinc-50 dark:bg-zinc-800/80 rounded-xl border border-zinc-200 dark:border-zinc-800">
                     <span className="text-xs text-zinc-500 dark:text-zinc-400 block mb-1">Gender</span>
                     <strong className="text-sm text-zinc-900 dark:text-zinc-100 capitalize">{targetUser.gender || 'Not specified'}</strong>
                   </div>
 
-                  <div className="p-4 bg-zinc-50 dark:bg-zinc-850 rounded-xl border border-zinc-200 dark:border-zinc-800">
+                  <div className="p-4 bg-zinc-50 dark:bg-zinc-800/80 rounded-xl border border-zinc-200 dark:border-zinc-800">
                     <span className="text-xs text-zinc-500 dark:text-zinc-400 block mb-1">Target Category</span>
                     <strong className="text-sm text-zinc-900 dark:text-zinc-100">{category} (BMI: {bmi})</strong>
                   </div>
 
-                  <div className="p-4 bg-zinc-50 dark:bg-zinc-850 rounded-xl border border-zinc-200 dark:border-zinc-800">
+                  <div className="p-4 bg-zinc-50 dark:bg-zinc-800/80 rounded-xl border border-zinc-200 dark:border-zinc-800">
                     <span className="text-xs text-zinc-500 dark:text-zinc-400 block mb-1">Group Visibility</span>
                     <strong className="text-sm text-zinc-900 dark:text-zinc-100">{targetUser.is_private ? 'Private to Member (Hidden)' : 'Visible to This Group'}</strong>
                   </div>
@@ -443,7 +443,7 @@ export const ProfileSection: React.FC<ProfileSectionProps> = ({
                   <Camera className="w-4 h-4 text-zinc-900 dark:text-zinc-100" />
                   Transformation Photo
                 </h4>
-                <div className="bg-zinc-50 dark:bg-zinc-850 p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 flex items-center gap-4">
+                <div className="bg-zinc-50 dark:bg-zinc-800/80 p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 flex items-center gap-4">
                   {targetUser.body_shape_photo ? (
                     <img
                       src={targetUser.body_shape_photo}
@@ -474,7 +474,7 @@ export const ProfileSection: React.FC<ProfileSectionProps> = ({
               </h3>
 
               {/* Account & Email Verification Status */}
-              <div className="mb-5 p-3.5 sm:p-4 bg-zinc-50 dark:bg-zinc-850 rounded-xl border border-zinc-200 dark:border-zinc-800 space-y-2">
+              <div className="mb-5 p-3.5 sm:p-4 bg-zinc-50 dark:bg-zinc-800/80 rounded-xl border border-zinc-200 dark:border-zinc-800 space-y-2">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <Mail className="w-4 h-4 text-zinc-900 dark:text-zinc-100" />
@@ -521,12 +521,12 @@ export const ProfileSection: React.FC<ProfileSectionProps> = ({
                     required
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    className="w-full max-w-full min-w-0 box-border block px-3.5 py-2.5 bg-white dark:bg-zinc-850 border border-zinc-200 dark:border-zinc-750 rounded-xl text-zinc-900 dark:text-zinc-100 text-sm focus:outline-none focus:border-zinc-900 dark:focus:border-zinc-100 transition"
+                    className="w-full max-w-full min-w-0 box-border block px-3.5 py-2.5 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl text-zinc-900 dark:text-zinc-100 text-sm focus:outline-none focus:border-zinc-900 dark:focus:border-zinc-100 transition"
                   />
                 </div>
 
                 {/* Age & Date of Birth Section */}
-                <div className="space-y-3 p-3.5 sm:p-4 bg-zinc-50 dark:bg-zinc-850 rounded-xl border border-zinc-200 dark:border-zinc-800">
+                <div className="space-y-3 p-3.5 sm:p-4 bg-zinc-50 dark:bg-zinc-800/80 rounded-xl border border-zinc-200 dark:border-zinc-800">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                     {/* Age Input */}
                     <div className="min-w-0 w-full">
@@ -544,7 +544,7 @@ export const ProfileSection: React.FC<ProfileSectionProps> = ({
                         value={age}
                         onChange={(e) => handleAgeChange(e.target.value)}
                         placeholder="e.g. 21"
-                        className="w-full max-w-full min-w-0 box-border block px-3.5 py-2.5 bg-white dark:bg-zinc-850 border border-zinc-200 dark:border-zinc-750 rounded-xl text-zinc-900 dark:text-zinc-100 font-bold text-sm focus:outline-none focus:border-zinc-900 dark:focus:border-zinc-100 transition"
+                        className="w-full max-w-full min-w-0 box-border block px-3.5 py-2.5 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl text-zinc-900 dark:text-zinc-100 font-bold text-sm focus:outline-none focus:border-zinc-900 dark:focus:border-zinc-100 transition"
                       />
                     </div>
 
@@ -560,7 +560,7 @@ export const ProfileSection: React.FC<ProfileSectionProps> = ({
                         type="date"
                         value={birthday}
                         onChange={(e) => handleBirthdayChange(e.target.value)}
-                        className="w-full max-w-full min-w-0 box-border block px-3.5 py-2 bg-white dark:bg-zinc-850 border border-zinc-200 dark:border-zinc-750 rounded-xl text-zinc-900 dark:text-zinc-100 text-sm focus:outline-none focus:border-zinc-900 dark:focus:border-zinc-100 transition cursor-pointer"
+                        className="w-full max-w-full min-w-0 box-border block px-3.5 py-2 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl text-zinc-900 dark:text-zinc-100 text-sm focus:outline-none focus:border-zinc-900 dark:focus:border-zinc-100 transition cursor-pointer"
                       />
                     </div>
                   </div>
@@ -632,7 +632,7 @@ export const ProfileSection: React.FC<ProfileSectionProps> = ({
                       value={height}
                       onChange={(e) => setHeight(e.target.value)}
                       placeholder="e.g. 175"
-                      className="w-full px-3.5 py-2 bg-white dark:bg-zinc-850 border border-zinc-200 dark:border-zinc-750 rounded-xl text-zinc-900 dark:text-zinc-100 text-sm focus:outline-none focus:border-zinc-900 dark:focus:border-zinc-100 transition"
+                      className="w-full px-3.5 py-2 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl text-zinc-900 dark:text-zinc-100 text-sm focus:outline-none focus:border-zinc-900 dark:focus:border-zinc-100 transition"
                     />
                   </div>
 
@@ -644,7 +644,7 @@ export const ProfileSection: React.FC<ProfileSectionProps> = ({
                       value={weight}
                       onChange={(e) => setWeight(e.target.value)}
                       placeholder="e.g. 75"
-                      className="w-full px-3.5 py-2 bg-white dark:bg-zinc-850 border border-zinc-200 dark:border-zinc-750 rounded-xl text-zinc-900 dark:text-zinc-100 text-sm focus:outline-none focus:border-zinc-900 dark:focus:border-zinc-100 transition"
+                      className="w-full px-3.5 py-2 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl text-zinc-900 dark:text-zinc-100 text-sm focus:outline-none focus:border-zinc-900 dark:focus:border-zinc-100 transition"
                     />
                   </div>
                 </div>
@@ -654,7 +654,7 @@ export const ProfileSection: React.FC<ProfileSectionProps> = ({
                   <select
                     value={gender}
                     onChange={(e) => setGender(e.target.value as Gender)}
-                    className="w-full px-3.5 py-2 bg-white dark:bg-zinc-850 border border-zinc-200 dark:border-zinc-750 rounded-xl text-zinc-900 dark:text-zinc-100 text-sm focus:outline-none focus:border-zinc-900 dark:focus:border-zinc-100 transition cursor-pointer"
+                    className="w-full px-3.5 py-2 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl text-zinc-900 dark:text-zinc-100 text-sm focus:outline-none focus:border-zinc-900 dark:focus:border-zinc-100 transition cursor-pointer"
                   >
                     <option value="male" className="bg-white text-zinc-900 dark:bg-zinc-800 dark:text-zinc-100">Male</option>
                     <option value="female" className="bg-white text-zinc-900 dark:bg-zinc-800 dark:text-zinc-100">Female</option>
@@ -662,7 +662,7 @@ export const ProfileSection: React.FC<ProfileSectionProps> = ({
                   </select>
                 </div>
 
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 bg-zinc-50 dark:bg-zinc-850 rounded-xl border border-zinc-200 dark:border-zinc-800">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 bg-zinc-50 dark:bg-zinc-800/80 rounded-xl border border-zinc-200 dark:border-zinc-800">
                   <div className="flex items-start sm:items-center gap-2.5">
                     <Shield className="w-4 h-4 text-zinc-900 dark:text-zinc-100 shrink-0 mt-0.5 sm:mt-0" />
                     <div>
@@ -712,7 +712,7 @@ export const ProfileSection: React.FC<ProfileSectionProps> = ({
                   Upload a progress photo to track your physical transformation over time.
                 </p>
 
-                <div className="flex flex-col sm:flex-row items-center gap-4 bg-zinc-50 dark:bg-zinc-850 p-4 rounded-xl border border-zinc-200 dark:border-zinc-800">
+                <div className="flex flex-col sm:flex-row items-center gap-4 bg-zinc-50 dark:bg-zinc-800/80 p-4 rounded-xl border border-zinc-200 dark:border-zinc-800">
                   {bodyShapePhoto ? (
                     <img
                       src={bodyShapePhoto}
@@ -768,7 +768,7 @@ export const ProfileSection: React.FC<ProfileSectionProps> = ({
                 userWeightLogs.map((log) => (
                   <div
                     key={log.id}
-                    className="flex items-center justify-between p-2.5 bg-zinc-50 dark:bg-zinc-850 rounded-xl border border-zinc-200 dark:border-zinc-800 text-xs"
+                    className="flex items-center justify-between p-2.5 bg-zinc-50 dark:bg-zinc-800/80 rounded-xl border border-zinc-200 dark:border-zinc-800 text-xs"
                   >
                     <div className="flex items-center gap-2 text-zinc-600 dark:text-zinc-400">
                       <Calendar className="w-3.5 h-3.5 text-zinc-500 dark:text-zinc-400" />
@@ -871,7 +871,7 @@ export const ProfileSection: React.FC<ProfileSectionProps> = ({
                     {paymentsList.map((payment) => (
                       <div
                         key={payment.id}
-                        className="p-3 bg-zinc-50 dark:bg-zinc-850 rounded-xl border border-zinc-200 dark:border-zinc-800 space-y-1.5 text-xs"
+                        className="p-3 bg-zinc-50 dark:bg-zinc-800/80 rounded-xl border border-zinc-200 dark:border-zinc-800 space-y-1.5 text-xs"
                       >
                         <div className="flex items-center justify-between">
                           <span className="font-bold text-zinc-900 dark:text-zinc-100">
@@ -1030,7 +1030,7 @@ export const ProfileSection: React.FC<ProfileSectionProps> = ({
                       setTimeout(() => setGroupSaveSuccess(''), 4000);
                     }
                   }}
-                  className="bg-zinc-50 dark:bg-zinc-850 border border-zinc-200 dark:border-zinc-800 rounded-xl p-4 space-y-3.5"
+                  className="bg-zinc-50 dark:bg-zinc-800/80 border border-zinc-200 dark:border-zinc-800 rounded-xl p-4 space-y-3.5"
                 >
                   <div className="flex items-center justify-between">
                     <h4 className="text-xs font-bold uppercase tracking-wider text-zinc-900 dark:text-zinc-100 flex items-center gap-1.5">
@@ -1136,7 +1136,7 @@ export const ProfileSection: React.FC<ProfileSectionProps> = ({
                 <h4 className="text-xs font-bold text-zinc-600 dark:text-zinc-400 uppercase tracking-wider">
                   Group Members
                 </h4>
-                <div className="divide-y divide-zinc-200 dark:divide-zinc-800 bg-zinc-50 dark:bg-zinc-850 border border-zinc-200 dark:border-zinc-800 rounded-xl overflow-hidden">
+                <div className="divide-y divide-zinc-200 dark:divide-zinc-800 bg-zinc-50 dark:bg-zinc-800/80 border border-zinc-200 dark:border-zinc-800 rounded-xl overflow-hidden">
                   {(currentGroup?.members || []).map(member => (
                     <div key={member.user_id} className="p-3 flex items-center justify-between gap-3">
                       <div className="flex items-center gap-2.5 min-w-0">
@@ -1190,7 +1190,7 @@ export const ProfileSection: React.FC<ProfileSectionProps> = ({
                   </h4>
                   <div className="space-y-2">
                     {(invites || []).filter(i => !i.revoked).map(inv => (
-                      <div key={inv.token} className="p-2.5 bg-zinc-50 dark:bg-zinc-850 border border-zinc-200 dark:border-zinc-800 rounded-xl flex items-center justify-between gap-2 text-xs">
+                      <div key={inv.token} className="p-2.5 bg-zinc-50 dark:bg-zinc-800/80 border border-zinc-200 dark:border-zinc-800 rounded-xl flex items-center justify-between gap-2 text-xs">
                         <span className="font-mono text-zinc-900 dark:text-zinc-100 truncate text-[11px]">{inv.token}</span>
                         <div className="flex items-center gap-2 shrink-0">
                           <span className="text-[11px] text-zinc-500 dark:text-zinc-400">{inv.uses}/{inv.max_uses} used</span>
@@ -1226,7 +1226,7 @@ export const ProfileSection: React.FC<ProfileSectionProps> = ({
                     <span>Leave Group</span>
                   </button>
                 ) : (
-                  <div className="p-4 bg-zinc-100 dark:bg-zinc-850 border border-zinc-300 dark:border-zinc-700 rounded-xl space-y-3">
+                  <div className="p-4 bg-zinc-100 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 rounded-xl space-y-3">
                     <p className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">
                       {myRole === 'owner' && (currentGroup?.members?.length || 1) > 1
                         ? 'As the group owner, leaving will transfer ownership to the next earliest member. Confirm?'
@@ -1279,7 +1279,7 @@ export const ProfileSection: React.FC<ProfileSectionProps> = ({
                   <Trash2 className="w-4 h-4" /> Delete My Account
                 </button>
               ) : (
-                <div className="p-4 bg-zinc-100 dark:bg-zinc-850 border border-zinc-300 dark:border-zinc-700 rounded-xl space-y-3">
+                <div className="p-4 bg-zinc-100 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 rounded-xl space-y-3">
                   <p className="text-xs font-bold text-zinc-900 dark:text-zinc-100">
                     Are you sure you want to permanently delete your account? This action cannot be undone.
                   </p>
