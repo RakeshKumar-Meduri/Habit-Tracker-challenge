@@ -961,18 +961,26 @@ export const ProfileSection: React.FC<ProfileSectionProps> = ({
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
                       <h3 className="text-base font-bold text-zinc-900 dark:text-zinc-100 truncate">
-                        {currentGroup?.name || 'My Group'}
+                        {currentGroup?.name || `${currentUser.name}'s Tracker`}
                       </h3>
                       <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase ${
                         myRole === 'owner' 
                           ? 'bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900 border border-zinc-800 dark:border-zinc-200'
                           : 'bg-zinc-100 text-zinc-800 border border-zinc-200 dark:bg-zinc-800 dark:text-zinc-200 dark:border-zinc-700'
                       }`}>
-                        {myRole === 'owner' ? 'Group Owner' : 'Member'}
+                        {currentGroup ? (myRole === 'owner' ? 'Group Owner' : 'Member') : 'Solo Mode'}
                       </span>
                     </div>
                     <p className="text-xs text-zinc-600 dark:text-zinc-400 mt-0.5">
-                      {currentGroup?.members?.length || 1} {(currentGroup?.members?.length || 1) === 1 ? 'member' : 'members'} · Daily Target: <span className="text-zinc-900 dark:text-zinc-100 font-semibold tabular-nums">{(currentGroup?.step_target || 10000).toLocaleString()}</span> steps
+                      {currentGroup ? (
+                        <>
+                          {currentGroup.members?.length || 1} {(currentGroup.members?.length || 1) === 1 ? 'member' : 'members'} · Daily Target: <span className="text-zinc-900 dark:text-zinc-100 font-semibold tabular-nums">{(currentGroup.step_target || 10000).toLocaleString()}</span> steps
+                        </>
+                      ) : (
+                        <>
+                          Solo Accountability · Personal Target: <span className="text-zinc-900 dark:text-zinc-100 font-semibold tabular-nums">10,000</span> steps
+                        </>
+                      )}
                     </p>
                   </div>
                 </div>
@@ -1137,48 +1145,67 @@ export const ProfileSection: React.FC<ProfileSectionProps> = ({
                   Group Members
                 </h4>
                 <div className="divide-y divide-zinc-200 dark:divide-zinc-800 bg-zinc-50 dark:bg-zinc-800/80 border border-zinc-200 dark:border-zinc-800 rounded-xl overflow-hidden">
-                  {(currentGroup?.members || []).map(member => (
-                    <div key={member.user_id} className="p-3 flex items-center justify-between gap-3">
+                  {(currentGroup?.members && currentGroup.members.length > 0) ? (
+                    currentGroup.members.map(member => (
+                      <div key={member.user_id} className="p-3 flex items-center justify-between gap-3">
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          <div className="w-8 h-8 rounded-full bg-zinc-200 text-zinc-900 dark:bg-zinc-800 dark:text-zinc-100 border border-zinc-300 dark:border-zinc-700 flex items-center justify-center font-bold text-xs shrink-0">
+                            {member.name.charAt(0).toUpperCase()}
+                          </div>
+                          <div className="min-w-0">
+                            <p className="text-xs font-semibold text-zinc-900 dark:text-zinc-100 truncate flex items-center gap-1.5">
+                              {member.name}
+                              {member.user_id === currentUser.id && <span className="text-[10px] text-zinc-500 dark:text-zinc-400 font-normal">(You)</span>}
+                            </p>
+                            <p className="text-[10px] text-zinc-500 dark:text-zinc-400 font-mono">@{member.username}</p>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-2 shrink-0">
+                          <span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold ${
+                            member.role === 'owner'
+                              ? 'bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900 border border-zinc-800 dark:border-zinc-200'
+                              : 'bg-zinc-100 text-zinc-800 border border-zinc-200 dark:bg-zinc-800 dark:text-zinc-300 dark:border-zinc-700'
+                          }`}>
+                            {member.role === 'owner' ? 'Owner' : 'Member'}
+                          </span>
+
+                          {/* Owner can remove other members */}
+                          {myRole === 'owner' && member.user_id !== currentUser.id && onRemoveGroupMember && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                if (window.confirm(`Are you sure you want to remove ${member.name} from the group?`)) {
+                                  onRemoveGroupMember(member.user_id);
+                                }
+                              }}
+                              className="p-1.5 hover:bg-zinc-200 text-zinc-400 hover:text-zinc-900 dark:hover:bg-zinc-800 dark:hover:text-zinc-100 rounded-lg transition cursor-pointer"
+                              title="Remove from group"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="p-3 flex items-center justify-between gap-3">
                       <div className="flex items-center gap-2.5 min-w-0">
                         <div className="w-8 h-8 rounded-full bg-zinc-200 text-zinc-900 dark:bg-zinc-800 dark:text-zinc-100 border border-zinc-300 dark:border-zinc-700 flex items-center justify-center font-bold text-xs shrink-0">
-                          {member.name.charAt(0).toUpperCase()}
+                          {currentUser.name.charAt(0).toUpperCase()}
                         </div>
                         <div className="min-w-0">
                           <p className="text-xs font-semibold text-zinc-900 dark:text-zinc-100 truncate flex items-center gap-1.5">
-                            {member.name}
-                            {member.user_id === currentUser.id && <span className="text-[10px] text-zinc-500 dark:text-zinc-400 font-normal">(You)</span>}
+                            {currentUser.name} <span className="text-[10px] text-zinc-500 dark:text-zinc-400 font-normal">(You)</span>
                           </p>
-                          <p className="text-[10px] text-zinc-500 dark:text-zinc-400 font-mono">@{member.username}</p>
+                          <p className="text-[10px] text-zinc-500 dark:text-zinc-400 font-mono">@{currentUser.username}</p>
                         </div>
                       </div>
-
-                      <div className="flex items-center gap-2 shrink-0">
-                        <span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold ${
-                          member.role === 'owner'
-                            ? 'bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900 border border-zinc-800 dark:border-zinc-200'
-                            : 'bg-zinc-100 text-zinc-800 border border-zinc-200 dark:bg-zinc-800 dark:text-zinc-300 dark:border-zinc-700'
-                        }`}>
-                          {member.role === 'owner' ? 'Owner' : 'Member'}
-                        </span>
-
-                        {/* Owner can remove other members */}
-                        {myRole === 'owner' && member.user_id !== currentUser.id && onRemoveGroupMember && (
-                          <button
-                            type="button"
-                            onClick={() => {
-                              if (window.confirm(`Are you sure you want to remove ${member.name} from the group?`)) {
-                                onRemoveGroupMember(member.user_id);
-                              }
-                            }}
-                            className="p-1.5 hover:bg-zinc-200 text-zinc-400 hover:text-zinc-900 dark:hover:bg-zinc-800 dark:hover:text-zinc-100 rounded-lg transition cursor-pointer"
-                            title="Remove from group"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
-                        )}
-                      </div>
+                      <span className="text-[10px] px-2 py-0.5 rounded-full font-semibold bg-zinc-100 text-zinc-800 border border-zinc-200 dark:bg-zinc-800 dark:text-zinc-300 dark:border-zinc-700">
+                        Solo
+                      </span>
                     </div>
-                  ))}
+                  )}
                 </div>
               </div>
 
@@ -1214,48 +1241,50 @@ export const ProfileSection: React.FC<ProfileSectionProps> = ({
                 </div>
               )}
 
-              {/* Leave Group Button with Confirmation */}
-              <div className="pt-3 border-t border-zinc-200 dark:border-zinc-800">
-                {!showLeaveConfirm ? (
-                  <button
-                    type="button"
-                    onClick={() => setShowLeaveConfirm(true)}
-                    className="px-3.5 py-2 btn-secondary rounded-xl text-xs font-semibold transition flex items-center gap-1.5 cursor-pointer"
-                  >
-                    <LogOut className="w-3.5 h-3.5" />
-                    <span>Leave Group</span>
-                  </button>
-                ) : (
-                  <div className="p-4 bg-zinc-100 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 rounded-xl space-y-3">
-                    <p className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">
-                      {myRole === 'owner' && (currentGroup?.members?.length || 1) > 1
-                        ? 'As the group owner, leaving will transfer ownership to the next earliest member. Confirm?'
-                        : 'Are you sure you want to leave this group? You will be placed in your own private group.'}
-                    </p>
-                    <div className="flex items-center gap-2">
-                      <button
-                        type="button"
-                        onClick={async () => {
-                          if (onLeaveGroup) {
-                            await onLeaveGroup();
-                            setShowLeaveConfirm(false);
-                          }
-                        }}
-                        className="px-3.5 py-1.5 btn-primary font-bold rounded-lg text-xs transition cursor-pointer"
-                      >
-                        Yes, Leave Group
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setShowLeaveConfirm(false)}
-                        className="px-3.5 py-1.5 btn-secondary rounded-lg text-xs font-semibold transition cursor-pointer"
-                      >
-                        Cancel
-                      </button>
+              {/* Leave Group Button with Confirmation (Only for multi-member groups or non-owner members) */}
+              {currentGroup && ((currentGroup.members?.length || 0) > 1 || myRole !== 'owner') && (
+                <div className="pt-3 border-t border-zinc-200 dark:border-zinc-800">
+                  {!showLeaveConfirm ? (
+                    <button
+                      type="button"
+                      onClick={() => setShowLeaveConfirm(true)}
+                      className="px-3.5 py-2 btn-secondary rounded-xl text-xs font-semibold transition flex items-center gap-1.5 cursor-pointer"
+                    >
+                      <LogOut className="w-3.5 h-3.5" />
+                      <span>Leave Group</span>
+                    </button>
+                  ) : (
+                    <div className="p-4 bg-zinc-100 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 rounded-xl space-y-3">
+                      <p className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">
+                        {myRole === 'owner' && (currentGroup?.members?.length || 1) > 1
+                          ? 'As the group owner, leaving will transfer ownership to the next earliest member. Confirm?'
+                          : 'Are you sure you want to leave this group? You will be placed in your own private group.'}
+                      </p>
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={async () => {
+                            if (onLeaveGroup) {
+                              await onLeaveGroup();
+                              setShowLeaveConfirm(false);
+                            }
+                          }}
+                          className="px-3.5 py-1.5 btn-primary font-bold rounded-lg text-xs transition cursor-pointer"
+                        >
+                          Yes, Leave Group
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setShowLeaveConfirm(false)}
+                          className="px-3.5 py-1.5 btn-secondary rounded-lg text-xs font-semibold transition cursor-pointer"
+                        >
+                          Cancel
+                        </button>
+                      </div>
                     </div>
-                  </div>
-                )}
-              </div>
+                  )}
+                </div>
+              )}
             </div>
           )}
 

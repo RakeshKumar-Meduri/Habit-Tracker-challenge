@@ -6,6 +6,7 @@ import { AppError } from '../middleware/errorHandler';
 import { broadcast, broadcastClientCount } from '../websocket/websocket.server';
 import { invalidateGroupSync } from '../db/redis';
 import { WS_EVENTS } from '../config/constants';
+import { cleanupDeletedUser } from '../utils/userCleanup';
 
 const router = Router();
 
@@ -137,21 +138,6 @@ router.delete('/api/users/:id', requireAuth, async (req, res, next) => {
 
     const groupId = req.user!.groupId;
 
-    // Transactionally soft-delete user and revoke sessions
-    await prisma.$transaction([
-      prisma.user.update({
-        where: { id },
-        data: { is_active: false },
-      }),
-      prisma.session.updateMany({
-        where: { user_id: id },
-        data: { revoked_at: new Date() },
-      }),
-      prisma.membership.deleteMany({
-        where: { user_id: id },
-      }),
-    ]);
-
     if (groupId) {
       await invalidateGroupSync(groupId);
       broadcast({
@@ -160,11 +146,14 @@ router.delete('/api/users/:id', requireAuth, async (req, res, next) => {
       }, null, groupId);
     }
 
+    // Permanently purge user, transfer group ownership if needed, and release username/email
+    await cleanupDeletedUser(id);
+
     broadcastClientCount();
 
     res.json({
       success: true,
-      message: `User ${id} deactivated successfully`,
+      message: `User ${id} deleted successfully and credentials released`,
     });
   } catch (err) {
     next(err);

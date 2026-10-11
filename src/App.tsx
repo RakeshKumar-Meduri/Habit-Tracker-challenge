@@ -222,8 +222,23 @@ export function App() {
   // Group & Invites state
   const [currentGroup, setCurrentGroup] = useState<Group | null>(() => {
     try {
+      const sessionStr = localStorage.getItem(STORAGE_KEYS.AUTH_SESSION);
+      const currId = localStorage.getItem(STORAGE_KEYS.CURRENT_USER_ID);
+      if (!sessionStr || !currId) {
+        localStorage.removeItem('pulse_fitness_current_group');
+        sessionStorage.removeItem('pulse_fitness_current_group');
+        return null;
+      }
       const raw = localStorage.getItem('pulse_fitness_current_group');
-      return raw ? JSON.parse(raw) : null;
+      if (!raw) return null;
+      const parsed = JSON.parse(raw);
+      // Validate that this cached group actually belongs to the active logged-in user
+      if (Array.isArray(parsed.members) && !parsed.members.some((m: any) => m.user_id === currId)) {
+        localStorage.removeItem('pulse_fitness_current_group');
+        sessionStorage.removeItem('pulse_fitness_current_group');
+        return null;
+      }
+      return parsed;
     } catch {
       return null;
     }
@@ -318,17 +333,34 @@ export function App() {
     if (!serverData) return;
 
     if (serverData.group) {
-      setCurrentGroup(serverData.group);
+      // Security check: verify this group actually belongs to currentUser
+      const members = Array.isArray(serverData.group.members) ? serverData.group.members : [];
+      const userInGroup = members.some((m: any) => m.user_id === currentUserId);
+      if (userInGroup || !currentUserId) {
+        setCurrentGroup(serverData.group);
+        try {
+          localStorage.setItem('pulse_fitness_current_group', JSON.stringify(serverData.group));
+        } catch {}
+      } else {
+        // Group does not include this user - NEVER display another user's group!
+        console.warn('[Security] Incoming group does not contain currentUser. Clearing group state.');
+        setCurrentGroup(null);
+        try {
+          localStorage.removeItem('pulse_fitness_current_group');
+          sessionStorage.removeItem('pulse_fitness_current_group');
+        } catch {}
+      }
+    } else {
+      // User is solo or has no active group - explicitly reset
+      setCurrentGroup(null);
       try {
-        localStorage.setItem('pulse_fitness_current_group', JSON.stringify(serverData.group));
+        localStorage.removeItem('pulse_fitness_current_group');
+        sessionStorage.removeItem('pulse_fitness_current_group');
       } catch {}
     }
-    if (serverData.myRole) {
-      setMyRole(serverData.myRole);
-    }
-    if (Array.isArray(serverData.invites)) {
-      setGroupInvites(serverData.invites);
-    }
+
+    setMyRole(serverData.myRole || 'member');
+    setGroupInvites(Array.isArray(serverData.invites) ? serverData.invites : []);
 
     if (Array.isArray(serverData.users)) {
       const cleanServerUsers = serverData.users.filter(
@@ -1274,6 +1306,18 @@ export function App() {
   const handleLogout = () => {
     logoutSession();
     setCurrentUserId('');
+    setCurrentGroup(null);
+    setMyRole('member');
+    setGroupInvites([]);
+    setDailyLogs([]);
+    setWorkouts([]);
+    setWeightLogs([]);
+    setMissedReasons([]);
+    setReactions([]);
+    setSupplements([]);
+    setSupplementLogs([]);
+    setCustomHabits([]);
+    setCustomHabitLogs([]);
     realtimeClient.identify(null);
   };
 
@@ -1706,6 +1750,12 @@ export function App() {
           onClose={() => setIsAuthModalOpen(false)}
           users={users}
           onLoginSuccess={(user) => {
+            // Immediately purge any stale group from memory/storage
+            setCurrentGroup(null);
+            try {
+              localStorage.removeItem('pulse_fitness_current_group');
+              sessionStorage.removeItem('pulse_fitness_current_group');
+            } catch {}
             setUsers(prev => [...prev.filter(u => u.id !== user.id), user]);
             setCurrentUserId(user.id);
             setIsAuthModalOpen(false);
@@ -1714,6 +1764,12 @@ export function App() {
             }).catch(() => {});
           }}
           onRegisterSuccess={(newUser) => {
+            // Immediately purge any stale group from memory/storage
+            setCurrentGroup(null);
+            try {
+              localStorage.removeItem('pulse_fitness_current_group');
+              sessionStorage.removeItem('pulse_fitness_current_group');
+            } catch {}
             setUsers(prev => [...prev.filter(u => u.id !== newUser.id), newUser]);
             setCurrentUserId(newUser.id);
             setIsAuthModalOpen(false);

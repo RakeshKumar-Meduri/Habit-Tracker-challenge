@@ -74,8 +74,8 @@ router.get('/api/sync', requireAuth, async (req, res, next) => {
       } as any;
     }
 
-    if (!groupId || userTier === 'base') {
-      // User has no group membership or is on Base (Solo) plan, return solo data
+    if (!groupId) {
+      // User has no group membership, return solo data
       const [
         user,
         dailyLogs,
@@ -122,21 +122,23 @@ router.get('/api/sync', requireAuth, async (req, res, next) => {
       });
     }
 
-    // Try Redis cache acceleration first (Section 19)
-    const cached = await getCachedGroupSync(groupId);
-    if (cached) {
-      return res.json({
-        success: true,
-        data: {
-          ...cached,
-          myRole: req.user!.groupRole,
-          planTier: userTier,
-          subscription: activeSub || null,
-        },
-      });
+    // Try Redis cache acceleration only for Pro users with multi-member groups
+    if (userTier !== 'base') {
+      const cached = await getCachedGroupSync(groupId);
+      if (cached) {
+        return res.json({
+          success: true,
+          data: {
+            ...cached,
+            myRole: req.user!.groupRole,
+            planTier: userTier,
+            subscription: activeSub || null,
+          },
+        });
+      }
     }
 
-    // Load group details and members
+    // Load group details and verify active membership
     const group = await prisma.group.findUnique({
       where: { id: groupId },
       include: {
@@ -151,36 +153,115 @@ router.get('/api/sync', requireAuth, async (req, res, next) => {
       },
     });
 
-    if (!group) {
+    // If group does not exist or user is NOT an active member, return solo data with group: null
+    const myMembership = group?.memberships.find(m => m.user_id === userId && m.user && m.user.is_active);
+    if (!group || !myMembership) {
+      const [
+        user,
+        dailyLogs,
+        workouts,
+        weightLogs,
+        badges,
+        supplements,
+        supplementLogs,
+        customHabits,
+        customHabitLogs,
+      ] = await Promise.all([
+        prisma.user.findUnique({ where: { id: userId } }),
+        prisma.dailyLog.findMany({ where: { user_id: userId }, orderBy: { date: 'desc' } }),
+        prisma.workout.findMany({ where: { user_id: userId, deleted_at: null }, orderBy: { date: 'desc' } }),
+        prisma.weightLog.findMany({ where: { user_id: userId }, orderBy: { date: 'desc' } }),
+        prisma.badge.findMany({ where: { user_id: userId } }),
+        prisma.supplement.findMany({ where: { user_id: userId } }),
+        prisma.supplementLog.findMany({ where: { user_id: userId } }),
+        prisma.customHabit.findMany({ where: { user_id: userId } }),
+        prisma.customHabitLog.findMany({ where: { user_id: userId } }),
+      ]);
+
       return res.json({
         success: true,
         data: {
-          users: [],
-          dailyLogs: [],
-          workouts: [],
-          weightLogs: [],
+          users: user ? [sanitizeUser(user)] : [],
+          dailyLogs,
+          workouts,
+          weightLogs,
           missedReasons: [],
           reactions: [],
-          badges: [],
-          supplements: [],
-          supplementLogs: [],
-          customHabits: [],
-          customHabitLogs: [],
+          badges,
+          supplements,
+          supplementLogs,
+          customHabits,
+          customHabitLogs,
           deletedWorkoutIds: [],
           group: null,
           myRole: null,
           invites: [],
+          planTier: userTier,
+          subscription: activeSub || null,
         },
       });
     }
 
-    const memberUserIds = group.memberships
-      .filter(m => m.user && m.user.is_active)
-      .map(m => m.user.id);
+    // Determine allowed member scope based on plan tier
+    const isOwner = group.owner_id === userId;
+    const isSoloGroup = group.memberships.length <= 1;
+    
+    // For Base tier, only allow viewing own personal group (owner/solo). If in a multi-user group without Pro, limit to solo.
+    let activeMemberships = group.memberships.filter(m => m.user && m.user.is_active);
+    if (userTier === 'base') {
+      if (!isOwner && !isSoloGroup) {
+        // Base user in someone else's multi-user group -> restrict to solo data with group: null
+        const [
+          user,
+          dailyLogs,
+          workouts,
+          weightLogs,
+          badges,
+          supplements,
+          supplementLogs,
+          customHabits,
+          customHabitLogs,
+        ] = await Promise.all([
+          prisma.user.findUnique({ where: { id: userId } }),
+          prisma.dailyLog.findMany({ where: { user_id: userId }, orderBy: { date: 'desc' } }),
+          prisma.workout.findMany({ where: { user_id: userId, deleted_at: null }, orderBy: { date: 'desc' } }),
+          prisma.weightLog.findMany({ where: { user_id: userId }, orderBy: { date: 'desc' } }),
+          prisma.badge.findMany({ where: { user_id: userId } }),
+          prisma.supplement.findMany({ where: { user_id: userId } }),
+          prisma.supplementLog.findMany({ where: { user_id: userId } }),
+          prisma.customHabit.findMany({ where: { user_id: userId } }),
+          prisma.customHabitLog.findMany({ where: { user_id: userId } }),
+        ]);
 
-    const safeUsers = group.memberships
-      .filter(m => m.user && m.user.is_active)
-      .map(m => sanitizeUser(m.user));
+        return res.json({
+          success: true,
+          data: {
+            users: user ? [sanitizeUser(user)] : [],
+            dailyLogs,
+            workouts,
+            weightLogs,
+            missedReasons: [],
+            reactions: [],
+            badges,
+            supplements,
+            supplementLogs,
+            customHabits,
+            customHabitLogs,
+            deletedWorkoutIds: [],
+            group: null,
+            myRole: null,
+            invites: [],
+            planTier: userTier,
+            subscription: activeSub || null,
+          },
+        });
+      }
+      // Owner of their personal group on base tier: return only themselves as member
+      activeMemberships = activeMemberships.filter(m => m.user_id === userId);
+    }
+
+    const memberUserIds = activeMemberships.map(m => m.user.id);
+    const safeUsers = activeMemberships.map(m => sanitizeUser(m.user));
 
     // Parallel fetch of group-scoped data
     const [
@@ -249,7 +330,7 @@ router.get('/api/sync', requireAuth, async (req, res, next) => {
       owner_id: group.owner_id,
       created_at: group.created_at.toISOString(),
       step_target: group.step_target,
-      members: group.memberships.map(m => ({
+      members: activeMemberships.map(m => ({
         user_id: m.user_id,
         role: m.role as 'owner' | 'member',
         joined_at: m.joined_at.toISOString(),

@@ -33,6 +33,7 @@ import {
   sendPasswordResetEmail, 
   sendPasswordChangedNotificationEmail 
 } from '../services/email.service';
+import { cleanupDeletedUser } from '../utils/userCleanup';
 
 const router = Router();
 
@@ -62,7 +63,12 @@ router.post('/api/auth/register', authLimiter, async (req, res, next) => {
       where: { username: cleanUsername },
     });
     if (existing) {
-      throw new AppError(`Username @${cleanUsername} is already registered.`, 400, 'USERNAME_TAKEN');
+      if (existing.is_active) {
+        throw new AppError(`Username @${cleanUsername} is already registered.`, 400, 'USERNAME_TAKEN');
+      } else {
+        // The previous account with this username was deleted: purge it and allow registration!
+        await cleanupDeletedUser(existing.id);
+      }
     }
 
     // Check email conflict if provided
@@ -71,7 +77,12 @@ router.post('/api/auth/register', authLimiter, async (req, res, next) => {
         where: { email: cleanEmail },
       });
       if (existingEmail) {
-        throw new AppError('An account with this email address already exists.', 400, 'EMAIL_TAKEN');
+        if (existingEmail.is_active) {
+          throw new AppError('An account with this email address already exists.', 400, 'EMAIL_TAKEN');
+        } else {
+          // The previous account with this email was deleted: purge it and allow registration!
+          await cleanupDeletedUser(existingEmail.id);
+        }
       }
     }
 
@@ -267,9 +278,17 @@ router.post('/api/auth/register', authLimiter, async (req, res, next) => {
 
     // Dispatch branded verification email asynchronously
     if (cleanEmail && verificationTokenToSend) {
-      sendVerificationEmail(cleanEmail, cleanName, verificationTokenToSend).catch((err) => {
-        console.error('[Verification Email Delivery Error]', err.message);
-      });
+      sendVerificationEmail(cleanEmail, cleanName, verificationTokenToSend)
+        .then((result) => {
+          if (!result.success) {
+            console.error('[Registration Email Error]', result.error);
+          } else {
+            console.log('[Registration Email Success] Sent to', cleanEmail, 'ID:', result.messageId);
+          }
+        })
+        .catch((err) => {
+          console.error('[Verification Email Delivery Error]', err.message);
+        });
     }
 
     // Broadcast registration event only AFTER transaction commits
@@ -591,7 +610,11 @@ router.post('/api/auth/resend-verification', emailResendLimiter, async (req, res
     });
 
     // Send email via Resend
-    await sendVerificationEmail(targetUser.email, targetUser.name, newVerifyToken);
+    const emailResult = await sendVerificationEmail(targetUser.email, targetUser.name, newVerifyToken);
+    if (!emailResult.success) {
+      console.error('[Resend Verification Error]', emailResult.error);
+      throw new AppError(emailResult.error || 'Failed to dispatch verification email. Please try again.', 500, 'EMAIL_SEND_FAILED');
+    }
 
     res.json({
       success: true,
@@ -617,7 +640,11 @@ router.post('/api/auth/set-email', requireAuth, emailResendLimiter, async (req, 
     });
 
     if (existing && existing.id !== userId) {
-      throw new AppError('This email address is already registered with another account.', 400, 'EMAIL_TAKEN');
+      if (existing.is_active) {
+        throw new AppError('This email address is already registered with another account.', 400, 'EMAIL_TAKEN');
+      } else {
+        await cleanupDeletedUser(existing.id);
+      }
     }
 
     // Update user's email and reset verification status
@@ -643,7 +670,11 @@ router.post('/api/auth/set-email', requireAuth, emailResendLimiter, async (req, 
       },
     });
 
-    await sendVerificationEmail(cleanEmail, updatedUser.name, verifyToken);
+    const emailResult = await sendVerificationEmail(cleanEmail, updatedUser.name, verifyToken);
+    if (!emailResult.success) {
+      console.error('[Set Email Verification Error]', emailResult.error);
+      throw new AppError(emailResult.error || 'Failed to dispatch verification email to the updated address.', 500, 'EMAIL_SEND_FAILED');
+    }
 
     res.json({
       success: true,

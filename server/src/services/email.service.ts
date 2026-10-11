@@ -57,20 +57,49 @@ export async function sendResendEmail(params: {
       return { success: false, error: 'Resend client is not initialized' };
     }
 
+    // PRIMARY SENDER: pulse.avixstudio.com is verified on Resend
+    let senderAddress = ENV.RESEND_SENDER_EMAIL || 'noreply@pulse.avixstudio.com';
+    // If sender was configured with unverified root domain avixstudio.com, map to verified pulse.avixstudio.com
+    if (senderAddress.endsWith('@avixstudio.com') && !senderAddress.endsWith('@pulse.avixstudio.com')) {
+      senderAddress = senderAddress.replace('@avixstudio.com', '@pulse.avixstudio.com');
+    }
+    const from = `${ENV.RESEND_SENDER_NAME || 'PULSE'} <${senderAddress}>`;
+    const replyTo = ENV.RESEND_SUPPORT_EMAIL || 'team@avixstudio.com';
+
     let { data, error } = await resend.emails.send({
-      from: "PULSE <noreply@avixstudio.com>",
+      from,
       to: [toEmail],
-      replyTo: ENV.RESEND_SUPPORT_EMAIL || "team@avixstudio.com",
+      replyTo,
       subject,
       html: htmlContent,
       text: textContent || subject,
     });
 
     if (error) {
-      console.error(`[Resend Error] Failed sending email to ${toEmail}:`, error.message);
+      console.error(`[Resend Error] Failed sending email to ${toEmail} from ${from}:`, error.message);
+      // Auto-fallback: if sending failed, retry once with verified noreply@pulse.avixstudio.com
+      if (senderAddress !== 'noreply@pulse.avixstudio.com') {
+        console.log(`[Resend Retry] Retrying with verified sender noreply@pulse.avixstudio.com`);
+        const retry = await resend.emails.send({
+          from: "PULSE <noreply@pulse.avixstudio.com>",
+          to: [toEmail],
+          replyTo,
+          subject,
+          html: htmlContent,
+          text: textContent || subject,
+        });
+        if (!retry.error && retry.data) {
+          console.log(`[Resend Retry Success] Sent to ${toEmail}: ID ${retry.data.id}`);
+          return {
+            success: true,
+            messageId: retry.data.id,
+          };
+        }
+      }
       return { success: false, error: error.message };
     }
 
+    console.log(`[Resend Success] Sent email to ${toEmail} (ID: ${data?.id})`);
     return {
       success: true,
       messageId: data?.id || `resend_${Date.now()}`,

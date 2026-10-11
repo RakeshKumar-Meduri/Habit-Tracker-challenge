@@ -93,7 +93,7 @@ export function clearFailedLogin(username: string) {
  */
 export function checkUsernameExists(users: User[], username: string): boolean {
   const cleanUsername = username.trim().replace(/^@+/, '').toLowerCase();
-  return users.some(u => u.username.trim().replace(/^@+/, '').toLowerCase() === cleanUsername);
+  return users.some(u => u && u.is_active !== false && u.username.trim().replace(/^@+/, '').toLowerCase() === cleanUsername);
 }
 
 /**
@@ -349,4 +349,16 @@ export async function changeUserPassword(
 export function logoutSession() {
   localStorage.removeItem(STORAGE_KEYS.AUTH_SESSION);
   localStorage.removeItem(STORAGE_KEYS.CURRENT_USER_ID);
+  localStorage.removeItem('pulse_fitness_current_group');
+  localStorage.removeItem('pulse_invite_token');
+  sessionStorage.removeItem('pulse_invite_token');
+  sessionStorage.removeItem('pulse_fitness_current_group');
+  localStorage.removeItem(STORAGE_KEYS.DAILY_LOGS);
+  localStorage.removeItem(STORAGE_KEYS.WORKOUTS);
+  localStorage.removeItem(STORAGE_KEYS.WEIGHT_LOGS);
+  localStorage.removeItem(STORAGE_KEYS.CUSTOM_HABITS);
+  localStorage.removeItem(STORAGE_KEYS.CUSTOM_HABIT_LOGS);
+  localStorage.removeItem(STORAGE_KEYS.SUPPLEMENTS);
+  localStorage.removeItem(STORAGE_KEYS.SUPPLEMENT_LOGS);
+  localStorage.removeItem('pulse_fitness_deleted_workout_ids');
 }
