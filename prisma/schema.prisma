@@ -53,6 +53,7 @@ model User {
   subscriptions             Subscription[]
   payments                  Payment[]
   email_verification_tokens EmailVerificationToken[]
+  password_reset_tokens     PasswordResetToken[]
 
   @@index([username])
   @@index([email])
@@ -455,3 +456,21 @@ model EmailVerificationToken {
   @@index([token_hash])
   @@map("email_verification_tokens")
 }
+
+model PasswordResetToken {
+  id         String    @id @default(cuid())
+  user_id    String
+  email      String
+  token_hash String    @unique
+  expires_at DateTime
+  used_at    DateTime?
+  created_at DateTime  @default(now())
+
+  // Relationships
+  user       User      @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([user_id])
+  @@index([token_hash])
+  @@map("password_reset_tokens")
+}
+

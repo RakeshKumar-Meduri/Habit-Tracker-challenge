@@ -58,6 +58,15 @@ export function generateVerificationToken(): { rawToken: string; tokenHash: stri
 }
 
 /**
+ * Generate cryptographically secure password reset token and its database-stored SHA-256 hash
+ */
+export function generatePasswordResetToken(): { rawToken: string; tokenHash: string } {
+  const rawToken = crypto.randomBytes(32).toString('hex');
+  const tokenHash = hashToken(rawToken);
+  return { rawToken, tokenHash };
+}
+
+/**
  * Generate secure session token and its database-stored hash
  */
 export function generateSessionToken(): { rawToken: string; tokenHash: string } {

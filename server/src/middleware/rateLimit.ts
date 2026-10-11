@@ -75,3 +75,36 @@ export const emailResendLimiter = rateLimit({
   },
 });
 
+// Forgot password request rate limit: 5 requests per 15 minutes per IP
+export const forgotPasswordLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  standardHeaders: true,
+  legacyHeaders: false,
+  skip: (req) => req.headers['x-pulse-test-bypass'] === 'pulse-internal-security-test',
+  message: {
+    success: false,
+    error: {
+      code: 'FORGOT_PASSWORD_RATE_LIMIT_EXCEEDED',
+      message: 'Too many password reset requests. Please wait 15 minutes before trying again.',
+    },
+  },
+});
+
+// Password reset execution rate limit: 15 attempts per 15 minutes per IP
+export const passwordResetLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 15,
+  standardHeaders: true,
+  legacyHeaders: false,
+  skip: (req) => req.headers['x-pulse-test-bypass'] === 'pulse-internal-security-test',
+  message: {
+    success: false,
+    error: {
+      code: 'RESET_PASSWORD_RATE_LIMIT_EXCEEDED',
+      message: 'Too many password reset attempts. Please wait 15 minutes before trying again.',
+    },
+  },
+});
+
+

@@ -305,3 +305,175 @@ export async function sendPaymentReceiptEmail(
     textContent: `Payment Receipt: ${receipt.planName} - ₹${formattedAmount} ${receipt.currency}. Receipt #${receipt.receiptNumber}. Support: ${ENV.RESEND_SUPPORT_EMAIL}`,
   });
 }
+
+/**
+ * Send branded password reset email with secure single-use recovery link
+ */
+export async function sendPasswordResetEmail(
+  toEmail: string,
+  toName: string,
+  rawToken: string
+): Promise<SendEmailResult> {
+  const resetUrl = `${ENV.FRONTEND_URL}/reset-password?token=${encodeURIComponent(rawToken)}`;
+  const subject = 'Reset your password for PULSE';
+
+  const htmlContent = `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Reset your password</title>
+      </head>
+      <body style="margin: 0; padding: 0; background-color: #0F172A; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #F8FAFC;">
+        <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #0F172A; padding: 40px 20px;">
+          <tr>
+            <td align="center">
+              <table width="100%" max-width="560px" style="max-width: 560px; background-color: #1E293B; border-radius: 16px; border: 1px solid #334155; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.5);" cellpadding="0" cellspacing="0">
+                <!-- Header -->
+                <tr>
+                  <td style="padding: 32px 32px 20px 32px; text-align: center; border-bottom: 1px solid #334155;">
+                    <div style="display: inline-block; padding: 8px 16px; background: linear-gradient(135deg, #D98B4A 0%, #B45F1E 100%); border-radius: 10px; font-weight: 800; font-size: 20px; letter-spacing: 2px; color: #FFFFFF;">
+                      ⚡ PULSE
+                    </div>
+                    <h2 style="margin: 16px 0 0 0; color: #F8FAFC; font-size: 22px; font-weight: 700;">Password Reset Request</h2>
+                  </td>
+                </tr>
+
+                <!-- Content -->
+                <tr>
+                  <td style="padding: 32px; color: #CBD5E1; font-size: 15px; line-height: 1.6;">
+                    <p style="margin: 0 0 16px 0;">Hello <strong style="color: #F8FAFC;">${toName || 'Athlete'}</strong>,</p>
+                    <p style="margin: 0 0 24px 0;">
+                      We received a request to reset the password for your <strong>PULSE</strong> account. Click the secure button below to choose a new password:
+                    </p>
+
+                    <!-- Button -->
+                    <table width="100%" cellpadding="0" cellspacing="0" style="margin: 28px 0;">
+                      <tr>
+                        <td align="center">
+                          <a href="${resetUrl}" target="_blank" style="display: inline-block; padding: 14px 32px; background: linear-gradient(135deg, #D98B4A 0%, #B45F1E 100%); color: #FFFFFF; text-decoration: none; font-weight: 700; font-size: 15px; border-radius: 10px; box-shadow: 0 4px 15px rgba(217, 139, 74, 0.4); text-transform: uppercase; letter-spacing: 0.5px;">
+                            Reset Password
+                          </a>
+                        </td>
+                      </tr>
+                    </table>
+
+                    <p style="margin: 0 0 12px 0; font-size: 13px; color: #94A3B8;">
+                      Or copy and paste this link into your browser:
+                    </p>
+                    <p style="margin: 0 0 24px 0; font-size: 12px; color: #38BDF8; word-break: break-all; background-color: #0F172A; padding: 12px; border-radius: 8px; border: 1px solid #1E293B;">
+                      <a href="${resetUrl}" style="color: #38BDF8; text-decoration: underline;">${resetUrl}</a>
+                    </p>
+
+                    <div style="background-color: #0F172A; border-left: 3px solid #D98B4A; padding: 12px 16px; border-radius: 4px; font-size: 13px; color: #94A3B8; margin-top: 24px;">
+                      ⏳ <strong>Security Notice:</strong> This password reset link expires in <strong>1 hour</strong> and can only be used once. If you did not request this reset, your account is safe and you can safely ignore this email.
+                    </div>
+                  </td>
+                </tr>
+
+                <!-- Footer -->
+                <tr>
+                  <td style="padding: 24px 32px; background-color: #0F172A; border-top: 1px solid #334155; text-align: center; color: #64748B; font-size: 12px;">
+                    <p style="margin: 0 0 8px 0;">PULSE Fitness Platform · High-Performance Daily Habits</p>
+                    <p style="margin: 0;">Need help? Reach out at <a href="mailto:${ENV.RESEND_SUPPORT_EMAIL}" style="color: #D98B4A; text-decoration: none;">${ENV.RESEND_SUPPORT_EMAIL}</a></p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+      </body>
+    </html>
+  `;
+
+  return sendResendEmail({
+    toEmail,
+    toName,
+    subject,
+    htmlContent,
+    textContent: `Reset your PULSE password: ${resetUrl} (link expires in 1 hour)`,
+  });
+}
+
+/**
+ * Send security notification after a password has been successfully changed
+ */
+export async function sendPasswordChangedNotificationEmail(
+  toEmail: string,
+  toName: string
+): Promise<SendEmailResult> {
+  const subject = 'Your PULSE account password was changed';
+  const changedAtFormatted = new Intl.DateTimeFormat('en-IN', {
+    dateStyle: 'medium',
+    timeStyle: 'short',
+    timeZone: 'Asia/Kolkata',
+  }).format(new Date());
+
+  const htmlContent = `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Password Changed</title>
+      </head>
+      <body style="margin: 0; padding: 0; background-color: #0F172A; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #F8FAFC;">
+        <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #0F172A; padding: 40px 20px;">
+          <tr>
+            <td align="center">
+              <table width="100%" max-width="560px" style="max-width: 560px; background-color: #1E293B; border-radius: 16px; border: 1px solid #334155; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.5);" cellpadding="0" cellspacing="0">
+                <!-- Header -->
+                <tr>
+                  <td style="padding: 32px 32px 20px 32px; text-align: center; border-bottom: 1px solid #334155;">
+                    <div style="display: inline-block; padding: 8px 16px; background: linear-gradient(135deg, #D98B4A 0%, #B45F1E 100%); border-radius: 10px; font-weight: 800; font-size: 20px; letter-spacing: 2px; color: #FFFFFF;">
+                      ⚡ PULSE
+                    </div>
+                    <div style="margin-top: 14px; display: inline-block; padding: 4px 12px; background-color: rgba(16, 185, 129, 0.15); border: 1px solid #10B981; border-radius: 20px; color: #10B981; font-size: 13px; font-weight: 600;">
+                      ✓ Security Confirmation
+                    </div>
+                    <h2 style="margin: 14px 0 0 0; color: #F8FAFC; font-size: 22px; font-weight: 700;">Password Changed Successfully</h2>
+                  </td>
+                </tr>
+
+                <!-- Content -->
+                <tr>
+                  <td style="padding: 32px; color: #CBD5E1; font-size: 15px; line-height: 1.6;">
+                    <p style="margin: 0 0 16px 0;">Hello <strong style="color: #F8FAFC;">${toName || 'Athlete'}</strong>,</p>
+                    <p style="margin: 0 0 16px 0;">
+                      The password for your <strong>PULSE</strong> account was successfully updated on <strong>${changedAtFormatted} IST</strong>.
+                    </p>
+                    <p style="margin: 0 0 20px 0; color: #94A3B8;">
+                      As a security precaution, all other active sessions and remembered devices for this account have been logged out.
+                    </p>
+
+                    <div style="background-color: #0F172A; border-left: 3px solid #EF4444; padding: 12px 16px; border-radius: 4px; font-size: 13px; color: #F87171; margin-top: 20px;">
+                      ⚠️ <strong>Did not make this change?</strong> If you did not reset or change your password, someone may have unauthorized access to your account. Please contact our support team immediately at <a href="mailto:${ENV.RESEND_SUPPORT_EMAIL}" style="color: #F87171; text-decoration: underline;">${ENV.RESEND_SUPPORT_EMAIL}</a>.
+                    </div>
+                  </td>
+                </tr>
+
+                <!-- Footer -->
+                <tr>
+                  <td style="padding: 24px 32px; background-color: #0F172A; border-top: 1px solid #334155; text-align: center; color: #64748B; font-size: 12px;">
+                    <p style="margin: 0 0 8px 0;">PULSE Fitness Platform · High-Performance Daily Habits</p>
+                    <p style="margin: 0;">Need help? Reach out at <a href="mailto:${ENV.RESEND_SUPPORT_EMAIL}" style="color: #D98B4A; text-decoration: none;">${ENV.RESEND_SUPPORT_EMAIL}</a></p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+      </body>
+    </html>
+  `;
+
+  return sendResendEmail({
+    toEmail,
+    toName,
+    subject,
+    htmlContent,
+    textContent: `Your PULSE password was successfully changed on ${changedAtFormatted}. If you did not make this change, contact ${ENV.RESEND_SUPPORT_EMAIL} immediately.`,
+  });
+}
+

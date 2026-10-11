@@ -761,3 +761,102 @@ export async function resendPaymentReceiptOnServer(paymentId: string): Promise<{
   }
 }
 
+/**
+ * Request password reset link (Forgot password)
+ */
+export async function requestPasswordReset(email: string): Promise<{
+  success: boolean;
+  message: string;
+  error?: string;
+}> {
+  try {
+    const res = await fetch(`${API_BASE}/api/auth/forgot-password`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email }),
+    });
+    const json = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      return {
+        success: false,
+        message: json?.error?.message || json?.message || 'Failed to request password reset.',
+        error: json?.error?.message || json?.message,
+      };
+    }
+    return {
+      success: true,
+      message: json?.message || "If an account matches that email, we'll send a password-reset link.",
+    };
+  } catch (err: any) {
+    return {
+      success: false,
+      message: err.message || 'Network error while requesting password reset.',
+      error: err.message,
+    };
+  }
+}
+
+/**
+ * Verify validity of a password reset token
+ */
+export async function verifyResetTokenOnServer(token: string): Promise<{
+  valid: boolean;
+  email?: string;
+  username?: string;
+  reason?: string;
+  message?: string;
+}> {
+  try {
+    const res = await fetch(`${API_BASE}/api/auth/verify-reset-token`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token }),
+    });
+    return await res.json();
+  } catch (err: any) {
+    return {
+      valid: false,
+      reason: 'network_error',
+      message: 'Failed to verify reset token due to network issue.',
+    };
+  }
+}
+
+/**
+ * Submit new password with valid reset token
+ */
+export async function submitPasswordResetOnServer(params: {
+  token: string;
+  newPassword: string;
+  confirmPassword?: string;
+}): Promise<{
+  success: boolean;
+  message?: string;
+  error?: string;
+}> {
+  try {
+    const res = await fetch(`${API_BASE}/api/auth/reset-password`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(params),
+    });
+    const json = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      return {
+        success: false,
+        error: json?.error?.message || json?.message || 'Failed to reset password.',
+      };
+    }
+    return {
+      success: true,
+      message: json?.message || 'Password successfully reset.',
+    };
+  } catch (err: any) {
+    return {
+      success: false,
+      error: err.message || 'Network error while resetting password.',
+    };
+  }
+}
+
+

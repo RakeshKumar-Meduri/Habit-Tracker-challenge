@@ -76,6 +76,7 @@ import { JoinGroupModal } from './components/JoinGroupModal';
 import { SubscriptionModal } from './components/SubscriptionModal';
 import { EmailVerificationModal } from './components/EmailVerificationModal';
 import { PaymentStatusModal } from './components/PaymentStatusModal';
+import { ResetPasswordModal } from './components/ResetPasswordModal';
 import { Trophy, Swords, Award } from 'lucide-react';
 
 export function App() {
@@ -214,7 +215,7 @@ export function App() {
 
   // Modals state
   const [isAuthModalOpen, setIsAuthModalOpen] = useState<boolean>(false);
-  const [authModalMode, setAuthModalMode] = useState<'login' | 'register'>('login');
+  const [authModalMode, setAuthModalMode] = useState<'login' | 'register' | 'forgot'>('login');
   const [isWorkoutModalOpen, setIsWorkoutModalOpen] = useState<boolean>(false);
   const [isRecapModalOpen, setIsRecapModalOpen] = useState<boolean>(false);
 
@@ -239,7 +240,11 @@ export function App() {
   const [isPaymentStatusModalOpen, setIsPaymentStatusModalOpen] = useState<boolean>(false);
   const [paymentOrderId, setPaymentOrderId] = useState<string | null>(null);
 
-  // Detect /join/:token, /verify-email, and /payment-status on mount and popstate
+  // Password reset modal state
+  const [isResetPasswordModalOpen, setIsResetPasswordModalOpen] = useState<boolean>(false);
+  const [passwordResetToken, setPasswordResetToken] = useState<string>('');
+
+  // Detect /join/:token, /reset-password, /verify-email, and /payment-status on mount and popstate
   useEffect(() => {
     const checkAppUrls = () => {
       if (typeof window === 'undefined') return;
@@ -255,11 +260,24 @@ export function App() {
         } catch {}
       }
 
-      // 2. /verify-email or ?token=...
       const urlParams = new URLSearchParams(window.location.search);
+
+      // 2. /reset-password or ?resetToken=... (or ?token=... when on reset-password path)
+      const isResetPath = window.location.pathname.includes('reset-password');
+      const resetTokenParam = urlParams.get('resetToken') || (isResetPath ? urlParams.get('token') : null);
+      if (isResetPath || resetTokenParam !== null) {
+        setPasswordResetToken(resetTokenParam ? resetTokenParam.trim() : '');
+        setIsResetPasswordModalOpen(true);
+        // Clean URL immediately to prevent token leakage via referrer, browser history, or logs
+        try {
+          window.history.replaceState({}, document.title, window.location.pathname);
+        } catch {}
+      }
+
+      // 3. /verify-email or ?token=... (only if not a reset-password path)
       const verifyTokenParam = urlParams.get('token');
       const isVerifyPath = window.location.pathname.includes('verify-email');
-      if (verifyTokenParam || isVerifyPath) {
+      if (!isResetPath && resetTokenParam === null && (verifyTokenParam || isVerifyPath)) {
         if (verifyTokenParam) {
           setEmailVerifyToken(verifyTokenParam.trim());
         }
@@ -270,7 +288,7 @@ export function App() {
         } catch {}
       }
 
-      // 3. /payment-status or ?orderId=...
+      // 4. /payment-status or ?orderId=...
       const orderIdParam = urlParams.get('orderId') || urlParams.get('order_id');
       const isPaymentPath = window.location.pathname.includes('payment-status');
       if (orderIdParam || isPaymentPath) {
@@ -1191,7 +1209,7 @@ export function App() {
     if (data) applyServerDataRef.current(data);
   };
 
-  const handleOpenAuth = (mode: 'login' | 'register' = 'login') => {
+  const handleOpenAuth = (mode: 'login' | 'register' | 'forgot' = 'login') => {
     setAuthModalMode(mode);
     setIsAuthModalOpen(true);
   };
@@ -1805,6 +1823,26 @@ export function App() {
           setPaymentOrderId(null);
         }}
         orderId={paymentOrderId}
+      />
+
+      {/* Password Reset Modal */}
+      <ResetPasswordModal
+        isOpen={isResetPasswordModalOpen}
+        token={passwordResetToken}
+        onClose={() => {
+          setIsResetPasswordModalOpen(false);
+          setPasswordResetToken('');
+        }}
+        onSuccessReturnToLogin={() => {
+          setIsResetPasswordModalOpen(false);
+          setPasswordResetToken('');
+          handleOpenAuth('login');
+        }}
+        onRequestNewLink={() => {
+          setIsResetPasswordModalOpen(false);
+          setPasswordResetToken('');
+          handleOpenAuth('forgot');
+        }}
       />
 
       {/* Footer */}

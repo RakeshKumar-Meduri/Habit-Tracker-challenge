@@ -122,3 +122,45 @@ export const resendVerificationSchema = z.object({
   email: z.string().trim().email('Please enter a valid email address').optional(),
 });
 
+export const forgotPasswordSchema = z.object({
+  email: z.string().trim().email('Please enter a valid email address'),
+});
+
+export const resetPasswordSchema = z.object({
+  token: z.string().min(10, 'Reset token is required'),
+  newPassword: z.string().min(6, 'Password must be at least 6 characters long'),
+  confirmPassword: z.string().optional(),
+}).superRefine((data, ctx) => {
+  const pass = data.newPassword.trim();
+  if (pass.length < 6) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: 'Password must be at least 6 characters long',
+      path: ['newPassword'],
+    });
+    return;
+  }
+  if (!/[A-Z]/.test(pass)) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: 'Password must contain at least one uppercase letter',
+      path: ['newPassword'],
+    });
+  }
+  if (!/[^A-Za-z0-9]/.test(pass)) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: 'Password must contain at least one special character',
+      path: ['newPassword'],
+    });
+  }
+  if (data.confirmPassword && pass !== data.confirmPassword.trim()) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: 'Passwords do not match',
+      path: ['confirmPassword'],
+    });
+  }
+});
+
+
