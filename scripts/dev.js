@@ -24,8 +24,7 @@ const serverProc = spawn(npxCmd, ['tsx', 'watch', path.join(rootDir, 'server', '
 });
 
 // 2. Start Vite Dev Server
-const viteCmd = isWin ? 'npx.cmd' : 'npx';
-const viteProc = spawn(viteCmd, ['vite', '--host'], {
+const viteProc = spawn(npxCmd, ['vite', '--host', '--port', '5173'], {
   cwd: rootDir,
   stdio: 'inherit',
   shell: isWin,
