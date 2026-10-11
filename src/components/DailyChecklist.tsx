@@ -465,10 +465,10 @@ export const DailyChecklist: React.FC<DailyChecklistProps> = ({
       <div className="space-y-3">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
           <div>
-            <h1 className="text-xl sm:text-2xl font-bold text-[#111827] tracking-tight">
+            <h1 className="text-xl sm:text-2xl font-bold text-zinc-900 dark:text-zinc-100 tracking-tight">
               {greeting}, {currentUser.name}
             </h1>
-            <p className="text-xs sm:text-sm text-[#667085]">
+            <p className="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400">
               Here is your daily momentum and consistency breakdown for today.
             </p>
           </div>
@@ -476,28 +476,28 @@ export const DailyChecklist: React.FC<DailyChecklistProps> = ({
 
         {/* 4 Restrained Overview Cards (Score, Workouts, Streak, Group Rank) */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3">
-          <div className="bg-white border border-[#E4E7EC] rounded-[14px] p-3 sm:p-3.5 shadow-[0_1px_3px_rgba(16,24,40,0.06)]">
-            <span className="text-[11px] font-semibold text-[#667085] uppercase tracking-wider block">Today's Score</span>
+          <div className="bg-white dark:bg-[#121215] border border-zinc-200 dark:border-zinc-800 rounded-[14px] p-3 sm:p-3.5 shadow-sm">
+            <span className="text-[11px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider block">Today's Score</span>
             <div className="flex items-baseline gap-1 mt-1">
-              <span className="text-xl sm:text-2xl font-bold text-[#111827] tabular-nums">
+              <span className="text-xl sm:text-2xl font-bold text-zinc-900 dark:text-zinc-100 tabular-nums">
                 {displayedDailyLog.points_earned !== undefined ? displayedDailyLog.points_earned : (completedCount * 10)}
               </span>
-              <span className="text-xs text-[#98A2B3] font-semibold">/ 50</span>
+              <span className="text-xs text-zinc-400 font-semibold">/ 50</span>
             </div>
           </div>
 
-          <div className="bg-white border border-[#E4E7EC] rounded-[14px] p-3 sm:p-3.5 shadow-[0_1px_3px_rgba(16,24,40,0.06)]">
-            <span className="text-[11px] font-semibold text-[#667085] uppercase tracking-wider block">Workouts</span>
+          <div className="bg-white dark:bg-[#121215] border border-zinc-200 dark:border-zinc-800 rounded-[14px] p-3 sm:p-3.5 shadow-sm">
+            <span className="text-[11px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider block">Workouts</span>
             <div className="flex items-baseline gap-1 mt-1">
-              <span className="text-xl sm:text-2xl font-bold text-[#111827] tabular-nums">{workoutsThisWeek}</span>
-              <span className="text-xs text-[#98A2B3] font-semibold">/ 7</span>
+              <span className="text-xl sm:text-2xl font-bold text-zinc-900 dark:text-zinc-100 tabular-nums">{workoutsThisWeek}</span>
+              <span className="text-xs text-zinc-400 font-semibold">/ 7</span>
             </div>
           </div>
 
-          <div className="bg-white border border-[#E4E7EC] rounded-[14px] p-3 sm:p-3.5 shadow-[0_1px_3px_rgba(16,24,40,0.06)]">
-            <span className="text-[11px] font-semibold text-[#667085] uppercase tracking-wider block">Streak</span>
+          <div className="bg-white dark:bg-[#121215] border border-zinc-200 dark:border-zinc-800 rounded-[14px] p-3 sm:p-3.5 shadow-sm">
+            <span className="text-[11px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider block">Streak</span>
             <div className="flex items-center gap-1.5 mt-1">
-              <span className="text-xl sm:text-2xl font-bold text-[#111827] tabular-nums">{currentStreak}</span>
+              <span className="text-xl sm:text-2xl font-bold text-zinc-900 dark:text-zinc-100 tabular-nums">{currentStreak}</span>
               <span className="text-sm">🔥</span>
             </div>
           </div>
@@ -506,25 +506,25 @@ export const DailyChecklist: React.FC<DailyChecklistProps> = ({
             <button
               type="button"
               onClick={() => onOpenUpgradeModal?.()}
-              className="bg-white border border-[#E4E7EC] hover:border-[#D98B4A]/50 rounded-[14px] p-3 sm:p-3.5 shadow-[0_1px_3px_rgba(16,24,40,0.06)] text-left transition cursor-pointer group"
+              className="bg-white dark:bg-[#121215] border border-zinc-200 dark:border-zinc-800 hover:border-zinc-400 dark:hover:border-zinc-600 rounded-[14px] p-3 sm:p-3.5 shadow-sm text-left transition cursor-pointer group"
               title="Team Goals & Squad Ranking are exclusively available on PULSE Pro"
             >
               <div className="flex items-center justify-between">
-                <span className="text-[11px] font-semibold text-[#667085] uppercase tracking-wider block">Team Goals</span>
-                <Crown className="w-3.5 h-3.5 text-[#D98B4A] group-hover:scale-110 transition-transform" />
+                <span className="text-[11px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider block">Team Goals</span>
+                <Crown className="w-3.5 h-3.5 text-zinc-900 dark:text-zinc-100 group-hover:scale-110 transition-transform" />
               </div>
               <div className="flex items-center gap-1.5 mt-1">
-                <span className="text-xs font-bold text-[#D98B4A] bg-[#D98B4A]/10 border border-[#D98B4A]/25 px-2 py-0.5 rounded-full flex items-center gap-1">
+                <span className="text-xs font-bold text-zinc-900 dark:text-zinc-100 bg-zinc-100 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 px-2 py-0.5 rounded-full flex items-center gap-1">
                   <Lock className="w-2.5 h-2.5" /> Pro Only
                 </span>
               </div>
             </button>
           ) : (
-            <div className="bg-white border border-[#E4E7EC] rounded-[14px] p-3 sm:p-3.5 shadow-[0_1px_3px_rgba(16,24,40,0.06)]">
-              <span className="text-[11px] font-semibold text-[#667085] uppercase tracking-wider block">Group Rank</span>
+            <div className="bg-white dark:bg-[#121215] border border-zinc-200 dark:border-zinc-800 rounded-[14px] p-3 sm:p-3.5 shadow-sm">
+              <span className="text-[11px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider block">Group Rank</span>
               <div className="flex items-baseline gap-1 mt-1">
-                <span className="text-xl sm:text-2xl font-bold text-[#3157D5] tabular-nums">#{userRank}</span>
-                <span className="text-xs text-[#98A2B3] font-semibold">of {totalGroupMembers}</span>
+                <span className="text-xl sm:text-2xl font-bold text-zinc-900 dark:text-zinc-100 tabular-nums">#{userRank}</span>
+                <span className="text-xs text-zinc-400 font-semibold">of {totalGroupMembers}</span>
               </div>
             </div>
           )}
@@ -875,49 +875,49 @@ export const DailyChecklist: React.FC<DailyChecklistProps> = ({
         </div>
 
         {/* Today's Score Circular Progress Indicator (Section 19 Spec) */}
-        <div className="w-full md:w-auto flex items-center gap-4 bg-white border border-[#E4E7EC] rounded-[14px] p-3.5 shadow-[0_1px_3px_rgba(16,24,40,0.06)]">
+        <div className="w-full md:w-auto flex items-center gap-4 bg-white dark:bg-[#121215] border border-slate-200 dark:border-zinc-800 rounded-[14px] p-3.5 shadow-sm">
           <div className="relative w-14 h-14 flex items-center justify-center shrink-0">
             <svg className="w-14 h-14 transform -rotate-90">
-              <circle cx="28" cy="28" r="22" stroke="#E9EDF5" strokeWidth="4.5" fill="transparent" />
+              <circle cx="28" cy="28" r="22" stroke="currentColor" className="text-zinc-200 dark:text-zinc-800" strokeWidth="4.5" fill="transparent" />
               <circle
                 cx="28"
                 cy="28"
                 r="22"
-                stroke="#3157D5"
+                stroke="currentColor"
                 strokeWidth="4.5"
                 fill="transparent"
                 strokeDasharray={138.2}
                 strokeDashoffset={138.2 - (138.2 * (Math.min(50, displayedDailyLog.points_earned !== undefined ? displayedDailyLog.points_earned : (completedCount * 10))) / 50)}
                 strokeLinecap="round"
-                className="transition-all duration-500 ease-out"
+                className="text-zinc-900 dark:text-zinc-100 transition-all duration-500 ease-out"
               />
             </svg>
             <div className="absolute flex flex-col items-center justify-center text-center">
-              <span className="text-xs font-black text-[#111827] tabular-nums leading-none">
+              <span className="text-xs font-black text-zinc-900 dark:text-zinc-100 tabular-nums leading-none">
                 {isViewingOther && !actualMemberLog ? '—' : (displayedDailyLog.points_earned !== undefined ? displayedDailyLog.points_earned : (completedCount * 10))}
               </span>
-              <span className="text-[8px] font-bold text-[#667085] leading-none mt-0.5">/ 50</span>
+              <span className="text-[8px] font-bold text-zinc-500 dark:text-zinc-400 leading-none mt-0.5">/ 50</span>
             </div>
           </div>
           <div>
             <div className="flex items-center gap-1.5">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-[#3157D5]">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
                 Today's Score
               </span>
               {isSunday && (
-                <span className="text-[9px] px-1.5 py-0.2 rounded-full bg-[#ECFDF3] text-[#15803D] font-bold border border-[#15803D]/20">
+                <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-zinc-100 text-zinc-900 dark:bg-zinc-800 dark:text-zinc-100 font-bold border border-zinc-300 dark:border-zinc-700">
                   Healing
                 </span>
               )}
             </div>
-            <h3 className="text-sm font-bold text-[#111827]">
+            <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100">
               {isViewingOther ? `${targetUser.name}'s Progress` : `${completedCount} of 5 Habits Completed`}
             </h3>
-            <p className="text-xs text-[#667085] mt-0.5">
+            <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
               {isViewingOther && !actualMemberLog ? (
-                <span>No habits recorded for <span className="text-[#111827] font-semibold">{selectedDate}</span></span>
+                <span>No habits recorded for <span className="text-zinc-900 dark:text-zinc-100 font-semibold">{selectedDate}</span></span>
               ) : (
-                <span>Selected Date: <span className="text-[#111827] font-semibold">{selectedDate}</span></span>
+                <span>Selected Date: <span className="text-zinc-900 dark:text-zinc-100 font-semibold">{selectedDate}</span></span>
               )}
             </p>
           </div>
@@ -958,45 +958,45 @@ export const DailyChecklist: React.FC<DailyChecklistProps> = ({
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="flex items-center gap-3">
               <div className={`p-2.5 sm:p-3 rounded-lg shrink-0 ${
-                (displayedDailyLog.gym_done || isSunday) ? 'bg-[#34D399]/15 text-[#34D399]' : 'bg-slate-100 text-slate-500 dark:bg-[#1B1B20] dark:text-[#A1A1AA]'
+                (displayedDailyLog.gym_done || isSunday) ? 'bg-zinc-100 text-zinc-900 dark:bg-zinc-800 dark:text-zinc-100' : 'bg-zinc-100 text-zinc-500 dark:bg-zinc-900 dark:text-zinc-400'
               }`}>
                 <Dumbbell className="w-5 h-5 sm:w-6 sm:h-6" />
               </div>
               <div>
                 <div className="flex items-center gap-2 flex-wrap">
-                  <h4 className="font-bold text-slate-900 dark:text-[#F4F4F5] text-sm sm:text-base whitespace-nowrap">1. Gym Routine</h4>
+                  <h4 className="font-bold text-zinc-900 dark:text-zinc-100 text-sm sm:text-base whitespace-nowrap">1. Gym Routine</h4>
                   {isSunday && (
-                    <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-[#34D399]/15 text-[#34D399] border border-[#34D399]/30 flex items-center gap-1 shrink-0">
+                    <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-zinc-100 text-zinc-900 dark:bg-zinc-800 dark:text-zinc-100 border border-zinc-300 dark:border-zinc-700 flex items-center gap-1 shrink-0">
                       🌿 Healing
                     </span>
                   )}
                 </div>
-                <p className="text-xs text-slate-500 dark:text-[#A1A1AA]">
+                <p className="text-xs text-zinc-500 dark:text-zinc-400">
                   {isSunday ? 'Sunday Body Recovery — Rest & Healing Day' : 'Log strength or cardio workouts'}
                 </p>
               </div>
             </div>
 
-            {/* Action Buttons: On Sunday show green Healing badge with no Mark Done or Failed buttons */}
+            {/* Action Buttons: On Sunday show clean Healing badge with no Mark Done or Failed buttons */}
             {isSunday ? (
               <div className="w-full xl:w-auto shrink-0 flex items-center">
-                <span className="w-full xl:w-auto px-4 py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 bg-[#34D399]/15 text-[#34D399] border border-[#34D399]/30 shadow-sm min-h-[42px]">
-                  <span className="w-2 h-2 rounded-full bg-[#34D399] animate-pulse" />
+                <span className="w-full xl:w-auto px-4 py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 bg-zinc-100 text-zinc-900 border border-zinc-300 dark:bg-zinc-800 dark:text-zinc-100 dark:border-zinc-700 shadow-sm min-h-[42px]">
+                  <span className="w-2 h-2 rounded-full bg-zinc-900 dark:bg-zinc-100 animate-pulse" />
                   <span>Healing</span>
                 </span>
               </div>
             ) : isViewingOther ? (
               <span className={`w-full xl:w-auto justify-center px-3 py-2.5 rounded-xl text-xs font-bold flex items-center gap-1.5 whitespace-nowrap shrink-0 ${
                 displayedDailyLog.gym_done
-                  ? 'bg-[#34D399]/15 text-[#34D399] border border-[#34D399]/30'
-                  : 'bg-slate-100 text-slate-600 border border-slate-200 dark:bg-[#1B1B20] dark:text-[#A1A1AA] dark:border-[#26262C]'
+                  ? 'bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-950 border border-zinc-900 dark:border-zinc-100'
+                  : 'bg-zinc-100 text-zinc-600 border border-zinc-200 dark:bg-zinc-800 dark:text-zinc-400 dark:border-zinc-700'
               }`}>
                 {displayedDailyLog.gym_done ? (
-                  <CheckCircle2 className="w-4 h-4 text-[#34D399]" />
+                  <CheckCircle2 className="w-4 h-4 text-white dark:text-zinc-950" />
                 ) : !hasLoggedForDate ? (
                   <Clock className="w-4 h-4 text-zinc-500" />
                 ) : (
-                  <XCircle className="w-4 h-4 text-[#71717A]" />
+                  <XCircle className="w-4 h-4 text-zinc-500" />
                 )}
                 <span>{displayedDailyLog.gym_done ? 'Completed' : !hasLoggedForDate ? 'Not Logged Yet' : 'Not Done'}</span>
               </span>
@@ -1005,7 +1005,7 @@ export const DailyChecklist: React.FC<DailyChecklistProps> = ({
                 {displayedDailyLog.gym_done ? (
                   <button
                     onClick={() => handleToggleGoal('gym', true)}
-                    className="w-full xl:w-auto flex-1 xl:flex-initial px-4 py-2.5 rounded-xl bg-[#34D399]/15 border border-[#34D399]/30 hover:bg-[#34D399]/25 text-[#34D399] font-bold text-xs flex items-center justify-center gap-1.5 transition cursor-pointer min-h-[42px] whitespace-nowrap shrink-0 active:scale-[0.98]"
+                    className="w-full xl:w-auto flex-1 xl:flex-initial px-4 py-2.5 rounded-xl bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-950 font-bold text-xs flex items-center justify-center gap-1.5 transition cursor-pointer min-h-[42px] whitespace-nowrap shrink-0 active:scale-[0.98]"
                     title="Click to unmark as completed"
                   >
                     <CheckCircle2 className="w-4 h-4" />
@@ -1015,7 +1015,7 @@ export const DailyChecklist: React.FC<DailyChecklistProps> = ({
                   <div className="flex items-center gap-2 w-full sm:w-auto shrink-0">
                     <button
                       onClick={() => handleToggleGoal('gym', false)}
-                      className="flex-1 sm:flex-initial px-4 py-2.5 rounded-xl bg-[#3157D5] hover:bg-[#2544B8] dark:bg-[#D98B4A] dark:hover:bg-[#E69A5C] text-white dark:text-[#0B0B0D] font-bold text-xs flex items-center justify-center gap-1.5 transition cursor-pointer min-h-[42px] whitespace-nowrap shadow-sm active:scale-[0.98]"
+                      className="btn-primary flex-1 sm:flex-initial px-4 py-2.5 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition cursor-pointer min-h-[42px] whitespace-nowrap shadow-sm active:scale-[0.98]"
                     >
                       <CheckCircle2 className="w-4 h-4" />
                       <span>Mark Done</span>
@@ -1225,7 +1225,7 @@ export const DailyChecklist: React.FC<DailyChecklistProps> = ({
                             const val = Math.max(stepTarget, dailyLog.steps_value || 0);
                             onUpdateDailyLog({ ...dailyLog, steps_done: true, steps_value: val, steps_target: stepTarget });
                           }}
-                          className="flex-1 min-h-[42px] px-3.5 py-2.5 rounded-xl bg-gradient-to-r from-[#3157D5] to-[#2544B8] hover:from-[#2544B8] hover:to-[#172554] dark:from-[#D98B4A] dark:to-[#B45F1E] dark:hover:from-[#E69A5C] dark:hover:to-[#C66D28] text-white font-bold text-xs flex items-center justify-center gap-1.5 transition cursor-pointer shadow-md shadow-blue-500/20 dark:shadow-[#D98B4A]/20 active:scale-[0.98]"
+                          className="btn-primary flex-1 min-h-[42px] px-3.5 py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition cursor-pointer shadow-sm active:scale-[0.98]"
                         >
                           <CheckCircle2 className="w-4 h-4" />
                           <span>Hit Target (10 pts)</span>
@@ -1235,8 +1235,8 @@ export const DailyChecklist: React.FC<DailyChecklistProps> = ({
                           onClick={() => handleToggleFailed('steps')}
                           className={`min-h-[42px] px-3.5 py-2.5 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition cursor-pointer border active:scale-[0.98] shrink-0 ${
                             getGoalMissedReason('steps')
-                              ? 'bg-rose-500/15 text-[#F87171] border-rose-500/30 hover:bg-rose-500/25'
-                              : 'bg-rose-50 text-rose-600 border-rose-200 hover:bg-rose-100 dark:bg-rose-500/10 dark:text-[#F87171] dark:border-rose-500/25 dark:hover:bg-rose-500/20'
+                              ? 'bg-zinc-100 text-zinc-900 border-zinc-400 dark:bg-zinc-800 dark:text-zinc-100 dark:border-zinc-600'
+                              : 'bg-zinc-50 text-zinc-700 border-zinc-200 hover:bg-zinc-100 dark:bg-zinc-900 dark:text-zinc-300 dark:border-zinc-800 dark:hover:bg-zinc-800'
                           }`}
                           title={getGoalMissedReason('steps') ? "Marked as Failed — click to remove / undo" : "Unable to hit step goal? Log reason"}
                         >
@@ -1267,8 +1267,8 @@ export const DailyChecklist: React.FC<DailyChecklistProps> = ({
                     <div 
                       className={`h-full transition-all duration-300 rounded-full ${
                         isStepHit 
-                          ? 'bg-[#34D399] shadow-[0_0_12px_rgba(52,211,153,0.4)]' 
-                          : 'bg-gradient-to-r from-blue-500 to-[#3157D5] dark:from-amber-500 dark:via-[#D98B4A] dark:to-amber-600'
+                          ? 'bg-zinc-900 dark:bg-zinc-100' 
+                          : 'bg-zinc-500 dark:bg-zinc-400'
                       }`}
                       style={{ width: `${stepPercent}%` }}
                     />

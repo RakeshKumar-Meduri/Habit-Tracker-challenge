@@ -162,7 +162,7 @@ export const WorkoutHistory: React.FC<WorkoutHistoryProps> = ({
 
           <button
             onClick={onOpenWorkoutModal}
-            className="flex-1 sm:flex-none justify-center py-2.5 px-5 min-h-[44px] bg-[#3157D5] hover:bg-[#2544B8] text-white font-semibold rounded-[10px] text-xs sm:text-sm transition shadow-sm flex items-center gap-2 cursor-pointer active:scale-95"
+            className="btn-primary flex-1 sm:flex-none justify-center py-2.5 px-5 min-h-[44px] rounded-[10px] text-xs sm:text-sm transition shadow-sm flex items-center gap-2 cursor-pointer active:scale-95"
           >
             <Dumbbell className="w-4 h-4 stroke-[2.5]" />
             <span>+ Log Session</span>
@@ -256,7 +256,7 @@ export const WorkoutHistory: React.FC<WorkoutHistoryProps> = ({
           {(!searchExercise && selectedUserId === 'all') && (
             <button
               onClick={onOpenWorkoutModal}
-              className="mt-5 px-5 py-2.5 min-h-[44px] bg-[#3157D5] hover:bg-[#2544B8] text-white font-semibold rounded-[10px] text-xs sm:text-sm transition inline-flex items-center gap-2 cursor-pointer shadow-sm active:scale-95"
+              className="mt-5 px-5 py-2.5 min-h-[44px] btn-primary rounded-[10px] text-xs sm:text-sm transition inline-flex items-center gap-2 cursor-pointer shadow-sm active:scale-95"
             >
               <Dumbbell className="w-4 h-4 stroke-[2.5]" />
               <span>Log workout</span>

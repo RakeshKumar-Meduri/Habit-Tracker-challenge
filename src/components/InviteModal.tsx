@@ -130,33 +130,33 @@ export const InviteModal: React.FC<InviteModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/85 backdrop-blur-md animate-fadeIn font-sans overflow-y-auto">
-      <div className="relative w-full max-w-lg bg-[#131316] border border-[#26262C] rounded-2xl p-5 sm:p-7 shadow-2xl my-4">
+      <div className="relative w-full max-w-lg bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5 sm:p-7 shadow-2xl my-4 text-zinc-900 dark:text-zinc-100">
         
         {/* Close Button */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 text-[#A1A1AA] hover:text-[#F4F4F5] p-1.5 rounded-lg hover:bg-[#1B1B20] transition cursor-pointer"
+          className="absolute top-4 right-4 text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 p-1.5 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition cursor-pointer"
         >
           <X className="w-5 h-5" />
         </button>
 
         {/* Header */}
         <div className="flex items-center gap-3 mb-5">
-          <div className="w-10 h-10 rounded-xl bg-[#D98B4A]/15 border border-[#D98B4A]/30 flex items-center justify-center text-[#D98B4A] shrink-0">
+          <div className="w-10 h-10 rounded-xl bg-zinc-100 border border-zinc-200 dark:bg-zinc-800 dark:border-zinc-700 flex items-center justify-center text-zinc-900 dark:text-zinc-100 shrink-0">
             <UserPlus className="w-5 h-5" />
           </div>
           <div className="min-w-0">
-            <h3 className="text-lg sm:text-xl font-bold text-[#F4F4F5] truncate">
+            <h3 className="text-lg sm:text-xl font-bold text-zinc-900 dark:text-zinc-100 truncate">
               Invite to {group?.name || 'Group'}
             </h3>
-            <p className="text-xs text-[#A1A1AA]">
+            <p className="text-xs text-zinc-500 dark:text-zinc-400">
               Generate tokenized invite links with expiration and usage limits to add members
             </p>
           </div>
         </div>
 
         {errorMsg && (
-          <div className="mb-4 p-3 rounded-xl bg-rose-500/10 border border-rose-500/25 text-rose-400 text-xs flex items-center gap-2">
+          <div className="mb-4 p-3 rounded-xl bg-zinc-100 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 text-zinc-900 dark:text-zinc-100 text-xs flex items-center gap-2">
             <AlertCircle className="w-4 h-4 shrink-0" />
             <span>{errorMsg}</span>
           </div>
@@ -164,18 +164,18 @@ export const InviteModal: React.FC<InviteModalProps> = ({
 
         {/* Create Link Section / Pro Paywall */}
         {isBasePlan ? (
-          <div className="bg-slate-50 dark:bg-gradient-to-br dark:from-[#1C1A17] dark:to-[#18181C] border border-slate-200 dark:border-[#D98B4A]/40 rounded-xl p-5 mb-5 text-center space-y-3">
-            <div className="w-12 h-12 rounded-xl bg-blue-50 dark:bg-[#D98B4A]/15 border border-blue-200 dark:border-[#D98B4A]/30 flex items-center justify-center text-[#3157D5] dark:text-[#D98B4A] mx-auto shadow-sm">
-              <Crown className="w-6 h-6 text-[#3157D5] dark:text-[#FBBF24]" />
+          <div className="bg-zinc-50 dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800 rounded-xl p-5 mb-5 text-center space-y-3">
+            <div className="w-12 h-12 rounded-xl bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 flex items-center justify-center text-zinc-900 dark:text-zinc-100 mx-auto shadow-sm">
+              <Crown className="w-6 h-6" />
             </div>
             <div>
-              <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-blue-100 dark:bg-[#D98B4A]/20 text-[#3157D5] dark:text-[#D98B4A] border border-[#3157D5]/30 dark:border-[#D98B4A]/30">
+              <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-zinc-200 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 border border-zinc-300 dark:border-zinc-700">
                 PULSE Pro Exclusive
               </span>
-              <h4 className="text-sm font-bold text-slate-900 dark:text-[#F4F4F5] mt-2">
+              <h4 className="text-sm font-bold text-zinc-900 dark:text-zinc-100 mt-2">
                 Group Invites Require PULSE Pro
               </h4>
-              <p className="text-xs text-slate-600 dark:text-[#A1A1AA] mt-1 max-w-sm mx-auto">
+              <p className="text-xs text-zinc-600 dark:text-zinc-400 mt-1 max-w-sm mx-auto">
                 Inviting friends, generating links, and squad accountability are exclusively available on PULSE Pro. Upgrade to invite unlimited friends.
               </p>
             </div>
@@ -185,27 +185,27 @@ export const InviteModal: React.FC<InviteModalProps> = ({
                 onClose();
                 onOpenUpgradeModal?.();
               }}
-              className="px-5 py-2.5 min-h-[38px] bg-gradient-to-r from-[#D98B4A] to-[#B45F1E] hover:from-[#E69A5C] hover:to-[#D98B4A] text-[#131316] font-extrabold rounded-lg text-xs transition cursor-pointer shadow-md inline-flex items-center gap-1.5 active:scale-95"
+              className="px-5 py-2.5 min-h-[38px] btn-primary font-bold rounded-lg text-xs transition cursor-pointer shadow-sm inline-flex items-center gap-1.5 active:scale-95"
             >
               <Crown className="w-3.5 h-3.5" />
               <span>Upgrade to PULSE Pro</span>
             </button>
           </div>
         ) : (
-          <form onSubmit={handleCreate} className="bg-[#1B1B20] border border-[#26262C] rounded-xl p-4 mb-5 space-y-3">
-            <h4 className="text-xs font-bold text-[#F4F4F5] uppercase tracking-wider text-[#D98B4A]">
+          <form onSubmit={handleCreate} className="bg-zinc-50 dark:bg-zinc-800/40 border border-zinc-200 dark:border-zinc-800 rounded-xl p-4 mb-5 space-y-3">
+            <h4 className="text-xs font-bold text-zinc-900 dark:text-zinc-100 uppercase tracking-wider">
               Create New Invite Link
             </h4>
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-[11px] font-semibold text-[#A1A1AA] mb-1">
+                <label className="block text-[11px] font-semibold text-zinc-600 dark:text-zinc-400 mb-1">
                   Expires In
                 </label>
                 <select
                   value={expiresInDays}
                   onChange={(e) => setExpiresInDays(Number(e.target.value))}
-                  className="w-full px-3 py-2 bg-[#131316] border border-[#26262C] rounded-lg text-xs text-[#F4F4F5] focus:outline-none focus:border-[#D98B4A]"
+                  className="w-full px-3 py-2 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-lg text-xs text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-500"
                 >
                   <option value={1}>1 Day (24 hrs)</option>
                   <option value={3}>3 Days</option>
@@ -216,13 +216,13 @@ export const InviteModal: React.FC<InviteModalProps> = ({
               </div>
 
               <div>
-                <label className="block text-[11px] font-semibold text-[#A1A1AA] mb-1">
+                <label className="block text-[11px] font-semibold text-zinc-600 dark:text-zinc-400 mb-1">
                   Max Uses
                 </label>
                 <select
                   value={maxUses}
                   onChange={(e) => setMaxUses(Number(e.target.value))}
-                  className="w-full px-3 py-2 bg-[#131316] border border-[#26262C] rounded-lg text-xs text-[#F4F4F5] focus:outline-none focus:border-[#D98B4A]"
+                  className="w-full px-3 py-2 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-lg text-xs text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-500"
                 >
                   <option value={1}>1 Person (Single-use)</option>
                   <option value={5}>5 People</option>
@@ -236,7 +236,7 @@ export const InviteModal: React.FC<InviteModalProps> = ({
             <button
               type="submit"
               disabled={isCreating}
-              className="w-full py-2.5 px-4 min-h-[38px] bg-gradient-to-r from-[#D98B4A] to-[#B45F1E] hover:from-[#E69A5C] hover:to-[#D98B4A] text-[#131316] font-bold rounded-lg text-xs transition cursor-pointer disabled:opacity-50 flex items-center justify-center gap-1.5 active:scale-95"
+              className="w-full py-2.5 px-4 min-h-[38px] btn-primary font-bold rounded-lg text-xs transition cursor-pointer disabled:opacity-50 flex items-center justify-center gap-1.5 active:scale-95"
             >
               <UserPlus className="w-3.5 h-3.5" />
               <span>{isCreating ? 'Creating Link...' : 'Generate Invite Link'}</span>
@@ -271,16 +271,16 @@ export const InviteModal: React.FC<InviteModalProps> = ({
                 return (
                   <div
                     key={inv.token}
-                    className="bg-[#1B1B20] border border-[#26262C] rounded-xl p-3 space-y-2"
+                    className="bg-zinc-50 dark:bg-zinc-800/40 border border-zinc-200 dark:border-zinc-800 rounded-xl p-3 space-y-2 text-zinc-900 dark:text-zinc-100"
                   >
                     <div className="flex items-center justify-between gap-2">
-                      <div className="flex items-center gap-2 text-[11px] text-[#A1A1AA]">
+                      <div className="flex items-center gap-2 text-[11px] text-zinc-500 dark:text-zinc-400">
                         <span className="flex items-center gap-1">
-                          <Clock className="w-3 h-3 text-[#D98B4A]" /> {daysLeft}d left
+                          <Clock className="w-3 h-3 text-zinc-900 dark:text-zinc-100" /> {daysLeft}d left
                         </span>
                         <span>•</span>
                         <span className="flex items-center gap-1">
-                          <Users className="w-3 h-3 text-[#D98B4A]" /> {inv.uses}/{inv.max_uses} used
+                          <Users className="w-3 h-3 text-zinc-900 dark:text-zinc-100" /> {inv.uses}/{inv.max_uses} used
                         </span>
                       </div>
 
@@ -288,7 +288,7 @@ export const InviteModal: React.FC<InviteModalProps> = ({
                         type="button"
                         onClick={() => handleRevoke(inv.token)}
                         disabled={revokingToken === inv.token}
-                        className="px-2 py-0.5 rounded-md text-[11px] font-semibold text-rose-400 hover:text-rose-300 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/25 flex items-center gap-1 cursor-pointer disabled:opacity-50 transition"
+                        className="px-2 py-0.5 rounded-md text-[11px] font-semibold text-zinc-700 dark:text-zinc-300 hover:text-zinc-950 dark:hover:text-white bg-zinc-200/60 dark:bg-zinc-700/60 border border-zinc-300 dark:border-zinc-600 flex items-center gap-1 cursor-pointer disabled:opacity-50 transition"
                         title="Revoke this invite link immediately"
                       >
                         <Trash2 className="w-3 h-3" />
@@ -301,7 +301,7 @@ export const InviteModal: React.FC<InviteModalProps> = ({
                         type="text"
                         readOnly
                         value={url}
-                        className="flex-1 px-2.5 py-1.5 bg-[#131316] border border-[#26262C] rounded-lg text-xs text-[#F4F4F5] font-mono truncate focus:outline-none"
+                        className="flex-1 px-2.5 py-1.5 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-lg text-xs text-zinc-900 dark:text-zinc-100 font-mono truncate focus:outline-none"
                       />
 
                       <button
@@ -309,8 +309,8 @@ export const InviteModal: React.FC<InviteModalProps> = ({
                         onClick={() => handleCopyLink(inv.token)}
                         className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1 transition cursor-pointer shrink-0 ${
                           isCopied 
-                            ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' 
-                            : 'bg-[#26262C] hover:bg-[#32323A] text-[#F4F4F5] border border-[#3A3A44]'
+                            ? 'bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900 border border-zinc-900 dark:border-zinc-100' 
+                            : 'btn-secondary'
                         }`}
                         title="Copy invite URL"
                       >
@@ -321,7 +321,7 @@ export const InviteModal: React.FC<InviteModalProps> = ({
                       <button
                         type="button"
                         onClick={() => handleShareWhatsApp(inv.token)}
-                        className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-semibold flex items-center gap-1 transition cursor-pointer shrink-0 shadow-sm"
+                        className="px-3 py-1.5 btn-primary rounded-lg text-xs font-semibold flex items-center gap-1 transition cursor-pointer shrink-0 shadow-sm"
                         title="Share on WhatsApp"
                       >
                         <Share2 className="w-3.5 h-3.5" />
@@ -336,8 +336,8 @@ export const InviteModal: React.FC<InviteModalProps> = ({
         </div>
 
         {/* Footer Note */}
-        <div className="mt-5 pt-3 border-t border-[#26262C] text-center">
-          <p className="text-[11px] text-[#A1A1AA]">
+        <div className="mt-5 pt-3 border-t border-zinc-200 dark:border-zinc-800 text-center">
+          <p className="text-[11px] text-zinc-500 dark:text-zinc-400">
             Members who join your group will share real-time workouts, leaderboards, and daily accountability.
           </p>
         </div>

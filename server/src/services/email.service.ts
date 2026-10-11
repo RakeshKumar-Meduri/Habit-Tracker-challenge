@@ -57,36 +57,13 @@ export async function sendResendEmail(params: {
       return { success: false, error: 'Resend client is not initialized' };
     }
 
-    const fromAddress = ENV.RESEND_SENDER_NAME
-      ? `${ENV.RESEND_SENDER_NAME} <${ENV.RESEND_SENDER_EMAIL}>`
-      : ENV.RESEND_SENDER_EMAIL;
-
     let { data, error } = await resend.emails.send({
-      from: fromAddress,
+      from: "PULSE <noreply@avixstudio.com>",
       to: [toEmail],
       subject,
       html: htmlContent,
       text: textContent || subject,
     });
-
-    // If custom domain is not yet verified on Resend, automatically fallback in dev
-    if (error && error.message?.includes('is not verified') && !ENV.IS_PROD) {
-      console.warn(`[Resend Notice] Domain ${ENV.RESEND_SENDER_EMAIL} not verified on Resend yet. Retrying with onboarding@resend.dev for dev testing...`);
-      const fallbackSender = ENV.RESEND_SENDER_NAME
-        ? `${ENV.RESEND_SENDER_NAME} <onboarding@resend.dev>`
-        : 'onboarding@resend.dev';
-
-      const retryResult = await resend.emails.send({
-        from: fallbackSender,
-        to: [toEmail],
-        subject,
-        html: htmlContent,
-        text: textContent || subject,
-      });
-
-      data = retryResult.data;
-      error = retryResult.error;
-    }
 
     if (error) {
       console.error(`[Resend Error] Failed sending email to ${toEmail}:`, error.message);

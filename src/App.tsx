@@ -1407,7 +1407,7 @@ export function App() {
   const currentGymWorkoutsCount = workouts.filter(w => w.user_id === currentUser?.id && w.date === selectedDate).length;
 
   return (
-    <div className="min-h-screen bg-[var(--bg)] text-[var(--text)] flex flex-col font-sans selection:bg-[#D98B4A] selection:text-[#0B0B0D]">
+    <div className="min-h-screen bg-[var(--bg)] text-[var(--text)] flex flex-col font-sans selection:bg-zinc-900 selection:text-white dark:selection:bg-zinc-100 dark:selection:text-zinc-900">
       
       {/* Top Navbar */}
       <Navbar
@@ -1442,21 +1442,22 @@ export function App() {
 
       {/* Unverified Email Warning Banner */}
       {currentUser && !currentUser.email_verified && (
-        <div className="bg-gradient-to-r from-amber-500/15 via-[#D98B4A]/15 to-amber-500/15 border-b border-[#D98B4A]/30 px-4 py-2.5 text-xs text-amber-200 flex flex-wrap items-center justify-between gap-2 shadow-sm">
+        <div className="bg-zinc-100 dark:bg-zinc-900 border-b border-zinc-300 dark:border-zinc-800 px-4 py-2.5 text-xs text-zinc-900 dark:text-zinc-100 flex flex-wrap items-center justify-between gap-2 shadow-sm">
           <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse shrink-0" />
+            <span className="w-2 h-2 rounded-full bg-zinc-900 dark:bg-zinc-100 shrink-0" />
             <span>
               Your account email ({currentUser.email || 'not set'}) is unverified. Verify your email to enable Pro upgrades and receipt delivery.
             </span>
           </div>
           <button
             onClick={() => setIsVerificationModalOpen(true)}
-            className="px-3 py-1 bg-[#D98B4A] hover:bg-[#B45F1E] text-white font-bold rounded-lg transition shadow-sm text-xs cursor-pointer"
+            className="px-3 py-1 bg-zinc-900 hover:bg-zinc-800 text-white dark:bg-zinc-100 dark:hover:bg-zinc-200 dark:text-zinc-900 font-bold rounded-lg transition shadow-sm text-xs cursor-pointer"
           >
             Verify Email Now
           </button>
         </div>
       )}
+
 
       {/* Main Container */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6 pb-28 md:pb-8">
@@ -1846,7 +1847,7 @@ export function App() {
       />
 
       {/* Footer */}
-      <footer className="border-t border-[#26262C] bg-[#131316] py-6 pb-24 md:pb-6 text-center text-xs text-[#A1A1AA]">
+      <footer className="border-t border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 py-6 pb-24 md:pb-6 text-center text-xs text-zinc-500 dark:text-zinc-400">
         <p>PULSE Fitness & Daily Goal Tracker — Real-Time Multi-User Edition</p>
       </footer>
     </div>

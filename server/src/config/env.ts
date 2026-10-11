@@ -34,15 +34,15 @@ export const ENV = {
 
   // Resend (Transactional Email Service)
   RESEND_API_KEY: process.env.RESEND_API_KEY || '',
-  RESEND_SENDER_EMAIL: process.env.RESEND_SENDER_EMAIL || 'notifications@pulse.avixstudio.in',
-  RESEND_SENDER_NAME: process.env.RESEND_SENDER_NAME || 'PULSE Fitness',
-  RESEND_SUPPORT_EMAIL: process.env.RESEND_SUPPORT_EMAIL || 'support@avixstudio.in',
+  RESEND_SENDER_EMAIL: process.env.RESEND_SENDER_EMAIL || 'noreply@avixstudio.com',
+  RESEND_SENDER_NAME: process.env.RESEND_SENDER_NAME || 'PULSE',
+  RESEND_SUPPORT_EMAIL: process.env.RESEND_SUPPORT_EMAIL || 'support@avixstudio.com',
 
   // Legacy Brevo compatibility aliases
   BREVO_API_KEY: process.env.RESEND_API_KEY || process.env.BREVO_API_KEY || '',
-  BREVO_SENDER_EMAIL: process.env.RESEND_SENDER_EMAIL || process.env.BREVO_SENDER_EMAIL || 'notifications@pulse.avixstudio.in',
-  BREVO_SENDER_NAME: process.env.RESEND_SENDER_NAME || process.env.BREVO_SENDER_NAME || 'PULSE Fitness',
-  BREVO_SUPPORT_EMAIL: process.env.RESEND_SUPPORT_EMAIL || process.env.BREVO_SUPPORT_EMAIL || 'support@avixstudio.in',
+  BREVO_SENDER_EMAIL: process.env.RESEND_SENDER_EMAIL || process.env.BREVO_SENDER_EMAIL || 'noreply@avixstudio.com',
+  BREVO_SENDER_NAME: process.env.RESEND_SENDER_NAME || process.env.BREVO_SENDER_NAME || 'PULSE',
+  BREVO_SUPPORT_EMAIL: process.env.RESEND_SUPPORT_EMAIL || process.env.BREVO_SUPPORT_EMAIL || 'support@avixstudio.com',
 
   // Security
   SESSION_SECRET: process.env.SESSION_SECRET || 'pulse_session_secret_2026_default',

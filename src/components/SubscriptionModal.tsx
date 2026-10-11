@@ -144,7 +144,7 @@ export const SubscriptionModal: React.FC<SubscriptionModalProps> = ({
             particleCount: 100,
             spread: 70,
             origin: { y: 0.6 },
-            colors: ['#D98B4A', '#FBBF24', '#10B981'],
+            colors: ['#09090B', '#27272A', '#71717A', '#D4D4D8', '#FAFAFA'],
           });
         } catch {}
         onSubscriptionSuccess(newSubscription);
@@ -546,7 +546,7 @@ export const SubscriptionModal: React.FC<SubscriptionModalProps> = ({
                     <button
                       onClick={handleCheckout}
                       disabled={isProcessing || isLoadingPlans || (selectedPlanId !== 'plan_base_monthly' && !currentUser.email_verified)}
-                      className="w-full sm:w-auto px-7 py-3 min-h-[46px] bg-[#3157D5] hover:bg-[#2544B8] disabled:opacity-50 text-white font-semibold text-sm rounded-[10px] transition shadow-sm flex items-center justify-center gap-2 cursor-pointer active:scale-95"
+                      className="w-full sm:w-auto px-7 py-3 min-h-[46px] btn-primary disabled:opacity-50 font-semibold text-sm rounded-[10px] transition shadow-sm flex items-center justify-center gap-2 cursor-pointer active:scale-95"
                     >
                       {isProcessing ? (
                         <>

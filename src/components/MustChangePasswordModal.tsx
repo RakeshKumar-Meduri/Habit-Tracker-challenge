@@ -55,52 +55,52 @@ export const MustChangePasswordModal: React.FC<MustChangePasswordModalProps> = (
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/75 backdrop-blur-md animate-fadeIn font-sans">
-      <div className="relative w-full max-w-md bg-white border border-[#E4E7EC] rounded-[20px] p-5 sm:p-7 shadow-[0_4px_12px_rgba(16,24,40,0.08)]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/70 backdrop-blur-sm animate-fadeIn font-sans">
+      <div className="relative w-full max-w-md bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5 sm:p-7 shadow-2xl text-zinc-900 dark:text-zinc-100">
         
         <div className="text-center mb-6">
-          <div className="w-14 h-14 mx-auto mb-3 rounded-[12px] bg-[#EFF8FF] border border-[#3157D5]/20 flex items-center justify-center text-[#3157D5] shadow-sm">
+          <div className="w-14 h-14 mx-auto mb-3 rounded-xl bg-zinc-100 dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 flex items-center justify-center text-zinc-900 dark:text-zinc-100 shadow-sm">
             <KeyRound className="w-7 h-7" />
           </div>
-          <h3 className="text-xl font-bold text-[#111827]">Action Required: Set New Password</h3>
-          <p className="text-xs text-[#667085] mt-1.5 leading-relaxed">
-            Hi <span className="text-[#111827] font-semibold">{currentUser.name}</span>! You are currently using a temporary password. For account security, please create a new password to continue.
+          <h3 className="text-xl font-bold text-zinc-900 dark:text-zinc-50">Action Required: Set New Password</h3>
+          <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1.5 leading-relaxed">
+            Hi <span className="text-zinc-900 dark:text-zinc-100 font-semibold">{currentUser.name}</span>! You are currently using a temporary password. For account security, please create a new password to continue.
           </p>
         </div>
 
         {error && (
-          <div className="mb-4 p-3 bg-rose-50 border border-rose-200 rounded-[10px] text-xs text-rose-600 flex items-center gap-2">
-            <AlertCircle className="w-4 h-4 shrink-0" />
+          <div className="mb-4 p-3 bg-zinc-100 dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded-xl text-xs text-zinc-900 dark:text-zinc-100 font-medium flex items-center gap-2">
+            <AlertCircle className="w-4 h-4 shrink-0 text-zinc-800 dark:text-zinc-200" />
             <span>{error}</span>
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-xs font-semibold text-[#667085] mb-1">New Password</label>
+            <label className="block text-xs font-semibold text-zinc-600 dark:text-zinc-400 mb-1">New Password</label>
             <div className="relative">
-              <Lock className="w-4 h-4 text-[#98A2B3] absolute left-3.5 top-3" />
+              <Lock className="w-4 h-4 text-zinc-400 dark:text-zinc-500 absolute left-3.5 top-3" />
               <input
                 type="password"
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
                 placeholder="Enter at least 6 characters"
-                className="w-full pl-10 pr-3 py-2.5 bg-white border border-[#D0D5DD] rounded-[10px] text-[#111827] text-sm focus:outline-none focus:border-[#3157D5]"
+                className="w-full pl-10 pr-3 py-2.5 bg-zinc-50 dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-800 rounded-xl text-zinc-900 dark:text-zinc-100 text-sm focus:outline-none focus:border-zinc-900 dark:focus:border-zinc-100 focus:ring-1 focus:ring-zinc-900 dark:focus:ring-zinc-100"
                 required
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-[#667085] mb-1">Confirm New Password</label>
+            <label className="block text-xs font-semibold text-zinc-600 dark:text-zinc-400 mb-1">Confirm New Password</label>
             <div className="relative">
-              <CheckCircle2 className="w-4 h-4 text-[#98A2B3] absolute left-3.5 top-3" />
+              <CheckCircle2 className="w-4 h-4 text-zinc-400 dark:text-zinc-500 absolute left-3.5 top-3" />
               <input
                 type="password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 placeholder="Re-enter new password"
-                className="w-full pl-10 pr-3 py-2.5 bg-white border border-[#D0D5DD] rounded-[10px] text-[#111827] text-sm focus:outline-none focus:border-[#3157D5]"
+                className="w-full pl-10 pr-3 py-2.5 bg-zinc-50 dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-800 rounded-xl text-zinc-900 dark:text-zinc-100 text-sm focus:outline-none focus:border-zinc-900 dark:focus:border-zinc-100 focus:ring-1 focus:ring-zinc-900 dark:focus:ring-zinc-100"
                 required
               />
             </div>
@@ -109,7 +109,7 @@ export const MustChangePasswordModal: React.FC<MustChangePasswordModalProps> = (
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3 min-h-[46px] bg-[#3157D5] hover:bg-[#2544B8] text-white font-semibold rounded-[10px] text-sm transition shadow-sm disabled:opacity-50 cursor-pointer flex items-center justify-center"
+            className="w-full py-3 min-h-[46px] bg-zinc-900 hover:bg-zinc-800 text-white dark:bg-zinc-100 dark:hover:bg-zinc-200 dark:text-zinc-900 font-bold rounded-xl text-sm transition shadow-sm disabled:opacity-50 cursor-pointer flex items-center justify-center border border-transparent"
           >
             {loading ? 'Updating Password...' : 'Save New Password & Continue'}
           </button>
@@ -118,3 +118,5 @@ export const MustChangePasswordModal: React.FC<MustChangePasswordModalProps> = (
     </div>
   );
 };
+
+export default MustChangePasswordModal;

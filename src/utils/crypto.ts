@@ -25,14 +25,14 @@ export async function hashPassword(password: string): Promise<string> {
  * Calculates BMI based on height in cm and weight in kg
  */
 export function calculateBMI(heightCm: number, weightKg: number): { bmi: number; category: string; color: string } {
-  if (!heightCm || !weightKg || heightCm <= 0) return { bmi: 0, category: 'Unknown', color: 'text-amber-800/60 font-medium' };
+  if (!heightCm || !weightKg || heightCm <= 0) return { bmi: 0, category: 'Unknown', color: 'text-zinc-400 font-medium' };
   const heightM = heightCm / 100;
   const bmi = parseFloat((weightKg / (heightM * heightM)).toFixed(1));
   
-  if (bmi < 18.5) return { bmi, category: 'Underweight', color: 'text-amber-400 font-bold' };
-  if (bmi < 25.0) return { bmi, category: 'Normal weight', color: 'text-amber-300 font-bold' };
-  if (bmi < 30.0) return { bmi, category: 'Overweight', color: 'text-amber-500 font-bold' };
-  return { bmi, category: 'Obesity', color: 'text-rose-400 font-bold' };
+  if (bmi < 18.5) return { bmi, category: 'Underweight', color: 'text-zinc-600 dark:text-zinc-300 font-bold' };
+  if (bmi < 25.0) return { bmi, category: 'Normal weight', color: 'text-zinc-900 dark:text-zinc-100 font-bold' };
+  if (bmi < 30.0) return { bmi, category: 'Overweight', color: 'text-zinc-600 dark:text-zinc-300 font-bold' };
+  return { bmi, category: 'Obesity', color: 'text-zinc-900 dark:text-zinc-100 font-bold' };
 }
 
 /**

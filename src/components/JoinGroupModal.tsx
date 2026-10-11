@@ -99,38 +99,38 @@ export const JoinGroupModal: React.FC<JoinGroupModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/85 backdrop-blur-md animate-fadeIn font-sans overflow-y-auto">
-      <div className="relative w-full max-w-md bg-[#131316] border border-[#26262C] rounded-2xl p-6 sm:p-8 shadow-2xl my-4 text-center">
+      <div className="relative w-full max-w-md bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 sm:p-8 shadow-2xl my-4 text-center text-zinc-900 dark:text-zinc-100">
         
         {/* Close Button */}
         <button
           onClick={handleDismiss}
-          className="absolute top-4 right-4 text-[#A1A1AA] hover:text-[#F4F4F5] p-1.5 rounded-lg hover:bg-[#1B1B20] transition cursor-pointer"
+          className="absolute top-4 right-4 text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 p-1.5 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition cursor-pointer"
         >
           <X className="w-5 h-5" />
         </button>
 
         {loading ? (
           <div className="py-10 space-y-3">
-            <Loader2 className="w-8 h-8 text-[#D98B4A] animate-spin mx-auto" />
-            <p className="text-xs text-[#A1A1AA]">Validating invite link...</p>
+            <Loader2 className="w-8 h-8 text-zinc-900 dark:text-zinc-100 animate-spin mx-auto" />
+            <p className="text-xs text-zinc-500 dark:text-zinc-400">Validating invite link...</p>
           </div>
         ) : !preview?.valid ? (
           /* Invalid / Expired State */
           <div className="space-y-4 py-2">
-            <div className="w-14 h-14 rounded-2xl bg-rose-500/15 border border-rose-500/30 flex items-center justify-center mx-auto text-rose-400">
+            <div className="w-14 h-14 rounded-2xl bg-zinc-100 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 flex items-center justify-center mx-auto text-zinc-900 dark:text-zinc-100">
               <AlertCircle className="w-7 h-7" />
             </div>
 
             <div>
-              <h3 className="text-lg font-bold text-[#F4F4F5]">Invite Link Unavailable</h3>
-              <p className="text-xs text-[#A1A1AA] mt-1.5 leading-relaxed">
+              <h3 className="text-lg font-bold text-zinc-900 dark:text-zinc-100">Invite Link Unavailable</h3>
+              <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1.5 leading-relaxed">
                 {preview?.reason || 'This invite link is invalid, expired, or has reached its usage limit.'}
               </p>
             </div>
 
             <button
               onClick={handleDismiss}
-              className="w-full py-3 px-4 min-h-[44px] bg-[#1B1B20] hover:bg-[#26262C] text-[#F4F4F5] font-bold rounded-xl text-xs transition border border-[#26262C] cursor-pointer"
+              className="w-full py-3 px-4 min-h-[44px] btn-secondary font-bold rounded-xl text-xs transition cursor-pointer"
             >
               Continue to App
             </button>
@@ -138,28 +138,28 @@ export const JoinGroupModal: React.FC<JoinGroupModalProps> = ({
         ) : (
           /* Valid Invite State */
           <div className="space-y-5 py-2">
-            <div className="w-16 h-16 rounded-[14px] bg-[#EFF8FF] border border-[#3157D5]/20 flex items-center justify-center mx-auto text-[#3157D5] shadow-sm">
+            <div className="w-16 h-16 rounded-[14px] bg-zinc-100 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 flex items-center justify-center mx-auto text-zinc-900 dark:text-zinc-100 shadow-sm">
               <Users className="w-8 h-8 stroke-[2.5]" />
             </div>
 
             <div>
-              <p className="text-xs text-[#3157D5] font-semibold tracking-wide uppercase">
+              <p className="text-xs text-zinc-600 dark:text-zinc-400 font-semibold tracking-wide uppercase">
                 Group Invitation
               </p>
-              <h3 className="text-xl sm:text-2xl font-bold text-[#111827] mt-1">
+              <h3 className="text-xl sm:text-2xl font-bold text-zinc-900 dark:text-zinc-100 mt-1">
                 {preview.groupName}
               </h3>
-              <p className="text-xs text-[#667085] mt-1.5">
+              <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1.5">
                 <strong>{preview.inviterName}</strong> invited you to join their fitness group.
               </p>
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#F1F3F6] border border-[#E4E7EC] text-[11px] text-[#667085] mt-3">
-                <Users className="w-3.5 h-3.5 text-[#3157D5]" />
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-[11px] text-zinc-600 dark:text-zinc-300 mt-3">
+                <Users className="w-3.5 h-3.5 text-zinc-900 dark:text-zinc-100" />
                 <span>{preview.memberCount} member{preview.memberCount === 1 ? '' : 's'} in this group</span>
               </div>
             </div>
 
             {errorMessage && (
-              <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/25 text-rose-500 text-xs text-left flex items-start gap-2">
+              <div className="p-3 rounded-xl bg-zinc-100 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 text-zinc-900 dark:text-zinc-100 text-xs text-left flex items-start gap-2">
                 <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
                 <span>{errorMessage}</span>
               </div>
@@ -172,13 +172,13 @@ export const JoinGroupModal: React.FC<JoinGroupModalProps> = ({
                   type="button"
                   onClick={handleJoinClick}
                   disabled={isJoining}
-                  className="w-full py-3 px-5 min-h-[46px] bg-[#3157D5] hover:bg-[#2544B8] text-white font-semibold rounded-[10px] text-sm transition shadow-sm cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2 active:scale-95"
+                  className="w-full py-3 px-5 min-h-[46px] btn-primary font-semibold rounded-[10px] text-sm transition shadow-sm cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2 active:scale-95"
                 >
                   <UserPlus className="w-4 h-4" />
                   <span>{isJoining ? 'Joining Group...' : 'Join Group'}</span>
                 </button>
 
-                <p className="text-[11px] text-[#667085]">
+                <p className="text-[11px] text-zinc-500 dark:text-zinc-400">
                   Logged in as <strong>{currentUser.name}</strong> (@{currentUser.username})
                 </p>
               </div>
@@ -191,7 +191,7 @@ export const JoinGroupModal: React.FC<JoinGroupModalProps> = ({
                     handleDismiss();
                     onOpenAuth('register');
                   }}
-                  className="w-full py-3 px-5 min-h-[46px] bg-[#3157D5] hover:bg-[#2544B8] text-white font-semibold rounded-[10px] text-sm transition shadow-sm cursor-pointer flex items-center justify-center gap-2 active:scale-95"
+                  className="w-full py-3 px-5 min-h-[46px] btn-primary font-semibold rounded-[10px] text-sm transition shadow-sm cursor-pointer flex items-center justify-center gap-2 active:scale-95"
                 >
                   <UserPlus className="w-4 h-4" />
                   <span>Sign Up to Join Group</span>
@@ -203,9 +203,9 @@ export const JoinGroupModal: React.FC<JoinGroupModalProps> = ({
                     handleDismiss();
                     onOpenAuth('login');
                   }}
-                  className="w-full py-2.5 px-4 min-h-[44px] bg-white hover:bg-[#F1F3F6] text-[#344054] font-semibold rounded-[10px] text-xs transition border border-[#D0D5DD] cursor-pointer flex items-center justify-center gap-1.5"
+                  className="w-full py-2.5 px-4 min-h-[44px] btn-secondary font-semibold rounded-[10px] text-xs transition cursor-pointer flex items-center justify-center gap-1.5"
                 >
-                  <LogIn className="w-3.5 h-3.5 text-[#3157D5]" />
+                  <LogIn className="w-3.5 h-3.5" />
                   <span>Already have an account? Sign In</span>
                 </button>
               </div>
