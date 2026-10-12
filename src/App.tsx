@@ -14,7 +14,8 @@ import type {
   CustomHabit,
   CustomHabitLog,
   Group,
-  Invite
+  Invite,
+  UserReview
 } from './types';
 import { 
   initializeStorageIfEmpty, 
@@ -53,7 +54,8 @@ import {
   revokeInvite,
   leaveGroup,
   removeGroupMember,
-  updateGroupSettings
+  updateGroupSettings,
+  fetchMyReview
 } from './services/apiService';
 import { realtimeClient } from './services/realtimeService';
 
@@ -79,6 +81,7 @@ import { PaymentStatusModal } from './components/PaymentStatusModal';
 import { ResetPasswordModal } from './components/ResetPasswordModal';
 import { Footer } from './components/Footer';
 import { LegalModal, type LegalTab } from './components/LegalModal';
+import { ReviewModal } from './components/ReviewModal';
 import { Trophy, Swords, Award } from 'lucide-react';
 
 export function App() {
@@ -265,6 +268,34 @@ export function App() {
   // Legal and support modal states
   const [isLegalModalOpen, setIsLegalModalOpen] = useState<boolean>(false);
   const [legalModalTab, setLegalModalTab] = useState<LegalTab>('terms');
+
+  // User feedback & reviews popup modal state
+  const [isReviewModalOpen, setIsReviewModalOpen] = useState<boolean>(false);
+  const [currentUserReview, setCurrentUserReview] = useState<UserReview | null>(null);
+  const hasCheckedReviewOnLoginRef = useRef<boolean>(false);
+
+  // Check review status on login and trigger popup only if not reviewed
+  const checkReviewPopupOnLogin = (userId: string) => {
+    if (!userId) return;
+    fetchMyReview().then(res => {
+      if (res.success && res.review) {
+        setCurrentUserReview(res.review);
+        // Review already exists -> NO POPUP
+        setIsReviewModalOpen(false);
+      } else {
+        setCurrentUserReview(null);
+        // Review not given -> POP UP ON LOGIN
+        setIsReviewModalOpen(true);
+      }
+    }).catch(() => {});
+  };
+
+  useEffect(() => {
+    if (currentUserId && !hasCheckedReviewOnLoginRef.current) {
+      hasCheckedReviewOnLoginRef.current = true;
+      checkReviewPopupOnLogin(currentUserId);
+    }
+  }, [currentUserId]);
 
   // Detect /join/:token, /reset-password, /verify-email, and /payment-status on mount and popstate
   useEffect(() => {
@@ -1369,6 +1400,9 @@ export function App() {
     setCustomHabits([]);
     setCustomHabitLogs([]);
     realtimeClient.identify(null);
+    hasCheckedReviewOnLoginRef.current = false;
+    setCurrentUserReview(null);
+    setIsReviewModalOpen(false);
   };
 
   // Emoji Reaction Handler
@@ -1793,6 +1827,8 @@ export function App() {
               setVerificationModalMode(mode);
               setIsVerificationModalOpen(true);
             }}
+            userReview={currentUserReview}
+            onOpenReviewModal={() => setIsReviewModalOpen(true)}
           />
         )}
       </main>
@@ -1822,6 +1858,8 @@ export function App() {
             fetchServerSync().then(data => {
               if (data) applyServerDataRef.current(data);
             }).catch(() => {});
+            // Check review status immediately on login: popup only if review not given
+            checkReviewPopupOnLogin(user.id);
           }}
           onRegisterSuccess={(newUser) => {
             // Immediately purge any stale group from memory/storage
@@ -1992,6 +2030,18 @@ export function App() {
         activeTab={legalModalTab}
         onTabChange={setLegalModalTab}
       />
+
+      {/* User Feedback & Reviews Popup Modal */}
+      {currentUser && (
+        <ReviewModal
+          isOpen={isReviewModalOpen}
+          onClose={() => setIsReviewModalOpen(false)}
+          existingReview={currentUserReview}
+          onReviewSubmitted={(review) => {
+            setCurrentUserReview(review);
+          }}
+        />
+      )}
 
       {/* Footer */}
       <Footer
