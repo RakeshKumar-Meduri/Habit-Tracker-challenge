@@ -401,7 +401,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
     if (isSelectedFuture) {
       return {
         label: 'Upcoming',
-        className: 'bg-[#131316] text-[#71717A] border-[#26262C]',
+        className: 'bg-zinc-100 text-zinc-600 border-zinc-200 dark:bg-[#131316] dark:text-[#A1A1AA] dark:border-[#26262C] font-semibold',
       };
     }
     return {
@@ -530,13 +530,13 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
       </div>
 
       {/* Main Calendar Month View Container */}
-      <div className="bg-[#131316] border border-[#26262C] rounded-xl p-3 sm:p-6 shadow-xl">
+      <div className="bg-white dark:bg-[#131316] border border-zinc-200 dark:border-[#26262C] rounded-xl p-3 sm:p-6 shadow-xl">
         
         {/* Month Navigation Bar */}
         <div className="flex items-center justify-between mb-4 sm:mb-6 px-1">
           <button
             onClick={handlePrevMonth}
-            className="p-2 sm:px-3 sm:py-2 bg-[#1B1B20] hover:bg-[#1B1B20] text-[#A1A1AA] hover:text-[#F4F4F5] border border-[#26262C] rounded-xl text-xs font-bold transition flex items-center gap-1 cursor-pointer active:scale-95"
+            className="p-2 sm:px-3 sm:py-2 bg-zinc-100 hover:bg-zinc-200 dark:bg-[#1B1B20] dark:hover:bg-[#25252c] text-zinc-700 hover:text-zinc-950 dark:text-[#A1A1AA] dark:hover:text-[#F4F4F5] border border-zinc-200 dark:border-[#26262C] rounded-xl text-xs font-bold transition flex items-center gap-1 cursor-pointer active:scale-95"
             title="Previous Month"
           >
             <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5 text-[#D98B4A]" />
@@ -545,14 +545,14 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
 
           <div className="flex items-center gap-2">
             <CalendarIcon className="w-4 h-4 sm:w-5 sm:h-5 text-[#D98B4A]" />
-            <h3 className="text-base sm:text-xl font-black text-[#F4F4F5] tracking-tight">
+            <h3 className="text-base sm:text-xl font-black text-zinc-900 dark:text-[#F4F4F5] tracking-tight">
               {MONTH_NAMES[viewMonth]} {viewYear}
             </h3>
           </div>
 
           <button
             onClick={handleNextMonth}
-            className="p-2 sm:px-3 sm:py-2 bg-[#1B1B20] hover:bg-[#1B1B20] text-[#A1A1AA] hover:text-[#F4F4F5] border border-[#26262C] rounded-xl text-xs font-bold transition flex items-center gap-1 cursor-pointer active:scale-95"
+            className="p-2 sm:px-3 sm:py-2 bg-zinc-100 hover:bg-zinc-200 dark:bg-[#1B1B20] dark:hover:bg-[#25252c] text-zinc-700 hover:text-zinc-950 dark:text-[#A1A1AA] dark:hover:text-[#F4F4F5] border border-zinc-200 dark:border-[#26262C] rounded-xl text-xs font-bold transition flex items-center gap-1 cursor-pointer active:scale-95"
             title="Next Month"
           >
             <span className="hidden sm:inline">Next Month</span>
@@ -565,8 +565,8 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
           {WEEKDAY_NAMES.map((w, idx) => (
             <div
               key={w}
-              className={`text-center py-1 sm:py-1.5 text-[10px] sm:text-xs font-bold tracking-wider uppercase ${
-                idx === 0 ? 'text-emerald-400' : 'text-[#A1A1AA]'
+              className={`text-center py-1 sm:py-1.5 text-[10px] sm:text-xs font-black tracking-wider uppercase ${
+                idx === 0 ? 'text-emerald-600 dark:text-emerald-400 font-extrabold' : 'text-zinc-600 dark:text-zinc-400'
               }`}
             >
               <span>{w}</span>
@@ -589,16 +589,16 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
                 }}
                 className={`min-h-[72px] sm:min-h-[96px] p-1.5 sm:p-2.5 rounded-xl border flex flex-col justify-between transition-all cursor-pointer select-none active:scale-[0.98] relative overflow-hidden ${
                   isSelected
-                    ? 'border-[#D98B4A] ring-2 ring-[#D98B4A]/60 bg-gradient-to-b from-[#1B1B20] to-[#131316] shadow-lg shadow-[#D98B4A]/15 z-10'
+                    ? 'border-[#D98B4A] dark:border-[#D98B4A] ring-2 ring-[#D98B4A]/80 bg-amber-500/10 dark:bg-amber-500/20 shadow-md shadow-[#D98B4A]/20 z-10'
                     : stats.isPerfect && day.isCurrentMonth
-                    ? 'border-amber-500/40 bg-gradient-to-b from-amber-950/20 to-[#1B1B20] hover:border-amber-400/60'
+                    ? 'border-amber-500/50 dark:border-amber-500/40 bg-amber-50/50 dark:bg-amber-950/20 hover:border-amber-400'
                     : stats.coreTasksDone >= 3 && day.isCurrentMonth
-                    ? 'border-emerald-500/30 bg-gradient-to-b from-emerald-950/20 to-[#1B1B20] hover:border-emerald-400/50'
+                    ? 'border-emerald-500/40 dark:border-emerald-500/30 bg-emerald-50/40 dark:bg-emerald-950/20 hover:border-emerald-400'
                     : day.isSunday && day.isCurrentMonth
-                    ? 'border-teal-800/40 bg-[#1B1B20] hover:border-teal-700/60'
+                    ? 'border-teal-700/30 dark:border-teal-800/40 bg-teal-50/30 dark:bg-[#1B1B20] hover:border-teal-600'
                     : day.isCurrentMonth
-                    ? 'border-[#26262C] bg-[#1B1B20] hover:border-[#D98B4A]/50 hover:bg-[#1B1B20]'
-                    : 'border-[#26262C]/40 bg-[#0B0B0D]/50 opacity-40 hover:opacity-70'
+                    ? 'border-zinc-200 dark:border-[#26262C] bg-white dark:bg-[#1B1B20] hover:border-[#D98B4A]/60 hover:bg-zinc-50 dark:hover:bg-[#22222a]'
+                    : 'border-zinc-200/40 dark:border-[#26262C]/40 bg-zinc-100/50 dark:bg-[#0B0B0D]/50 opacity-50 hover:opacity-80'
                 }`}
               >
                 {/* Top Row: Day Number & Today/Healing Badges */}
@@ -606,12 +606,14 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
                   <span
                     className={`text-xs sm:text-sm font-black leading-none ${
                       day.isToday
-                        ? 'text-[#E69A5C] bg-[#D98B4A]/20 px-1.5 py-0.5 rounded-md border border-[#D98B4A]/40'
+                        ? 'text-white bg-[#D98B4A] dark:bg-[#D98B4A] px-1.5 py-0.5 rounded-md shadow-sm'
                         : day.isSunday && day.isCurrentMonth
-                        ? 'text-emerald-400'
+                        ? 'text-emerald-700 dark:text-emerald-400 font-bold'
                         : day.isCurrentMonth
-                        ? 'text-[#F4F4F5]'
-                        : 'text-[#A1A1AA]/60'
+                        ? isSelected
+                          ? 'text-zinc-950 dark:text-white font-black'
+                          : 'text-zinc-800 dark:text-zinc-100 font-bold'
+                        : 'text-zinc-400 dark:text-zinc-600'
                     }`}
                   >
                     {day.dayNumber}
@@ -620,40 +622,40 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
                   {/* Badges: Today dot, Sunday Healing Icon, or Perfect Star */}
                   <div className="flex items-center gap-0.5">
                     {day.isSunday && day.isCurrentMonth && (
-                      <span className="text-[9px] text-emerald-400" title="Sunday Healing Day">
+                      <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold" title="Sunday Healing Day">
                         🌿
                       </span>
                     )}
                     {stats.isPerfect && day.isCurrentMonth && (
-                      <Star className="w-3 h-3 text-amber-400 fill-amber-400 shrink-0" />
+                      <Star className="w-3.5 h-3.5 text-amber-500 dark:text-amber-400 fill-amber-500 dark:fill-amber-400 shrink-0" />
                     )}
                     {day.isToday && !stats.isPerfect && (
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#D98B4A] animate-pulse" />
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#D98B4A] ring-2 ring-[#D98B4A]/30 animate-pulse" />
                     )}
                   </div>
                 </div>
 
                 {/* Middle: Tasks Completed Pill & Points Earned */}
-                <div className="my-1 space-y-0.5 sm:space-y-1">
+                <div className="my-1 space-y-1">
                   
                   {/* Tasks count indicator */}
                   {day.isFuture ? (
-                    <span className="text-[9px] text-[#A1A1AA]/40 italic block leading-none truncate">
+                    <span className="text-[10px] sm:text-[11px] font-semibold text-zinc-500 dark:text-zinc-400 block leading-none truncate">
                       Upcoming
                     </span>
                   ) : day.isSunday && stats.coreTasksDone === 0 ? (
-                    <span className="text-[9px] sm:text-[10px] text-emerald-400 font-bold bg-emerald-950/40 border border-emerald-800/40 px-1 py-0.2 rounded block text-center truncate">
+                    <span className="text-[9px] sm:text-[10px] text-emerald-800 dark:text-emerald-300 font-bold bg-emerald-100 dark:bg-emerald-950/60 border border-emerald-300 dark:border-emerald-800/60 px-1 py-0.5 rounded block text-center truncate">
                       Heal
                     </span>
                   ) : stats.coreTasksDone > 0 ? (
                     <div className="flex items-center justify-between gap-1">
                       <span
-                        className={`text-[9px] sm:text-[10px] font-bold px-1 py-0.2 rounded border truncate ${
+                        className={`text-[9px] sm:text-[10px] font-bold px-1.5 py-0.5 rounded border truncate ${
                           stats.isPerfect
-                            ? 'bg-amber-950/60 text-amber-300 border-amber-800/60'
+                            ? 'bg-amber-100 dark:bg-amber-950/60 text-amber-900 dark:text-amber-300 border-amber-300 dark:border-amber-800/60'
                             : stats.coreTasksDone >= 3
-                            ? 'bg-emerald-950/50 text-emerald-300 border-emerald-800/50'
-                            : 'bg-[#131316] text-[#A1A1AA] border-[#26262C]'
+                            ? 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-900 dark:text-emerald-300 border-emerald-300 dark:border-emerald-800/60'
+                            : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 border-zinc-300 dark:border-zinc-700'
                         }`}
                         title={`${stats.coreTasksDone} of 5 core goals completed`}
                       >
@@ -662,14 +664,18 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
 
                       {/* Workouts indicator icon if any */}
                       {stats.workouts.length > 0 && (
-                        <span className="hidden sm:inline-flex items-center text-[9px] text-[#D98B4A]" title={`${stats.workouts.length} workout(s) logged`}>
-                          <Dumbbell className="w-2.5 h-2.5" />
+                        <span className="hidden sm:inline-flex items-center text-[10px] text-[#D98B4A]" title={`${stats.workouts.length} workout(s) logged`}>
+                          <Dumbbell className="w-3 h-3" />
                         </span>
                       )}
                     </div>
                   ) : (
-                    <span className="text-[9px] text-[#A1A1AA]/40 block leading-none truncate">
-                      - / 5
+                    <span className={`text-[10px] sm:text-[11px] font-semibold block leading-none truncate ${
+                      isSelected
+                        ? 'text-zinc-900 dark:text-zinc-200'
+                        : 'text-zinc-600 dark:text-zinc-400'
+                    }`}>
+                      0/5
                     </span>
                   )}
 
@@ -679,10 +685,10 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
                       <span
                         className={`text-[9px] sm:text-[10px] font-mono font-bold leading-none ${
                           stats.points >= 50
-                            ? 'text-[#E69A5C]'
+                            ? 'text-amber-600 dark:text-[#E69A5C]'
                             : stats.points >= 30
-                            ? 'text-emerald-400'
-                            : 'text-[#A1A1AA]'
+                            ? 'text-emerald-600 dark:text-emerald-400'
+                            : 'text-zinc-700 dark:text-zinc-300'
                         }`}
                       >
                         +{stats.points} pts
@@ -693,7 +699,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
                 </div>
 
                 {/* Bottom: Mini completion progress bar */}
-                <div className="w-full bg-[#131316] h-1 rounded-full overflow-hidden border border-[#26262C]/40">
+                <div className="w-full bg-zinc-200 dark:bg-zinc-800/90 h-1.5 rounded-full overflow-hidden border border-zinc-300/60 dark:border-zinc-700/60">
                   <div
                     className={`h-full transition-all duration-300 rounded-full ${
                       stats.isPerfect
@@ -714,27 +720,27 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
         </div>
 
         {/* Legend / Key Footer */}
-        <div className="flex flex-wrap items-center justify-between gap-3 mt-4 pt-3 border-t border-[#26262C]/60 text-[10px] sm:text-xs text-[#A1A1AA]">
+        <div className="flex flex-wrap items-center justify-between gap-3 mt-4 pt-3 border-t border-zinc-200 dark:border-[#26262C]/60 text-[10px] sm:text-xs text-zinc-600 dark:text-[#A1A1AA] font-medium">
           <div className="flex flex-wrap items-center gap-3">
             <div className="flex items-center gap-1.5">
               <span className="w-2.5 h-2.5 rounded-full bg-amber-400 shadow-sm shadow-amber-400/40" />
-              <span>Perfect Day (50 pts)</span>
+              <span className="text-zinc-700 dark:text-zinc-300">Perfect Day (50 pts)</span>
             </div>
             <div className="flex items-center gap-1.5">
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-400" />
-              <span>Strong (30–40 pts)</span>
+              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
+              <span className="text-zinc-700 dark:text-zinc-300">Strong (30–40 pts)</span>
             </div>
             <div className="flex items-center gap-1.5">
-              <span className="text-emerald-400 text-xs leading-none">🌿</span>
-              <span>Sunday Healing</span>
+              <span className="text-emerald-500 text-xs leading-none">🌿</span>
+              <span className="text-zinc-700 dark:text-zinc-300">Sunday Healing</span>
             </div>
             <div className="flex items-center gap-1.5">
-              <span className="w-2.5 h-2.5 rounded-full border border-[#D98B4A] bg-[#D98B4A]/20" />
-              <span>Selected Date</span>
+              <span className="w-2.5 h-2.5 rounded-full border border-[#D98B4A] bg-[#D98B4A]/30" />
+              <span className="text-zinc-700 dark:text-zinc-300">Selected Date</span>
             </div>
           </div>
 
-          <div className="text-[11px] text-[#E69A5C] font-semibold">
+          <div className="text-[11px] text-[#D98B4A] dark:text-[#E69A5C] font-bold">
             Click any date below for full details
           </div>
         </div>

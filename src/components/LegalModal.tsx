@@ -44,15 +44,15 @@ export const LegalModal: React.FC<LegalModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-md animate-fadeIn">
+    <div className="fixed inset-0 z-[70] flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-md animate-fadeIn">
       <div 
-        className="relative w-full max-w-3xl max-h-[90vh] bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-2xl flex flex-col text-left text-zinc-900 dark:text-zinc-100 overflow-hidden"
+        className="relative w-full max-w-3xl max-h-[88vh] bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-2xl flex flex-col text-left text-zinc-900 dark:text-zinc-100 overflow-hidden"
         role="dialog"
         aria-modal="true"
         aria-labelledby="legal-modal-title"
       >
         {/* Header with Brand & Close Button */}
-        <div className="flex items-center justify-between px-5 sm:px-6 py-4 border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-950/50">
+        <div className="flex items-center justify-between px-5 sm:px-6 py-4 border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50/70 dark:bg-zinc-950/80 shrink-0">
           <div className="flex items-center gap-2.5">
             <span className="font-black text-lg tracking-tight text-zinc-950 dark:text-white">PULSE</span>
             <span className="text-zinc-300 dark:text-zinc-700">|</span>
@@ -73,63 +73,65 @@ export const LegalModal: React.FC<LegalModalProps> = ({
           </button>
         </div>
 
-        {/* Tab Navigation */}
-        <div className="flex items-center gap-1 px-4 sm:px-6 pt-3 border-b border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 overflow-x-auto scrollbar-none">
-          <button
-            type="button"
-            onClick={() => setTab('terms')}
-            className={`flex items-center gap-2 px-3.5 py-2.5 text-xs font-bold border-b-2 transition whitespace-nowrap cursor-pointer ${
-              currentTab === 'terms'
-                ? 'border-zinc-900 dark:border-white text-zinc-900 dark:text-white'
-                : 'border-transparent text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200'
-            }`}
-          >
-            <FileText className="w-3.5 h-3.5" />
-            <span>Terms & Conditions</span>
-          </button>
+        {/* Tab Navigation (Segmented Pill Bar with Guaranteed No-Scrollbar) */}
+        <div className="px-4 sm:px-6 py-3 border-b border-zinc-200 dark:border-zinc-800/80 bg-zinc-50/70 dark:bg-zinc-950/80 shrink-0">
+          <div className="flex items-center gap-1.5 p-1 bg-zinc-200/60 dark:bg-zinc-900/90 rounded-xl overflow-x-auto no-scrollbar">
+            <button
+              type="button"
+              onClick={() => setTab('terms')}
+              className={`flex-1 min-w-[130px] flex items-center justify-center gap-2 px-3 py-2 text-xs font-bold rounded-lg transition-all cursor-pointer select-none ${
+                currentTab === 'terms'
+                  ? 'bg-white dark:bg-zinc-800 text-zinc-950 dark:text-white shadow-sm ring-1 ring-zinc-300 dark:ring-zinc-700'
+                  : 'text-zinc-600 hover:text-zinc-950 dark:text-zinc-400 dark:hover:text-zinc-200'
+              }`}
+            >
+              <FileText className="w-3.5 h-3.5 shrink-0" />
+              <span>Terms & Conditions</span>
+            </button>
 
-          <button
-            type="button"
-            onClick={() => setTab('privacy')}
-            className={`flex items-center gap-2 px-3.5 py-2.5 text-xs font-bold border-b-2 transition whitespace-nowrap cursor-pointer ${
-              currentTab === 'privacy'
-                ? 'border-zinc-900 dark:border-white text-zinc-900 dark:text-white'
-                : 'border-transparent text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200'
-            }`}
-          >
-            <Shield className="w-3.5 h-3.5" />
-            <span>Privacy Policy</span>
-          </button>
+            <button
+              type="button"
+              onClick={() => setTab('privacy')}
+              className={`flex-1 min-w-[110px] flex items-center justify-center gap-2 px-3 py-2 text-xs font-bold rounded-lg transition-all cursor-pointer select-none ${
+                currentTab === 'privacy'
+                  ? 'bg-white dark:bg-zinc-800 text-zinc-950 dark:text-white shadow-sm ring-1 ring-zinc-300 dark:ring-zinc-700'
+                  : 'text-zinc-600 hover:text-zinc-950 dark:text-zinc-400 dark:hover:text-zinc-200'
+              }`}
+            >
+              <Shield className="w-3.5 h-3.5 shrink-0" />
+              <span>Privacy Policy</span>
+            </button>
 
-          <button
-            type="button"
-            onClick={() => setTab('refund')}
-            className={`flex items-center gap-2 px-3.5 py-2.5 text-xs font-bold border-b-2 transition whitespace-nowrap cursor-pointer ${
-              currentTab === 'refund'
-                ? 'border-zinc-900 dark:border-white text-zinc-900 dark:text-white'
-                : 'border-transparent text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200'
-            }`}
-          >
-            <RefreshCcw className="w-3.5 h-3.5" />
-            <span>Refund & Cancellation</span>
-          </button>
+            <button
+              type="button"
+              onClick={() => setTab('refund')}
+              className={`flex-1 min-w-[150px] flex items-center justify-center gap-2 px-3 py-2 text-xs font-bold rounded-lg transition-all cursor-pointer select-none ${
+                currentTab === 'refund'
+                  ? 'bg-white dark:bg-zinc-800 text-zinc-950 dark:text-white shadow-sm ring-1 ring-zinc-300 dark:ring-zinc-700'
+                  : 'text-zinc-600 hover:text-zinc-950 dark:text-zinc-400 dark:hover:text-zinc-200'
+              }`}
+            >
+              <RefreshCcw className="w-3.5 h-3.5 shrink-0" />
+              <span>Refund & Cancellation</span>
+            </button>
 
-          <button
-            type="button"
-            onClick={() => setTab('contact')}
-            className={`flex items-center gap-2 px-3.5 py-2.5 text-xs font-bold border-b-2 transition whitespace-nowrap cursor-pointer ${
-              currentTab === 'contact'
-                ? 'border-zinc-900 dark:border-white text-zinc-900 dark:text-white'
-                : 'border-transparent text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200'
-            }`}
-          >
-            <Mail className="w-3.5 h-3.5" />
-            <span>Contact & Support</span>
-          </button>
+            <button
+              type="button"
+              onClick={() => setTab('contact')}
+              className={`flex-1 min-w-[130px] flex items-center justify-center gap-2 px-3 py-2 text-xs font-bold rounded-lg transition-all cursor-pointer select-none ${
+                currentTab === 'contact'
+                  ? 'bg-white dark:bg-zinc-800 text-zinc-950 dark:text-white shadow-sm ring-1 ring-zinc-300 dark:ring-zinc-700'
+                  : 'text-zinc-600 hover:text-zinc-950 dark:text-zinc-400 dark:hover:text-zinc-200'
+              }`}
+            >
+              <Mail className="w-3.5 h-3.5 shrink-0" />
+              <span>Contact & Support</span>
+            </button>
+          </div>
         </div>
 
         {/* Content Body */}
-        <div className="flex-1 overflow-y-auto p-5 sm:p-7 space-y-6 text-sm text-zinc-700 dark:text-zinc-300 leading-relaxed font-sans">
+        <div className="flex-1 min-h-0 overflow-y-auto p-5 sm:p-7 space-y-6 text-sm text-zinc-700 dark:text-zinc-300 leading-relaxed font-sans bg-white dark:bg-zinc-950">
           
           {/* ==================== 1. TERMS & CONDITIONS ==================== */}
           {currentTab === 'terms' && (
