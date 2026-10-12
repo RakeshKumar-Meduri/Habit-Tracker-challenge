@@ -241,4 +241,13 @@ export interface InvitePreview {
   memberCount?: number;
 }
 
+export interface UserReview {
+  id: string;
+  userId: string;
+  rating: number;
+  comment: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 

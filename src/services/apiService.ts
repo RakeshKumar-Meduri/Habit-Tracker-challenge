@@ -12,7 +12,8 @@ import type {
   CustomHabitLog,
   Group,
   Invite,
-  InvitePreview
+  InvitePreview,
+  UserReview
 } from '../types';
 
 export interface ServerSyncResponse {
@@ -863,6 +864,103 @@ export async function submitPasswordResetOnServer(params: {
     return {
       success: false,
       error: err.message || 'Network error while resetting password.',
+    };
+  }
+}
+
+/**
+ * Reviews & Feedback API functions
+ */
+export async function fetchMyReview(): Promise<{
+  success: boolean;
+  review: UserReview | null;
+  error?: string;
+}> {
+  try {
+    const res = await apiFetch('/api/reviews/me', {
+      method: 'GET',
+    });
+    const json = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      return {
+        success: false,
+        review: null,
+        error: json?.error?.message || json?.message || 'Failed to load review',
+      };
+    }
+    return {
+      success: true,
+      review: json.review || null,
+    };
+  } catch (err: any) {
+    return {
+      success: false,
+      review: null,
+      error: err.message || 'Network error fetching review',
+    };
+  }
+}
+
+export async function submitReview(rating: number, comment: string): Promise<{
+  success: boolean;
+  review?: UserReview;
+  message?: string;
+  error?: string;
+  isDuplicate?: boolean;
+}> {
+  try {
+    const res = await apiFetch('/api/reviews', {
+      method: 'POST',
+      body: JSON.stringify({ rating, comment }),
+    });
+    const json = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      return {
+        success: false,
+        isDuplicate: res.status === 409 || json?.error?.code === 'REVIEW_ALREADY_EXISTS',
+        error: json?.error?.message || json?.message || 'Failed to submit feedback',
+      };
+    }
+    return {
+      success: true,
+      review: json.review,
+      message: json.message || 'Thank you for your feedback! Your review has been saved.',
+    };
+  } catch (err: any) {
+    return {
+      success: false,
+      error: err.message || 'Network error submitting feedback',
+    };
+  }
+}
+
+export async function updateReview(rating: number, comment: string): Promise<{
+  success: boolean;
+  review?: UserReview;
+  message?: string;
+  error?: string;
+}> {
+  try {
+    const res = await apiFetch('/api/reviews/me', {
+      method: 'PATCH',
+      body: JSON.stringify({ rating, comment }),
+    });
+    const json = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      return {
+        success: false,
+        error: json?.error?.message || json?.message || 'Failed to update feedback',
+      };
+    }
+    return {
+      success: true,
+      review: json.review,
+      message: json.message || 'Your review has been successfully updated.',
+    };
+  } catch (err: any) {
+    return {
+      success: false,
+      error: err.message || 'Network error updating feedback',
     };
   }
 }

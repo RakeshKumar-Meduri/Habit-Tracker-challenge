@@ -107,4 +107,20 @@ export const passwordResetLimiter = rateLimit({
   },
 });
 
+// Review endpoints rate limit: 60 requests per 15 minutes per IP
+export const reviewLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 60,
+  standardHeaders: true,
+  legacyHeaders: false,
+  skip: (req) => req.headers['x-pulse-test-bypass'] === 'pulse-internal-security-test',
+  message: {
+    success: false,
+    error: {
+      code: 'REVIEW_RATE_LIMIT_EXCEEDED',
+      message: 'Too many review requests. Please try again shortly.',
+    },
+  },
+});
+
 

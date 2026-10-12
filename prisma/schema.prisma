@@ -54,6 +54,7 @@ model User {
   payments                  Payment[]
   email_verification_tokens EmailVerificationToken[]
   password_reset_tokens     PasswordResetToken[]
+  review                    Review?
 
   @@index([username])
   @@index([email])
@@ -472,5 +473,20 @@ model PasswordResetToken {
   @@index([user_id])
   @@index([token_hash])
   @@map("password_reset_tokens")
+}
+
+model Review {
+  id         String   @id @default(uuid()) @db.Uuid
+  user_id    String   @unique
+  rating     Int
+  comment    String
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  // Relationships
+  user       User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([user_id])
+  @@map("reviews")
 }
 

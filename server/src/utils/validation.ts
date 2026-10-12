@@ -163,4 +163,15 @@ export const resetPasswordSchema = z.object({
   }
 });
 
+export const reviewSchema = z.object({
+  rating: z.number({ message: 'Rating is required' })
+    .int('Rating must be an integer between 1 and 5')
+    .min(1, 'Rating must be at least 1')
+    .max(5, 'Rating cannot exceed 5'),
+  comment: z.string({ message: 'Comment is required' })
+    .trim()
+    .min(1, 'Comment is required and cannot be empty')
+    .max(1000, 'Comment cannot exceed 1,000 characters'),
+});
+
 

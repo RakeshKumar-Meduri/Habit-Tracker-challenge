@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import type { User, WeightLog, Gender, Group, Invite } from '../types';
+import type { User, WeightLog, Gender, Group, Invite, UserReview } from '../types';
 import { calculateBMI, calculateAgeFromBirthday } from '../utils/crypto';
 import { 
   User as UserIcon, 
@@ -24,9 +24,10 @@ import {
   Mail,
   Receipt,
   Send,
-  AlertCircle
+  AlertCircle,
+  Star
 } from 'lucide-react';
-import { fetchUserPaymentHistory, resendPaymentReceiptOnServer } from '../services/apiService';
+import { fetchUserPaymentHistory, resendPaymentReceiptOnServer, fetchMyReview, submitReview, updateReview } from '../services/apiService';
 
 const CURRENT_YEAR = new Date().getFullYear();
 const YEARS = Array.from({ length: 90 }, (_, i) => CURRENT_YEAR - 10 - i);
@@ -98,6 +99,41 @@ export const ProfileSection: React.FC<ProfileSectionProps> = ({
   const [isLoadingPayments, setIsLoadingPayments] = useState(false);
   const [resendingReceiptId, setResendingReceiptId] = useState<string | null>(null);
   const [receiptFeedback, setReceiptFeedback] = useState<string | null>(null);
+
+  // User Feedback & Reviews state
+  const [myReview, setMyReview] = useState<UserReview | null>(null);
+  const [isLoadingReview, setIsLoadingReview] = useState(false);
+  const [isSubmittingReview, setIsSubmittingReview] = useState(false);
+  const [reviewRating, setReviewRating] = useState<number>(5);
+  const [hoverRating, setHoverRating] = useState<number>(0);
+  const [reviewComment, setReviewComment] = useState<string>('');
+  const [isEditingReview, setIsEditingReview] = useState(false);
+  const [reviewSuccessMsg, setReviewSuccessMsg] = useState<string | null>(null);
+  const [reviewErrorMsg, setReviewErrorMsg] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!isViewingOther && currentUser) {
+      setIsLoadingReview(true);
+      fetchMyReview()
+        .then(res => {
+          if (res.success && res.review) {
+            setMyReview(res.review);
+            setReviewRating(res.review.rating);
+            setReviewComment(res.review.comment);
+            setIsEditingReview(false);
+          } else {
+            setMyReview(null);
+            setReviewRating(5);
+            setReviewComment('');
+            setIsEditingReview(false);
+          }
+        })
+        .catch(() => {})
+        .finally(() => {
+          setIsLoadingReview(false);
+        });
+    }
+  }, [currentUser.id, isViewingOther]);
 
   useEffect(() => {
     if (!isViewingOther && currentUser) {
@@ -1317,6 +1353,250 @@ export const ProfileSection: React.FC<ProfileSectionProps> = ({
                     </div>
                   )}
                 </div>
+              )}
+            </div>
+          )}
+
+          {/* Rate PULSE / Feedback & Reviews Section (Only shown when viewing own profile) */}
+          {!isViewingOther && (
+            <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-4 sm:p-6 shadow-sm space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Star className="w-5 h-5 text-amber-500 fill-amber-500" />
+                  <h3 className="text-sm sm:text-base font-bold text-zinc-900 dark:text-zinc-100">
+                    Feedback & Reviews
+                  </h3>
+                </div>
+                {myReview && !isEditingReview && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsEditingReview(true);
+                      setReviewRating(myReview.rating);
+                      setReviewComment(myReview.comment);
+                      setReviewErrorMsg(null);
+                      setReviewSuccessMsg(null);
+                    }}
+                    className="px-3 py-1.5 btn-secondary rounded-xl text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer"
+                  >
+                    <Edit2 className="w-3.5 h-3.5" />
+                    <span>Edit Review</span>
+                  </button>
+                )}
+              </div>
+
+              {/* Status feedback banners */}
+              {reviewSuccessMsg && (
+                <div className="p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-xl flex items-center gap-2 text-xs text-emerald-600 dark:text-emerald-400">
+                  <CheckCircle2 className="w-4 h-4 shrink-0" />
+                  <span>{reviewSuccessMsg}</span>
+                </div>
+              )}
+
+              {reviewErrorMsg && (
+                <div className="p-3 bg-rose-500/10 border border-rose-500/20 rounded-xl flex items-center gap-2 text-xs text-rose-600 dark:text-rose-400">
+                  <AlertCircle className="w-4 h-4 shrink-0" />
+                  <span>{reviewErrorMsg}</span>
+                </div>
+              )}
+
+              {isLoadingReview ? (
+                <div className="py-6 flex flex-col items-center justify-center gap-2 text-zinc-400">
+                  <RefreshCw className="w-5 h-5 animate-spin text-zinc-500" />
+                  <span className="text-xs">Loading feedback status...</span>
+                </div>
+              ) : myReview && !isEditingReview ? (
+                /* Saved Review Display Card */
+                <div className="p-4 rounded-xl bg-zinc-50 dark:bg-zinc-800/60 border border-zinc-200 dark:border-zinc-800 space-y-3">
+                  <div className="flex items-center justify-between flex-wrap gap-2">
+                    <div className="flex items-center gap-1">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <Star
+                          key={star}
+                          className={`w-4 h-4 ${
+                            star <= myReview.rating
+                              ? 'text-amber-500 fill-amber-500'
+                              : 'text-zinc-300 dark:text-zinc-600'
+                          }`}
+                        />
+                      ))}
+                      <span className="ml-2 text-xs font-bold text-zinc-900 dark:text-zinc-100">
+                        {myReview.rating} / 5
+                      </span>
+                    </div>
+                    <span className="text-[11px] text-zinc-500 dark:text-zinc-400">
+                      {new Date(myReview.updatedAt || myReview.createdAt).toLocaleDateString(undefined, {
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric',
+                      })}
+                    </span>
+                  </div>
+
+                  <p className="text-xs sm:text-sm text-zinc-700 dark:text-zinc-300 whitespace-pre-wrap leading-relaxed italic border-l-2 border-amber-500 pl-3 py-0.5">
+                    "{myReview.comment}"
+                  </p>
+                </div>
+              ) : (
+                /* Submission / Edit Form */
+                <form
+                  onSubmit={async (e) => {
+                    e.preventDefault();
+                    setReviewErrorMsg(null);
+                    setReviewSuccessMsg(null);
+
+                    const trimmed = reviewComment.trim();
+                    if (!trimmed) {
+                      setReviewErrorMsg('Please write a comment before submitting.');
+                      return;
+                    }
+                    if (trimmed.length > 1000) {
+                      setReviewErrorMsg('Comment cannot exceed 1,000 characters.');
+                      return;
+                    }
+                    if (reviewRating < 1 || reviewRating > 5) {
+                      setReviewErrorMsg('Please select a star rating between 1 and 5.');
+                      return;
+                    }
+
+                    setIsSubmittingReview(true);
+                    try {
+                      if (myReview) {
+                        // Update existing review (PATCH)
+                        const res = await updateReview(reviewRating, trimmed);
+                        if (res.success && res.review) {
+                          setMyReview(res.review);
+                          setIsEditingReview(false);
+                          setReviewSuccessMsg(res.message || 'Your review has been successfully updated.');
+                        } else {
+                          setReviewErrorMsg(res.error || 'Failed to update review.');
+                        }
+                      } else {
+                        // Submit new review (POST)
+                        const res = await submitReview(reviewRating, trimmed);
+                        if (res.success && res.review) {
+                          setMyReview(res.review);
+                          setIsEditingReview(false);
+                          setReviewSuccessMsg(res.message || 'Thank you for your feedback! Your review has been saved.');
+                        } else if (res.isDuplicate) {
+                          // Already has review, re-fetch
+                          const fresh = await fetchMyReview();
+                          if (fresh.success && fresh.review) {
+                            setMyReview(fresh.review);
+                            setIsEditingReview(false);
+                            setReviewErrorMsg('You have already submitted a review. Your existing review has been loaded.');
+                          } else {
+                            setReviewErrorMsg(res.error || 'You have already submitted a review.');
+                          }
+                        } else {
+                          setReviewErrorMsg(res.error || 'Failed to submit review.');
+                        }
+                      }
+                    } catch (err: any) {
+                      setReviewErrorMsg(err.message || 'An error occurred while saving your review.');
+                    } finally {
+                      setIsSubmittingReview(false);
+                    }
+                  }}
+                  className="space-y-4"
+                >
+                  {/* Rating Selector */}
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 block">
+                      Rating <span className="text-rose-500">*</span>
+                    </label>
+                    <div className="flex items-center gap-1.5" onMouseLeave={() => setHoverRating(0)}>
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <button
+                          key={star}
+                          type="button"
+                          onClick={() => setReviewRating(star)}
+                          onMouseEnter={() => setHoverRating(star)}
+                          className="p-1 rounded-lg hover:scale-110 active:scale-95 transition-transform cursor-pointer focus:outline-none"
+                          aria-label={`Rate ${star} star${star > 1 ? 's' : ''}`}
+                        >
+                          <Star
+                            className={`w-6 h-6 transition-colors ${
+                              star <= (hoverRating || reviewRating)
+                                ? 'text-amber-500 fill-amber-500'
+                                : 'text-zinc-300 dark:text-zinc-700'
+                            }`}
+                          />
+                        </button>
+                      ))}
+                      <span className="ml-2 text-xs font-semibold text-zinc-600 dark:text-zinc-400">
+                        {hoverRating || reviewRating} / 5
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Comment Field */}
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between">
+                      <label className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">
+                        Comment <span className="text-rose-500">*</span>
+                      </label>
+                      <span
+                        className={`text-[11px] font-mono ${
+                          reviewComment.length > 950
+                            ? 'text-amber-500 font-bold'
+                            : 'text-zinc-400 dark:text-zinc-500'
+                        }`}
+                      >
+                        {reviewComment.length} / 1,000
+                      </span>
+                    </div>
+                    <textarea
+                      value={reviewComment}
+                      onChange={(e) => {
+                        setReviewComment(e.target.value);
+                        if (reviewErrorMsg) setReviewErrorMsg(null);
+                      }}
+                      maxLength={1000}
+                      rows={4}
+                      placeholder="Share your experience with PULSE — what you love, workouts, tracking, or areas for improvement..."
+                      className="w-full px-3.5 py-2.5 bg-zinc-50 dark:bg-zinc-800/80 border border-zinc-200 dark:border-zinc-700 rounded-xl text-xs sm:text-sm text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-500 transition resize-none"
+                      disabled={isSubmittingReview}
+                    />
+                  </div>
+
+                  {/* Actions */}
+                  <div className="flex items-center gap-2 pt-1">
+                    <button
+                      type="submit"
+                      disabled={isSubmittingReview || !reviewComment.trim()}
+                      className="px-4 py-2 btn-primary rounded-xl text-xs font-bold transition flex items-center gap-2 cursor-pointer shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {isSubmittingReview ? (
+                        <>
+                          <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                          <span>Saving...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Send className="w-3.5 h-3.5" />
+                          <span>{myReview ? 'Update Feedback' : 'Submit Feedback'}</span>
+                        </>
+                      )}
+                    </button>
+
+                    {myReview && isEditingReview && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIsEditingReview(false);
+                          setReviewRating(myReview.rating);
+                          setReviewComment(myReview.comment);
+                          setReviewErrorMsg(null);
+                        }}
+                        disabled={isSubmittingReview}
+                        className="px-4 py-2 btn-secondary rounded-xl text-xs font-semibold transition cursor-pointer"
+                      >
+                        Cancel
+                      </button>
+                    )}
+                  </div>
+                </form>
               )}
             </div>
           )}

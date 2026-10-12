@@ -20,6 +20,7 @@ import weightsRoutes from './routes/weights.routes';
 import habitsRoutes from './routes/habits.routes';
 import paymentsRoutes from './routes/payments.routes';
 import mediaRoutes from './routes/media.routes';
+import reviewsRoutes from './routes/reviews.routes';
 import { ensureStorageBuckets } from './db/supabase';
 
 const app = express();
@@ -90,6 +91,7 @@ app.use(weightsRoutes);
 app.use(habitsRoutes);
 app.use(paymentsRoutes);
 app.use(mediaRoutes);
+app.use(reviewsRoutes);
 
 // Initialize Supabase storage buckets if configured
 ensureStorageBuckets().catch(err => console.warn('[Supabase Init Warning]', err.message));
