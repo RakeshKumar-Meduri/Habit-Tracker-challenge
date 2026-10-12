@@ -64,7 +64,7 @@ export async function sendResendEmail(params: {
       senderAddress = senderAddress.replace('@avixstudio.com', '@pulse.avixstudio.com');
     }
     const from = `${ENV.RESEND_SENDER_NAME || 'PULSE'} <${senderAddress}>`;
-    const replyTo = ENV.RESEND_SUPPORT_EMAIL || 'team@avixstudio.com';
+    const replyTo = ENV.RESEND_SUPPORT_EMAIL || 'supportpulseteam@gmail.com';
 
     let { data, error } = await resend.emails.send({
       from,

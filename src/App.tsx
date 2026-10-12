@@ -77,6 +77,8 @@ import { SubscriptionModal } from './components/SubscriptionModal';
 import { EmailVerificationModal } from './components/EmailVerificationModal';
 import { PaymentStatusModal } from './components/PaymentStatusModal';
 import { ResetPasswordModal } from './components/ResetPasswordModal';
+import { Footer } from './components/Footer';
+import { LegalModal, type LegalTab } from './components/LegalModal';
 import { Trophy, Swords, Award } from 'lucide-react';
 
 export function App() {
@@ -251,6 +253,7 @@ export function App() {
 
   // Email verification and payment status states
   const [isVerificationModalOpen, setIsVerificationModalOpen] = useState<boolean>(false);
+  const [verificationModalMode, setVerificationModalMode] = useState<'verify' | 'change'>('verify');
   const [emailVerifyToken, setEmailVerifyToken] = useState<string | null>(null);
   const [isPaymentStatusModalOpen, setIsPaymentStatusModalOpen] = useState<boolean>(false);
   const [paymentOrderId, setPaymentOrderId] = useState<string | null>(null);
@@ -258,6 +261,10 @@ export function App() {
   // Password reset modal state
   const [isResetPasswordModalOpen, setIsResetPasswordModalOpen] = useState<boolean>(false);
   const [passwordResetToken, setPasswordResetToken] = useState<string>('');
+
+  // Legal and support modal states
+  const [isLegalModalOpen, setIsLegalModalOpen] = useState<boolean>(false);
+  const [legalModalTab, setLegalModalTab] = useState<LegalTab>('terms');
 
   // Detect /join/:token, /reset-password, /verify-email, and /payment-status on mount and popstate
   useEffect(() => {
@@ -337,6 +344,23 @@ export function App() {
           setPaymentOrderId(orderIdParam.trim());
         }
         setIsPaymentStatusModalOpen(true);
+      }
+
+      // 5. Legal & support routes: /terms, /privacy, /refund, /contact, /help, /support
+      const pathLower = window.location.pathname.toLowerCase();
+      const hashLower = window.location.hash.toLowerCase();
+      if (pathLower.includes('terms') || hashLower.includes('terms')) {
+        setLegalModalTab('terms');
+        setIsLegalModalOpen(true);
+      } else if (pathLower.includes('privacy') || hashLower.includes('privacy')) {
+        setLegalModalTab('privacy');
+        setIsLegalModalOpen(true);
+      } else if (pathLower.includes('refund') || hashLower.includes('refund') || pathLower.includes('cancellation') || hashLower.includes('cancellation')) {
+        setLegalModalTab('refund');
+        setIsLegalModalOpen(true);
+      } else if (pathLower.includes('contact') || hashLower.includes('contact') || pathLower.includes('help') || hashLower.includes('help') || pathLower.includes('support') || hashLower.includes('support')) {
+        setLegalModalTab('contact');
+        setIsLegalModalOpen(true);
       }
     };
 
@@ -1520,7 +1544,10 @@ export function App() {
             </span>
           </div>
           <button
-            onClick={() => setIsVerificationModalOpen(true)}
+            onClick={() => {
+              setVerificationModalMode('verify');
+              setIsVerificationModalOpen(true);
+            }}
             className="px-3 py-1 bg-zinc-900 hover:bg-zinc-800 text-white dark:bg-zinc-100 dark:hover:bg-zinc-200 dark:text-zinc-900 font-bold rounded-lg transition shadow-sm text-xs cursor-pointer"
           >
             Verify Email Now
@@ -1762,7 +1789,10 @@ export function App() {
               setHighlightProInModal(!!highlightPro);
               setIsSubscriptionModalOpen(true);
             }}
-            onOpenVerificationModal={() => setIsVerificationModalOpen(true)}
+            onOpenVerificationModal={(mode = 'verify') => {
+              setVerificationModalMode(mode);
+              setIsVerificationModalOpen(true);
+            }}
           />
         )}
       </main>
@@ -1876,6 +1906,10 @@ export function App() {
           activeSubscription={activeSubscription}
           forcePaywall={planTier === 'none'}
           highlightPro={highlightProInModal}
+          onOpenLegal={(tab) => {
+            setLegalModalTab(tab);
+            setIsLegalModalOpen(true);
+          }}
           onSubscriptionSuccess={(sub) => {
             setActiveSubscription(sub);
             setPlanTier(sub.plan_id?.includes('pro') ? 'pro' : 'base');
@@ -1887,6 +1921,7 @@ export function App() {
       {/* Email Verification Modal */}
       <EmailVerificationModal
         isOpen={isVerificationModalOpen}
+        initialMode={verificationModalMode}
         onClose={() => {
           setIsVerificationModalOpen(false);
           setEmailVerifyToken(null);
@@ -1895,7 +1930,7 @@ export function App() {
         initialToken={emailVerifyToken}
         onEmailVerified={(updated) => {
           if (currentUser) {
-            const updatedUser = { ...currentUser, ...updated, email_verified: true };
+            const updatedUser = { ...currentUser, ...updated };
             setUsers((prev) => prev.map((u) => (u.id === updatedUser.id ? updatedUser : u)));
             handleUpdateProfile(updatedUser);
           }
@@ -1950,10 +1985,21 @@ export function App() {
         }}
       />
 
+      {/* Legal & Policy Modal */}
+      <LegalModal
+        isOpen={isLegalModalOpen}
+        onClose={() => setIsLegalModalOpen(false)}
+        activeTab={legalModalTab}
+        onTabChange={setLegalModalTab}
+      />
+
       {/* Footer */}
-      <footer className="border-t border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 py-6 pb-24 md:pb-6 text-center text-xs text-zinc-500 dark:text-zinc-400">
-        <p>PULSE Fitness & Daily Goal Tracker — Real-Time Multi-User Edition</p>
-      </footer>
+      <Footer
+        onOpenLegal={(tab) => {
+          setLegalModalTab(tab);
+          setIsLegalModalOpen(true);
+        }}
+      />
     </div>
   );
 }

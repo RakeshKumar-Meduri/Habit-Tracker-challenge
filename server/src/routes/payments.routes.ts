@@ -9,6 +9,7 @@ import {
   processPaymentWebhook,
   ensureDefaultPlans,
   resendPaymentReceipt,
+  reconcilePaymentOrder,
 } from '../services/payment.service';
 import { AppError } from '../middleware/errorHandler';
 
@@ -224,6 +225,25 @@ router.post('/api/payments/resend-receipt/:paymentId', requireAuth, paymentLimit
     res.json({
       success: true,
       message: 'Payment receipt has been resent to your verified email address.',
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// ----------------------------------------------------
+// Reconcile Payment Order with Gateway (Recovery & Verification)
+// ----------------------------------------------------
+router.post('/api/payments/reconcile/:orderId', requireAuth, paymentLimiter, async (req, res, next) => {
+  try {
+    const userId = req.user!.id;
+    const orderId = String(req.params.orderId);
+
+    const result = await reconcilePaymentOrder(userId, orderId);
+
+    res.json({
+      success: true,
+      ...result,
     });
   } catch (err) {
     next(err);

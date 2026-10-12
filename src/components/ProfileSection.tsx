@@ -65,7 +65,7 @@ interface ProfileSectionProps {
   planTier?: 'none' | 'base' | 'pro';
   activeSubscription?: any;
   onOpenUpgradeModal?: (highlightPro?: boolean) => void;
-  onOpenVerificationModal?: () => void;
+  onOpenVerificationModal?: (mode?: 'verify' | 'change') => void;
 }
 
 export const ProfileSection: React.FC<ProfileSectionProps> = ({
@@ -502,13 +502,46 @@ export const ProfileSection: React.FC<ProfileSectionProps> = ({
                     </p>
                   </div>
                   {onOpenVerificationModal && (
-                    <button
-                      type="button"
-                      onClick={onOpenVerificationModal}
-                      className="px-3 py-1.5 btn-primary font-bold rounded-lg text-xs transition cursor-pointer shrink-0 self-start sm:self-auto"
-                    >
-                      {currentUser.email_verified ? 'Change Email' : (currentUser.email ? 'Verify Email' : 'Add Email')}
-                    </button>
+                    <div className="flex items-center gap-2 shrink-0 self-start sm:self-auto">
+                      {currentUser.email_verified ? (
+                        <button
+                          type="button"
+                          onClick={() => onOpenVerificationModal('change')}
+                          className="px-3.5 py-1.5 bg-zinc-900 hover:bg-zinc-800 text-white dark:bg-zinc-100 dark:hover:bg-zinc-200 dark:text-zinc-900 font-bold rounded-lg text-xs transition cursor-pointer shadow-sm active:scale-95 flex items-center gap-1.5"
+                        >
+                          <Edit2 className="w-3.5 h-3.5" />
+                          <span>Change Email</span>
+                        </button>
+                      ) : currentUser.email ? (
+                        <>
+                          <button
+                            type="button"
+                            onClick={() => onOpenVerificationModal('verify')}
+                            className="px-3 py-1.5 bg-zinc-900 hover:bg-zinc-800 text-white dark:bg-zinc-100 dark:hover:bg-zinc-200 dark:text-zinc-900 font-bold rounded-lg text-xs transition cursor-pointer shadow-sm active:scale-95 flex items-center gap-1.5"
+                          >
+                            <Mail className="w-3.5 h-3.5" />
+                            <span>Verify Email</span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => onOpenVerificationModal('change')}
+                            className="px-3 py-1.5 bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-200 font-bold rounded-lg text-xs border border-zinc-200 dark:border-zinc-700 transition cursor-pointer active:scale-95 flex items-center gap-1.5"
+                          >
+                            <Edit2 className="w-3.5 h-3.5" />
+                            <span>Change</span>
+                          </button>
+                        </>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => onOpenVerificationModal('change')}
+                          className="px-3.5 py-1.5 bg-zinc-900 hover:bg-zinc-800 text-white dark:bg-zinc-100 dark:hover:bg-zinc-200 dark:text-zinc-900 font-bold rounded-lg text-xs transition cursor-pointer shadow-sm active:scale-95 flex items-center gap-1.5"
+                        >
+                          <Mail className="w-3.5 h-3.5" />
+                          <span>Add Email</span>
+                        </button>
+                      )}
+                    </div>
                   )}
                 </div>
               </div>
@@ -920,7 +953,7 @@ export const ProfileSection: React.FC<ProfileSectionProps> = ({
                 )}
 
                 <p className="text-[10px] text-zinc-500 dark:text-zinc-400 pt-1">
-                  Merchant: PULSE Fitness Accountability • Support: team@avixstudio.com
+                  Merchant: PULSE Fitness Accountability • Support: supportpulseteam@gmail.com
                 </p>
               </div>
             </div>

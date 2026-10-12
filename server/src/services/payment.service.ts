@@ -263,6 +263,17 @@ export async function createPaymentOrder(userId: string, planId: string) {
 }
 
 /**
+ * Safe constant-time signature comparison to prevent timing side-channel attacks
+ */
+function safeCompareSignatures(expected: string, provided: string): boolean {
+  if (!expected || !provided) return false;
+  const bufA = Buffer.from(expected, 'utf8');
+  const bufB = Buffer.from(provided, 'utf8');
+  if (bufA.length !== bufB.length) return false;
+  return crypto.timingSafeEqual(bufA, bufB);
+}
+
+/**
  * Verify client payment signature and activate subscription transactionally
  */
 export async function verifyPaymentSignature(
@@ -271,17 +282,6 @@ export async function verifyPaymentSignature(
   paymentId: string,
   signature: string
 ) {
-  if (razorpay && ENV.RAZORPAY_KEY_SECRET) {
-    const expectedSignature = crypto
-      .createHmac('sha256', ENV.RAZORPAY_KEY_SECRET)
-      .update(`${orderId}|${paymentId}`)
-      .digest('hex');
-
-    if (expectedSignature !== signature) {
-      throw new AppError('Payment signature verification failed', 400, 'INVALID_SIGNATURE');
-    }
-  }
-
   const payment = await prisma.payment.findUnique({
     where: { razorpay_order_id: orderId },
     include: { user: true },
@@ -295,6 +295,74 @@ export async function verifyPaymentSignature(
     throw new AppError('Unauthorized: Order does not belong to this user', 403, 'FORBIDDEN');
   }
 
+  // Idempotency: If this order was already captured and activated, return existing state safely
+  if (payment.status === 'captured') {
+    const existingSub = await prisma.subscription.findFirst({
+      where: { user_id: userId, status: 'active' },
+      include: { plan: true },
+    });
+    return {
+      payment,
+      subscription: existingSub,
+      message: 'Payment was already verified and subscription is currently active.',
+    };
+  }
+
+  // Verify HMAC-SHA256 signature using constant-time comparison
+  if (razorpay && ENV.RAZORPAY_KEY_SECRET) {
+    const expectedSignature = crypto
+      .createHmac('sha256', ENV.RAZORPAY_KEY_SECRET)
+      .update(`${orderId}|${paymentId}`)
+      .digest('hex');
+
+    if (!safeCompareSignatures(expectedSignature, signature)) {
+      throw new AppError('Payment signature verification failed', 400, 'INVALID_SIGNATURE');
+    }
+
+    // Server-Side Gateway Authority: Query Razorpay API directly to verify payment status, amount, and capture
+    try {
+      const rzpPayment = await razorpay.payments.fetch(paymentId);
+      if (!rzpPayment) {
+        throw new AppError('Payment not found at payment gateway', 404, 'PAYMENT_GATEWAY_NOT_FOUND');
+      }
+
+      if (rzpPayment.order_id && rzpPayment.order_id !== orderId) {
+        throw new AppError('Payment does not match the order ID', 400, 'PAYMENT_ORDER_MISMATCH');
+      }
+
+      if (rzpPayment.amount !== payment.amount) {
+        throw new AppError('Payment amount mismatch between order record and gateway', 400, 'PAYMENT_AMOUNT_MISMATCH');
+      }
+
+      if (rzpPayment.currency !== payment.currency) {
+        throw new AppError('Payment currency mismatch between order record and gateway', 400, 'PAYMENT_CURRENCY_MISMATCH');
+      }
+
+      // Check capture status: Razorpay payment must be 'captured' (not merely 'authorized')
+      if (rzpPayment.status !== 'captured') {
+        if (rzpPayment.status === 'authorized') {
+          try {
+            const captured = await razorpay.payments.capture(paymentId, payment.amount, payment.currency);
+            if (captured.status !== 'captured') {
+              throw new AppError('Payment authorized but capture could not be confirmed', 400, 'PAYMENT_NOT_CAPTURED');
+            }
+          } catch (capErr: any) {
+            throw new AppError(capErr?.message || 'Payment is authorized but failed to capture', 400, 'PAYMENT_NOT_CAPTURED');
+          }
+        } else {
+          throw new AppError(`Payment status is '${rzpPayment.status}'. Paid access requires captured payment confirmation.`, 400, 'PAYMENT_NOT_CAPTURED');
+        }
+      }
+    } catch (gatewayErr: any) {
+      if (gatewayErr instanceof AppError) throw gatewayErr;
+      if (ENV.IS_PROD) {
+        throw new AppError(`Gateway status check failed: ${gatewayErr?.message || 'Verification failure'}`, 502, 'GATEWAY_VERIFICATION_FAILED');
+      } else {
+        console.warn('[Razorpay] Gateway payment fetch failed in development/test fallback:', gatewayErr.message);
+      }
+    }
+  }
+
   const plan = await prisma.plan.findFirst({
     where: { price: payment.amount, is_active: true },
   }) || await prisma.plan.findFirst();
@@ -306,7 +374,7 @@ export async function verifyPaymentSignature(
   const durationDays = plan.duration === 'yearly' ? 365 : 30;
   const expiresAt = new Date(Date.now() + durationDays * 24 * 60 * 60 * 1000);
 
-  // PostgreSQL Transaction: update payment and activate subscription
+  // PostgreSQL Transaction: update payment and activate subscription atomically
   const result = await prisma.$transaction(async (tx) => {
     // 1. Update Payment status
     const updatedPayment = await tx.payment.update({
@@ -388,7 +456,7 @@ export async function processPaymentWebhook(rawBody: string, webhookSignature: s
       .update(rawBody)
       .digest('hex');
 
-    if (expectedSignature !== webhookSignature) {
+    if (!safeCompareSignatures(expectedSignature, webhookSignature)) {
       throw new AppError('Invalid webhook signature', 400, 'INVALID_WEBHOOK_SIGNATURE');
     }
   }
@@ -507,10 +575,17 @@ export async function processPaymentWebhook(rawBody: string, webhookSignature: s
       const errorReason = paymentEntity?.error_description || paymentEntity?.error_reason || 'Payment failed';
 
       if (orderId) {
-        await tx.payment.updateMany({
+        // Safe out-of-order handling: never overwrite an already captured payment with a failure event
+        const existingPayment = await tx.payment.findUnique({
           where: { razorpay_order_id: orderId },
-          data: { status: 'failed', error_reason: errorReason },
         });
+
+        if (existingPayment && existingPayment.status !== 'captured') {
+          await tx.payment.updateMany({
+            where: { razorpay_order_id: orderId },
+            data: { status: 'failed', error_reason: errorReason },
+          });
+        }
       }
     } else if (event.event === 'payment.refunded' || event.event === 'refund.created') {
       const paymentEntity = event.payload?.payment?.entity;
@@ -598,5 +673,166 @@ export async function resendPaymentReceipt(userId: string, paymentId: string) {
   }
 
   return sendResult;
+}
+
+/**
+ * Reconcile a payment order with Razorpay in case client disconnected, browser crashed, or webhooks were delayed
+ */
+export async function reconcilePaymentOrder(userId: string, orderId: string) {
+  const payment = await prisma.payment.findUnique({
+    where: { razorpay_order_id: orderId },
+    include: { user: true },
+  });
+
+  if (!payment) {
+    throw new AppError('Payment order not found', 404, 'ORDER_NOT_FOUND');
+  }
+
+  if (payment.user_id !== userId) {
+    throw new AppError('Unauthorized: Order does not belong to this user', 403, 'FORBIDDEN');
+  }
+
+  // If already captured, fetch active subscription and return idempotently
+  if (payment.status === 'captured') {
+    const subscription = await prisma.subscription.findFirst({
+      where: { user_id: userId, status: 'active' },
+      include: { plan: true },
+    });
+    return {
+      status: 'captured',
+      reconciled: false,
+      message: 'Order is already captured and entitlement is active.',
+      payment,
+      subscription,
+    };
+  }
+
+  // If Razorpay client is active, query Razorpay order payments directly from gateway authority
+  if (razorpay) {
+    try {
+      const orderPayments = await (razorpay.orders as any).fetchPayments(orderId);
+      const items = orderPayments?.items || [];
+      const successfulPayment = items.find((p: any) => p.status === 'captured') ||
+                               items.find((p: any) => p.status === 'authorized');
+
+      if (successfulPayment) {
+        let finalStatus = successfulPayment.status;
+        if (successfulPayment.status === 'authorized') {
+          // Attempt capture if not yet captured
+          try {
+            const cap = await razorpay.payments.capture(successfulPayment.id, payment.amount, payment.currency);
+            finalStatus = cap.status;
+          } catch (e: any) {
+            console.warn('[Reconciliation] Failed to capture authorized payment:', e.message);
+          }
+        }
+
+        if (finalStatus === 'captured') {
+          // Reconcile and activate subscription atomically
+          const plan = await prisma.plan.findFirst({
+            where: { price: payment.amount, is_active: true },
+          }) || await prisma.plan.findFirst();
+
+          const resolvedPlanId = payment.plan_name?.toLowerCase().includes('yearly')
+            ? 'plan_pro_yearly'
+            : (plan?.id || 'plan_pro_monthly');
+          const durationDays = resolvedPlanId === 'plan_pro_yearly' ? 365 : 30;
+          const expiresAt = new Date(Date.now() + durationDays * 24 * 60 * 60 * 1000);
+
+          const result = await prisma.$transaction(async (tx) => {
+            const updatedPayment = await tx.payment.update({
+              where: { id: payment.id },
+              data: {
+                razorpay_payment_id: successfulPayment.id,
+                status: 'captured',
+              },
+            });
+
+            const subscription = await tx.subscription.upsert({
+              where: { id: payment.subscription_id || `sub_${userId}` },
+              update: {
+                plan_id: resolvedPlanId,
+                status: 'active',
+                starts_at: new Date(),
+                expires_at: expiresAt,
+                cancelled_at: null,
+              },
+              create: {
+                id: `sub_${userId}`,
+                user_id: userId,
+                plan_id: resolvedPlanId,
+                status: 'active',
+                starts_at: new Date(),
+                expires_at: expiresAt,
+              },
+            });
+
+            await tx.payment.update({
+              where: { id: payment.id },
+              data: { subscription_id: subscription.id },
+            });
+
+            return { payment: updatedPayment, subscription };
+          });
+
+          // Send receipt email if not already sent
+          if (payment.user.email && payment.user.email_verified && !payment.email_sent) {
+            const receiptNum = payment.receipt_number || `RCPT-${payment.id.slice(-6).toUpperCase()}`;
+            sendPaymentReceiptEmail(payment.user.email, payment.user.name || payment.user.username, {
+              receiptNumber: receiptNum,
+              orderId,
+              paymentId: successfulPayment.id,
+              planName: payment.plan_name || 'PULSE Pro Monthly',
+              amount: payment.amount,
+              currency: payment.currency,
+              paidAt: new Date(),
+            }).then(async (res) => {
+              if (res.success) {
+                await prisma.payment.update({
+                  where: { id: payment.id },
+                  data: { email_sent: true, email_sent_at: new Date() },
+                });
+              }
+            }).catch(() => {});
+          }
+
+          return {
+            status: 'captured',
+            reconciled: true,
+            message: 'Payment successfully verified with Razorpay and Pro plan activated!',
+            payment: result.payment,
+            subscription: result.subscription,
+          };
+        }
+      }
+
+      const failedPayment = items.find((p: any) => p.status === 'failed');
+      if (failedPayment) {
+        const updated = await prisma.payment.update({
+          where: { id: payment.id },
+          data: {
+            status: 'failed',
+            error_reason: failedPayment.error_description || 'Payment was declined or failed at bank',
+          },
+        });
+        return {
+          status: 'failed',
+          reconciled: true,
+          message: failedPayment.error_description || 'Payment was declined or failed at bank.',
+          payment: updated,
+        };
+      }
+    } catch (err: any) {
+      console.warn('[Reconciliation Error]', err.message);
+      throw new AppError(`Gateway reconciliation error: ${err.message}`, 502, 'GATEWAY_ERROR');
+    }
+  }
+
+  return {
+    status: payment.status,
+    reconciled: false,
+    message: 'Payment is pending. Please complete checkout or wait for gateway confirmation.',
+    payment,
+  };
 }
 

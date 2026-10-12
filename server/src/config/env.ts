@@ -36,13 +36,13 @@ export const ENV = {
   RESEND_API_KEY: process.env.RESEND_API_KEY || '',
   RESEND_SENDER_EMAIL: process.env.RESEND_SENDER_EMAIL || 'noreply@pulse.avixstudio.com',
   RESEND_SENDER_NAME: process.env.RESEND_SENDER_NAME || 'PULSE',
-  RESEND_SUPPORT_EMAIL: process.env.RESEND_SUPPORT_EMAIL || 'team@avixstudio.com',
+  RESEND_SUPPORT_EMAIL: process.env.RESEND_SUPPORT_EMAIL || 'supportpulseteam@gmail.com',
 
   // Legacy Brevo compatibility aliases
   BREVO_API_KEY: process.env.RESEND_API_KEY || process.env.BREVO_API_KEY || '',
   BREVO_SENDER_EMAIL: process.env.RESEND_SENDER_EMAIL || process.env.BREVO_SENDER_EMAIL || 'noreply@pulse.avixstudio.com',
   BREVO_SENDER_NAME: process.env.RESEND_SENDER_NAME || process.env.BREVO_SENDER_NAME || 'PULSE',
-  BREVO_SUPPORT_EMAIL: process.env.RESEND_SUPPORT_EMAIL || process.env.BREVO_SUPPORT_EMAIL || 'team@avixstudio.com',
+  BREVO_SUPPORT_EMAIL: process.env.RESEND_SUPPORT_EMAIL || process.env.BREVO_SUPPORT_EMAIL || 'supportpulseteam@gmail.com',
 
   // Security
   SESSION_SECRET: process.env.SESSION_SECRET || 'pulse_session_secret_2026_default',

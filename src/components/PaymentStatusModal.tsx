@@ -210,7 +210,7 @@ export const PaymentStatusModal: React.FC<PaymentStatusModalProps> = ({
             )}
 
             <div className="text-[11px] text-zinc-500 dark:text-zinc-400 text-center pt-2">
-              For support, contact <span className="font-semibold text-zinc-900 dark:text-zinc-100">team@avixstudio.com</span>
+              For support, contact <span className="font-semibold text-zinc-900 dark:text-zinc-100">supportpulseteam@gmail.com</span>
             </div>
           </div>
         )}

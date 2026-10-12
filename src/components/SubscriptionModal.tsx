@@ -31,6 +31,7 @@ interface SubscriptionModalProps {
   onSubscriptionSuccess: (sub: Subscription) => void;
   forcePaywall?: boolean; // If user has no active plan, modal cannot be simply closed without choosing
   highlightPro?: boolean;
+  onOpenLegal?: (tab: 'terms' | 'privacy' | 'refund' | 'contact') => void;
 }
 
 export const SubscriptionModal: React.FC<SubscriptionModalProps> = ({
@@ -42,12 +43,14 @@ export const SubscriptionModal: React.FC<SubscriptionModalProps> = ({
   onSubscriptionSuccess,
   forcePaywall = false,
   highlightPro = false,
+  onOpenLegal,
 }) => {
   const [plans, setPlans] = useState<Plan[]>([]);
   const [selectedPlanId, setSelectedPlanId] = useState<string>('plan_pro_monthly');
   const [isLoadingPlans, setIsLoadingPlans] = useState<boolean>(true);
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string>('');
+  const [agreeToTerms, setAgreeToTerms] = useState<boolean>(false);
 
   const [resendNotice, setResendNotice] = useState<string>('');
   const [isResending, setIsResending] = useState<boolean>(false);
@@ -103,6 +106,7 @@ export const SubscriptionModal: React.FC<SubscriptionModalProps> = ({
     if (isOpen) {
       setIsLoadingPlans(true);
       setErrorMessage('');
+      setAgreeToTerms(false);
       fetchSubscriptionPlans()
         .then((fetchedPlans) => {
           if (fetchedPlans.length > 0) {
@@ -526,6 +530,63 @@ export const SubscriptionModal: React.FC<SubscriptionModalProps> = ({
                 </div>
               )}
 
+              {/* Checkout Terms Agreement (Required for Paid Purchases) */}
+              {!isSelectedPlanCurrent && selectedPlanId !== 'plan_base_monthly' && (
+                <div className="border-t border-[#26262C] pt-4 space-y-2">
+                  <label className="flex items-start gap-2.5 cursor-pointer select-none group">
+                    <input
+                      type="checkbox"
+                      id="checkout-agree-terms-checkbox"
+                      checked={agreeToTerms}
+                      onChange={(e) => setAgreeToTerms(e.target.checked)}
+                      className="mt-0.5 w-4 h-4 rounded border-zinc-600 bg-zinc-800 text-emerald-500 focus:ring-0 cursor-pointer shrink-0"
+                    />
+                    <span className="text-xs text-zinc-300 leading-relaxed">
+                      I have read and agree to the{' '}
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          onOpenLegal?.('terms');
+                        }}
+                        className="text-white underline underline-offset-2 hover:text-emerald-400 font-medium cursor-pointer"
+                      >
+                        Terms & Conditions
+                      </button>
+                      ,{' '}
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          onOpenLegal?.('privacy');
+                        }}
+                        className="text-white underline underline-offset-2 hover:text-emerald-400 font-medium cursor-pointer"
+                      >
+                        Privacy Policy
+                      </button>
+                      , and{' '}
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          onOpenLegal?.('refund');
+                        }}
+                        className="text-white underline underline-offset-2 hover:text-emerald-400 font-medium cursor-pointer"
+                      >
+                        Refund & Cancellation Policy
+                      </button>
+                      .
+                    </span>
+                  </label>
+                  <p className="text-[11px] text-[#A1A1AA] leading-relaxed pl-6.5">
+                    Your paid plan will remain active for the purchased period. Renewal is optional unless you separately authorize a recurring-payment arrangement.
+                  </p>
+                </div>
+              )}
+
               {/* Security & Payment Footer */}
               <div className="border-t border-[#26262C] pt-5 flex flex-col sm:flex-row items-center justify-between gap-4">
                 <div className="flex items-center gap-2 text-xs text-[#71717A]">
@@ -545,8 +606,12 @@ export const SubscriptionModal: React.FC<SubscriptionModalProps> = ({
                   ) : (
                     <button
                       onClick={handleCheckout}
-                      disabled={isProcessing || isLoadingPlans || (selectedPlanId !== 'plan_base_monthly' && !currentUser.email_verified)}
-                      className="w-full sm:w-auto px-7 py-3 min-h-[46px] btn-primary disabled:opacity-50 font-semibold text-sm rounded-[10px] transition shadow-sm flex items-center justify-center gap-2 cursor-pointer active:scale-95"
+                      disabled={
+                        isProcessing || 
+                        isLoadingPlans || 
+                        (selectedPlanId !== 'plan_base_monthly' && (!currentUser.email_verified || !agreeToTerms))
+                      }
+                      className="w-full sm:w-auto px-8 py-3 min-h-[46px] btn-primary disabled:opacity-40 disabled:cursor-not-allowed font-bold text-sm rounded-[10px] transition shadow-sm flex items-center justify-center gap-2 cursor-pointer active:scale-95"
                     >
                       {isProcessing ? (
                         <>
@@ -560,9 +625,7 @@ export const SubscriptionModal: React.FC<SubscriptionModalProps> = ({
                               ? 'Verify Email to Upgrade'
                               : selectedPlanId === 'plan_base_monthly'
                               ? 'Start Free Solo Tracking'
-                              : selectedPlanId === 'plan_pro_monthly'
-                              ? (isBaseCurrent ? 'Upgrade to Pro Monthly (₹99/mo)' : 'Unlock Pro Groups (₹99/mo)')
-                              : (isBaseCurrent ? 'Upgrade to Pro Yearly (₹999/yr)' : 'Activate Pro Yearly (₹999/yr)')}
+                              : 'Pay Now'}
                           </span>
                           <ArrowRight className="w-4 h-4" />
                         </>

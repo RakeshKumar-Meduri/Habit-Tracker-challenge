@@ -32,7 +32,7 @@ export const BUCKETS = {
 } as const;
 
 /**
- * Ensure storage buckets exist with public read access
+ * Ensure storage buckets exist: avatars are public, progress photos are private
  */
 export async function ensureStorageBuckets() {
   if (!supabase) return;
@@ -43,11 +43,11 @@ export async function ensureStorageBuckets() {
     for (const bucketName of Object.values(BUCKETS)) {
       if (!existing.has(bucketName)) {
         await supabase.storage.createBucket(bucketName, {
-          public: true,
+          public: bucketName === BUCKETS.AVATARS, // Avatars are public, progress photos are private
           fileSizeLimit: 10485760, // 10MB
           allowedMimeTypes: ['image/jpeg', 'image/png', 'image/webp', 'image/gif'],
         });
-        console.log(`[Supabase Storage] Created bucket: ${bucketName}`);
+        console.log(`[Supabase Storage] Created bucket: ${bucketName} (public: ${bucketName === BUCKETS.AVATARS})`);
       }
     }
   } catch (err) {
@@ -56,7 +56,29 @@ export async function ensureStorageBuckets() {
 }
 
 /**
- * Upload a media buffer/base64 to Supabase Storage and return public URL
+ * Generate a short-lived or long-lived signed URL for private bucket objects
+ */
+export async function getSignedMediaUrl(
+  bucket: string,
+  filePath: string,
+  expiresInSeconds: number = 86400 // Default 24 hours
+): Promise<string | null> {
+  if (!supabase) return null;
+  try {
+    const { data, error } = await supabase.storage.from(bucket).createSignedUrl(filePath, expiresInSeconds);
+    if (error || !data) {
+      console.warn('[Supabase Storage Signed URL Error]', error?.message);
+      return null;
+    }
+    return data.signedUrl;
+  } catch (err) {
+    console.error('[Supabase Storage Signed URL Exception]', err);
+    return null;
+  }
+}
+
+/**
+ * Upload a media buffer/base64 to Supabase Storage and return signed or public URL
  */
 export async function uploadMediaToSupabase(
   bucket: string,
@@ -78,6 +100,14 @@ export async function uploadMediaToSupabase(
     if (error) {
       console.error('[Supabase Storage Upload Error]', error.message);
       return null;
+    }
+
+    // For private progress photos, create a signed URL so media is protected
+    if (bucket === BUCKETS.PROGRESS_PHOTOS) {
+      const signedUrl = await getSignedMediaUrl(bucket, data.path, 60 * 60 * 24 * 30); // 30-day signed access
+      if (signedUrl) {
+        return signedUrl;
+      }
     }
 
     const { data: publicUrlData } = supabase.storage.from(bucket).getPublicUrl(data.path);
