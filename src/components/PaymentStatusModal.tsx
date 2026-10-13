@@ -162,7 +162,7 @@ export const PaymentStatusModal: React.FC<PaymentStatusModalProps> = ({
                 <span className="font-semibold text-zinc-900 dark:text-zinc-100">PULSE Fitness (Avix Studio)</span>
               </div>
               <div className="flex justify-between py-1 border-b border-zinc-200 dark:border-zinc-800">
-                <span className="text-zinc-500 dark:text-zinc-400">Amount Paid</span>
+                <span className="text-zinc-500 dark:text-zinc-400">{status === 'captured' ? 'Amount Paid' : 'Order Amount'}</span>
                 <span className="font-bold text-zinc-900 dark:text-zinc-100">
                   ₹{(payment.amount / 100).toFixed(2)} {payment.currency}
                 </span>

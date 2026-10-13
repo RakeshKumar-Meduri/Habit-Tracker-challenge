@@ -160,13 +160,17 @@ router.post('/api/subscription/cancel', requireAuth, async (req, res, next) => {
 });
 
 // ----------------------------------------------------
-// Payment Status Check (Recent Payments for User)
+// Payment Status Check (Recent Captured Payments for User)
 // ----------------------------------------------------
 router.get('/api/payments/status', requireAuth, async (req, res, next) => {
   try {
     const userId = req.user!.id;
+    // CRITICAL: Only return successfully paid/captured transactions so unpaid orders never appear as bills
     const payments = await prisma.payment.findMany({
-      where: { user_id: userId },
+      where: {
+        user_id: userId,
+        status: 'captured',
+      },
       orderBy: { created_at: 'desc' },
       take: 10,
     });
@@ -244,6 +248,37 @@ router.post('/api/payments/reconcile/:orderId', requireAuth, paymentLimiter, asy
     res.json({
       success: true,
       ...result,
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// ----------------------------------------------------
+// Cancel / Dismiss Pending Payment Order (User Dismissed/Cancelled Modal)
+// ----------------------------------------------------
+router.post('/api/payments/cancel/:orderId', requireAuth, async (req, res, next) => {
+  try {
+    const userId = req.user!.id;
+    const orderId = String(req.params.orderId);
+
+    // Cancel order if still in created/pending status (never overwrite captured payments)
+    const result = await prisma.payment.updateMany({
+      where: {
+        razorpay_order_id: orderId,
+        user_id: userId,
+        status: 'created',
+      },
+      data: {
+        status: 'cancelled',
+        error_reason: 'User cancelled or closed checkout modal',
+      },
+    });
+
+    res.json({
+      success: true,
+      message: 'Payment order marked as cancelled.',
+      cancelledCount: result.count,
     });
   } catch (err) {
     next(err);

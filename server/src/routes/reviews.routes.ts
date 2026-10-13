@@ -65,7 +65,7 @@ router.post('/api/reviews', requireAuth, reviewLimiter, async (req: Request, res
 
     if (existing) {
       throw new AppError(
-        'You have already submitted a review. You can edit your existing review.',
+        'You have already submitted a review. Reviews cannot be edited.',
         409,
         'REVIEW_ALREADY_EXISTS'
       );
@@ -100,7 +100,7 @@ router.post('/api/reviews', requireAuth, reviewLimiter, async (req: Request, res
         dbErr?.code === '23505'
       ) {
         throw new AppError(
-          'You have already submitted a review. You can edit your existing review.',
+          'You have already submitted a review. Reviews cannot be edited.',
           409,
           'REVIEW_ALREADY_EXISTS'
         );
@@ -114,50 +114,15 @@ router.post('/api/reviews', requireAuth, reviewLimiter, async (req: Request, res
 
 /**
  * PATCH /api/reviews/me
- * Updates the authenticated user's existing review record without creating a new row.
+ * Editing submitted reviews is permanently disabled by policy.
  */
 router.patch('/api/reviews/me', requireAuth, reviewLimiter, async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const userId = req.user!.id;
-
-    // Server-side Zod validation
-    const parsed = reviewSchema.parse(req.body);
-
-    // Verify existing review exists
-    const existing = await prisma.review.findUnique({
-      where: { user_id: userId },
-    });
-
-    if (!existing) {
-      throw new AppError(
-        'No existing review found to update. Please submit a review first.',
-        404,
-        'REVIEW_NOT_FOUND'
-      );
-    }
-
-    // Update existing review record
-    const updated = await prisma.review.update({
-      where: { user_id: userId },
-      data: {
-        rating: parsed.rating,
-        comment: parsed.comment.trim(),
-        updated_at: new Date(),
-      },
-    });
-
-    res.status(200).json({
-      success: true,
-      message: 'Your review has been successfully updated.',
-      review: {
-        id: updated.id,
-        userId: updated.user_id,
-        rating: updated.rating,
-        comment: updated.comment,
-        createdAt: updated.created_at,
-        updatedAt: updated.updated_at,
-      },
-    });
+    throw new AppError(
+      'Reviews cannot be edited once submitted.',
+      403,
+      'REVIEW_EDIT_NOT_ALLOWED'
+    );
   } catch (err) {
     next(err);
   }

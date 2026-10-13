@@ -336,7 +336,7 @@ async function runTestSuite() {
       }
     });
 
-    await test('Client-supplied user_id spoofing is ignored and cannot overwrite other users', async () => {
+    await test('Client-supplied user_id spoofing or edits via PATCH are blocked with 403', async () => {
       // User B attempts to submit spoofing userA's ID in request body
       const res = await fetch(`${baseUrl}/api/reviews/me`, {
         method: 'PATCH',
@@ -348,7 +348,9 @@ async function runTestSuite() {
           user_id: userA.id,
         }),
       });
-      assert.strictEqual(res.status, 200);
+      assert.strictEqual(res.status, 403);
+      const data = await res.json();
+      assert.strictEqual(data.code, 'REVIEW_EDIT_NOT_ALLOWED');
 
       // Verify User A's review was unaffected!
       const userAReview = await prisma.review.findUnique({ where: { user_id: userA.id } });
@@ -357,30 +359,28 @@ async function runTestSuite() {
     });
 
     // ----------------------------------------------------
-    // Section 5: Review Editing & Privacy Isolation
+    // Section 5: Review Editing Disallowed & Privacy Scoping
     // ----------------------------------------------------
-    console.log('\n--- 5. Review Editing & Privacy Scoping ---');
+    console.log('\n--- 5. Review Editing Disallowed & Privacy Scoping ---');
 
-    await test('User A can edit review via PATCH /api/reviews/me', async () => {
+    await test('User A cannot edit review via PATCH /api/reviews/me (strictly disallowed with 403)', async () => {
       const updatedComment = 'PULSE continues to improve! Updated feedback.';
       const res = await fetch(`${baseUrl}/api/reviews/me`, {
         method: 'PATCH',
         headers: authHeadersA,
         body: JSON.stringify({ rating: 4, comment: updatedComment }),
       });
-      assert.strictEqual(res.status, 200);
+      assert.strictEqual(res.status, 403);
       const data = await res.json();
-      assert.strictEqual(data.success, true);
-      assert.strictEqual(data.review.id, createdReviewAId, 'Review ID must remain identical');
-      assert.strictEqual(data.review.rating, 4);
-      assert.strictEqual(data.review.comment, updatedComment);
+      assert.strictEqual(data.success, false);
+      assert.strictEqual(data.code, 'REVIEW_EDIT_NOT_ALLOWED');
     });
 
-    await test('Editing does NOT create a new row in database', async () => {
+    await test('Attempting to edit does NOT alter existing row in database', async () => {
       const allUserAReviews = await prisma.review.findMany({ where: { user_id: userA.id } });
       assert.strictEqual(allUserAReviews.length, 1, 'Total rows for user must remain strictly 1');
       assert.strictEqual(allUserAReviews[0].id, createdReviewAId);
-      assert.strictEqual(allUserAReviews[0].rating, 4);
+      assert.strictEqual(allUserAReviews[0].rating, 5, 'Rating must remain original 5');
     });
 
     await test('User B cannot see User A reviews via GET /api/reviews/me', async () => {

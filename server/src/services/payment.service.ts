@@ -102,7 +102,6 @@ export async function getUserPlanTier(userId: string): Promise<'none' | 'base' |
         VIP_FREE_USERNAMES.has(clean) ||
         clean === 'rakesh' ||
         clean === 'hitesh' ||
-        clean.startsWith('rakesh') ||
         clean === 'friend' ||
         clean === 'enumulahitesh'
       ) {
@@ -231,6 +230,18 @@ export async function createPaymentOrder(userId: string, planId: string) {
     // Development / test fallback order
     razorpayOrderId = `order_mock_${Date.now()}_${crypto.randomBytes(4).toString('hex')}`;
   }
+
+  // Mark any abandoned/stale pending orders as cancelled before creating a new one
+  await prisma.payment.updateMany({
+    where: {
+      user_id: userId,
+      status: 'created',
+    },
+    data: {
+      status: 'cancelled',
+      error_reason: 'Abandoned or superseded by new checkout attempt',
+    },
+  });
 
   // Record pending payment in PostgreSQL with receipt reference
   const payment = await prisma.payment.create({

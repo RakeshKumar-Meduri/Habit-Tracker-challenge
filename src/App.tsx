@@ -274,18 +274,14 @@ export function App() {
   const [currentUserReview, setCurrentUserReview] = useState<UserReview | null>(null);
   const hasCheckedReviewOnLoginRef = useRef<boolean>(false);
 
-  // Check review status on login and trigger popup only if not reviewed
-  const checkReviewPopupOnLogin = (userId: string) => {
+  // Check review status on login for footer state (NO automatic popup in the application)
+  const checkReviewStatusOnLogin = (userId: string) => {
     if (!userId) return;
     fetchMyReview().then(res => {
       if (res.success && res.review) {
         setCurrentUserReview(res.review);
-        // Review already exists -> NO POPUP
-        setIsReviewModalOpen(false);
       } else {
         setCurrentUserReview(null);
-        // Review not given -> POP UP ON LOGIN
-        setIsReviewModalOpen(true);
       }
     }).catch(() => {});
   };
@@ -293,7 +289,7 @@ export function App() {
   useEffect(() => {
     if (currentUserId && !hasCheckedReviewOnLoginRef.current) {
       hasCheckedReviewOnLoginRef.current = true;
-      checkReviewPopupOnLogin(currentUserId);
+      checkReviewStatusOnLogin(currentUserId);
     }
   }, [currentUserId]);
 
@@ -1827,8 +1823,6 @@ export function App() {
               setVerificationModalMode(mode);
               setIsVerificationModalOpen(true);
             }}
-            userReview={currentUserReview}
-            onOpenReviewModal={() => setIsReviewModalOpen(true)}
           />
         )}
       </main>
@@ -1858,8 +1852,8 @@ export function App() {
             fetchServerSync().then(data => {
               if (data) applyServerDataRef.current(data);
             }).catch(() => {});
-            // Check review status immediately on login: popup only if review not given
-            checkReviewPopupOnLogin(user.id);
+            // Fetch review status on login for footer display (no popup in app)
+            checkReviewStatusOnLogin(user.id);
           }}
           onRegisterSuccess={(newUser) => {
             // Immediately purge any stale group from memory/storage
@@ -1874,6 +1868,7 @@ export function App() {
             fetchServerSync().then(data => {
               if (data) applyServerDataRef.current(data);
             }).catch(() => {});
+            checkReviewStatusOnLogin(newUser.id);
           }}
         />
       )}
@@ -2049,6 +2044,14 @@ export function App() {
           setLegalModalTab(tab);
           setIsLegalModalOpen(true);
         }}
+        onOpenReview={() => {
+          if (!currentUser) {
+            setIsAuthModalOpen(true);
+          } else {
+            setIsReviewModalOpen(true);
+          }
+        }}
+        userReview={currentUserReview}
       />
     </div>
   );

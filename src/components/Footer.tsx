@@ -7,18 +7,26 @@ import {
   Shield, 
   RefreshCcw, 
   Mail, 
-  HelpCircle,
-  ChevronRight,
-  Flame,
-  CheckCircle2
+  HelpCircle, 
+  ChevronRight, 
+  Flame, 
+  CheckCircle2,
+  Star
 } from 'lucide-react';
 import type { LegalTab } from './LegalModal';
+import type { UserReview } from '../types';
 
 interface FooterProps {
   onOpenLegal: (tab: LegalTab) => void;
+  onOpenReview?: () => void;
+  userReview?: UserReview | null;
 }
 
-export const Footer: React.FC<FooterProps> = ({ onOpenLegal }) => {
+export const Footer: React.FC<FooterProps> = ({ 
+  onOpenLegal, 
+  onOpenReview,
+  userReview 
+}) => {
   return (
     <footer className="w-full border-t border-zinc-200 dark:border-zinc-800/80 bg-zinc-50/50 dark:bg-[#0c0c0e] text-zinc-600 dark:text-zinc-400 font-sans transition-colors">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 pb-8">
@@ -139,7 +147,7 @@ export const Footer: React.FC<FooterProps> = ({ onOpenLegal }) => {
               </ul>
             </div>
 
-            {/* Column 3: SUPPORT & CONTACT */}
+            {/* Column 3: SUPPORT & HELP */}
             <div className="space-y-3">
               <h3 className="text-xs font-black uppercase tracking-wider text-zinc-900 dark:text-zinc-200">
                 Support & Help
@@ -176,6 +184,24 @@ export const Footer: React.FC<FooterProps> = ({ onOpenLegal }) => {
                     <span className="group-hover:translate-x-0.5 transition-transform font-medium">Billing & Razorpay Support</span>
                   </button>
                 </li>
+                {onOpenReview && (
+                  <li>
+                    <button
+                      type="button"
+                      onClick={onOpenReview}
+                      className="group flex items-center gap-1.5 text-zinc-600 dark:text-zinc-400 hover:text-zinc-950 dark:hover:text-white transition cursor-pointer text-left py-0.5"
+                    >
+                      <Star className={`w-3.5 h-3.5 transition shrink-0 ${
+                        userReview 
+                          ? 'text-amber-500 fill-amber-500' 
+                          : 'text-zinc-400 group-hover:text-amber-500'
+                      }`} />
+                      <span className="group-hover:translate-x-0.5 transition-transform font-medium">
+                        {userReview ? `Your Review (${userReview.rating}★)` : 'Rate & Review PULSE'}
+                      </span>
+                    </button>
+                  </li>
+                )}
               </ul>
             </div>
 
@@ -188,7 +214,7 @@ export const Footer: React.FC<FooterProps> = ({ onOpenLegal }) => {
             © 2026 PULSE. All rights reserved. Designed for disciplined athletes.
           </p>
 
-          <div className="flex items-center gap-4 text-xs">
+          <div className="flex flex-wrap items-center gap-4 text-xs">
             <button
               type="button"
               onClick={() => onOpenLegal('terms')}
@@ -220,6 +246,19 @@ export const Footer: React.FC<FooterProps> = ({ onOpenLegal }) => {
             >
               Contact
             </button>
+            {onOpenReview && (
+              <>
+                <span className="text-zinc-300 dark:text-zinc-700">•</span>
+                <button
+                  type="button"
+                  onClick={onOpenReview}
+                  className="text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200 transition cursor-pointer flex items-center gap-1"
+                >
+                  <Star className={`w-3 h-3 ${userReview ? 'text-amber-500 fill-amber-500' : 'text-zinc-400'}`} />
+                  <span>{userReview ? 'Your Review' : 'Rate PULSE'}</span>
+                </button>
+              </>
+            )}
           </div>
         </div>
 

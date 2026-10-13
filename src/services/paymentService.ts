@@ -152,8 +152,16 @@ export async function initiateSubscriptionCheckout(
         }
       },
       modal: {
-        ondismiss: () => {
-          console.log('[Razorpay] Modal dismissed');
+        ondismiss: async () => {
+          console.log('[Razorpay] Modal dismissed / cancelled by user');
+          try {
+            await apiFetch(`/api/payments/cancel/${encodeURIComponent(orderData.orderId)}`, {
+              method: 'POST',
+            });
+          } catch (e) {
+            console.warn('[Razorpay] Failed to notify cancel:', e);
+          }
+          onError('Payment checkout was cancelled. No charges were made.');
         },
       },
     };
