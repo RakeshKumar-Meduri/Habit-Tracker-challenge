@@ -37,9 +37,11 @@ export const Footer: React.FC<FooterProps> = ({
           {/* Brand Info & Mission (5 Cols) */}
           <div className="lg:col-span-5 space-y-4 text-left">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-[#D98B4A] to-amber-500 flex items-center justify-center text-white shadow-md shadow-[#D98B4A]/25">
-                <Activity className="w-5 h-5 stroke-[2.5]" />
-              </div>
+              <img 
+                src="/logo.png" 
+                alt="PULSE" 
+                className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl object-cover shrink-0 shadow-md border border-zinc-200 dark:border-zinc-800" 
+              />
               <span className="text-2xl font-black tracking-tight text-zinc-950 dark:text-white">
                 PULSE
               </span>
