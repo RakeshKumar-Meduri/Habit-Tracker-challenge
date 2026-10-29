@@ -1,5 +1,8 @@
 import type { User, AuthSession, LoginResult } from '../types';
 import { STORAGE_KEYS } from '../utils/storage';
+import bcrypt from 'bcryptjs';
+
+const LEGACY_SALT = '_PULSE_SALT_2026';
 
 // Rate Limiting Config: 5 failures within 60 seconds -> Lockout for 60 seconds
 const MAX_FAILED_ATTEMPTS = 5;
@@ -16,19 +19,43 @@ const failedAttemptsMap: Record<string, FailedAttemptTracker> = {};
  * SHA-256 Hashing helper using Web Crypto API
  */
 export async function hashPassword(password: string): Promise<string> {
-  const encoder = new TextEncoder();
-  const data = encoder.encode(password + '_PULSE_SALT_2026');
-  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+  const salt = await bcrypt.genSalt(10);
+  return bcrypt.hash(password.trim(), salt);
 }
 
 /**
- * Verify plaintext password against stored hash or default demo password
+ * Verify plaintext password against stored hash.
+ * Supports modern bcrypt hashes with fallback to legacy SHA-256 hashes.
  */
 export async function verifyPassword(inputPassword: string, storedHash: string): Promise<boolean> {
-  const hashedInput = await hashPassword(inputPassword);
-  return hashedInput === storedHash;
+  if (!inputPassword || !storedHash) return false;
+  const cleanPass = inputPassword.trim();
+
+  // Modern bcrypt hash ($2a$, $2b$, $2y$)
+  if (storedHash.startsWith('$2a$') || storedHash.startsWith('$2b$') || storedHash.startsWith('$2y$')) {
+    try {
+      return await bcrypt.compare(cleanPass, storedHash);
+    } catch {
+      return false;
+    }
+  }
+
+  // Legacy SHA-256 with static salt
+  const encoder = new TextEncoder();
+  const data = encoder.encode(cleanPass + LEGACY_SALT);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  const legacyHash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+  if (legacyHash === storedHash) {
+    return true;
+  }
+
+  // Legacy SHA-256 without salt
+  const plainData = encoder.encode(cleanPass);
+  const plainBuffer = await crypto.subtle.digest('SHA-256', plainData);
+  const plainArray = Array.from(new Uint8Array(plainBuffer));
+  const plainHash = plainArray.map(b => b.toString(16).padStart(2, '0')).join('');
+  return plainHash === storedHash;
 }
 
 /**

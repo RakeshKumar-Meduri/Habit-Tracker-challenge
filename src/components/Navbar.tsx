@@ -391,10 +391,17 @@ export const Navbar: React.FC<NavbarProps> = ({
                         setIsMobileMenuOpen(false);
                         setActiveTab('comparison');
                       }}
-                      className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold text-zinc-800 hover:bg-zinc-100 dark:text-zinc-200 dark:hover:bg-zinc-900 transition cursor-pointer"
+                      className="w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-semibold text-zinc-800 hover:bg-zinc-100 dark:text-zinc-200 dark:hover:bg-zinc-900 transition cursor-pointer"
                     >
-                      <Swords className="w-4 h-4 text-zinc-800 dark:text-zinc-200" />
-                      Head-to-Head
+                      <div className="flex items-center gap-2.5">
+                        <Swords className="w-4 h-4 text-zinc-800 dark:text-zinc-200" />
+                        <span>Head-to-Head</span>
+                      </div>
+                      {planTier !== 'pro' && (
+                        <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-zinc-200 text-zinc-800 dark:bg-zinc-800 dark:text-zinc-200 font-bold border border-zinc-300 dark:border-zinc-700 flex items-center gap-0.5">
+                          <Lock className="w-2.5 h-2.5" /> PRO
+                        </span>
+                      )}
                     </button>
 
                     <button
@@ -463,7 +470,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 >
                   <Icon className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${isActive ? 'text-white dark:text-zinc-950' : 'text-zinc-500 dark:text-zinc-400'}`} />
                   <span>{item.label}</span>
-                  {(item.id === 'badges' || item.id === 'comparison') && planTier !== 'pro' && (
+                  {(item.id === 'leaderboard' || item.id === 'badges' || item.id === 'comparison') && planTier !== 'pro' && (
                     <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-bold border flex items-center gap-0.5 leading-none ${
                       isActive
                         ? 'bg-zinc-800 text-zinc-200 border-zinc-700 dark:bg-zinc-200 dark:text-zinc-800 dark:border-zinc-300'

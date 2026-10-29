@@ -1,4 +1,6 @@
 import express from 'express';
+import helmet from 'helmet';
+import bcrypt from 'bcryptjs';
 import cors from 'cors';
 import fs from 'fs';
 import path from 'path';
@@ -12,6 +14,36 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
+
+// Trust reverse proxies (Nginx / Vercel / Cloudflare)
+app.set('trust proxy', 1);
+
+// Security Headers (Helmet: HSTS, nosniff, X-Frame-Options, etc.)
+app.use(helmet({
+  contentSecurityPolicy: false,
+  crossOriginEmbedderPolicy: false,
+  hsts: {
+    maxAge: 31536000,
+    includeSubDomains: true,
+    preload: true,
+  },
+  frameguard: {
+    action: 'sameorigin',
+  },
+  referrerPolicy: {
+    policy: 'strict-origin-when-cross-origin',
+  },
+}));
+
+// Global Security Headers for Snyk / SecurityHeaders A+ Grade
+app.use((_req, res, next) => {
+  res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=(), browsing-topics=()');
+  res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'SAMEORIGIN');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  next();
+});
 const PORT = process.env.PORT || 3001;
 
 app.use(cors());
@@ -555,7 +587,7 @@ app.post('/api/auth/register', async (req, res) => {
   const userId = `user_${Date.now()}_${crypto.randomBytes(4).toString('hex')}`;
   const now = new Date().toISOString();
   const todayStr = now.split('T')[0];
-  const password_hash = hashPassword(String(pass).trim());
+  const password_hash = await hashPassword(String(pass).trim());
 
   const gradients = [
     'from-[#D98B4A] to-[#B45F1E]',

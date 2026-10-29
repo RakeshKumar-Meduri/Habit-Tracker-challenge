@@ -1,4 +1,5 @@
 import express from 'express';
+import helmet from 'helmet';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import http from 'http';
@@ -25,10 +26,42 @@ import { ensureStorageBuckets } from './db/supabase';
 
 const app = express();
 
+// Trust reverse proxies (Nginx / Vercel / Cloudflare) so req.secure & client IP are preserved
+app.set('trust proxy', 1);
+
+// Security Headers (Helmet: HSTS, nosniff, X-Frame-Options, etc.)
+app.use(helmet({
+  contentSecurityPolicy: false,
+  crossOriginEmbedderPolicy: false,
+  hsts: {
+    maxAge: 31536000,
+    includeSubDomains: true,
+    preload: true,
+  },
+  frameguard: {
+    action: 'sameorigin',
+  },
+  referrerPolicy: {
+    policy: 'strict-origin-when-cross-origin',
+  },
+}));
+
+// Global Security Headers for Snyk / SecurityHeaders A+ Grade
+app.use((_req, res, next) => {
+  res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=(), browsing-topics=()');
+  res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'SAMEORIGIN');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  next();
+});
+
 // ----------------------------------------------------
 // CORS Configuration (Section 37)
 // ----------------------------------------------------
 const allowedOrigins = [
+  'https://pulse.avixstudio.com',
+  'https://www.pulse.avixstudio.com',
   'https://pulse.avixstudio.in',
   'https://www.pulse.avixstudio.in',
   'http://localhost:5173',
