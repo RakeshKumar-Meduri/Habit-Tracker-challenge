@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import type { Workout, User, MissedReason } from '../types';
-import { Dumbbell, Calendar, Lock, Globe, Clock, Trash2, Search, AlertCircle } from 'lucide-react';
+import { Dumbbell, Calendar, Lock, Globe, Clock, Trash2, Search, AlertCircle, Footprints, Flame, Sparkles } from 'lucide-react';
 
 interface WorkoutHistoryProps {
   workouts: Workout[];
@@ -24,6 +24,7 @@ export const WorkoutHistory: React.FC<WorkoutHistoryProps> = ({
   onClearAllWorkouts,
 }) => {
   const [selectedUserId, setSelectedUserId] = useState<string>('all');
+  const [selectedCategory, setSelectedCategory] = useState<'all' | 'strength' | 'cardio' | 'hiit' | 'mobility'>('all');
   const [searchExercise, setSearchExercise] = useState('');
   const [deletedIds, setDeletedIds] = useState<Set<string>>(new Set());
   const [clearedAll, setClearedAll] = useState<boolean>(false);
@@ -36,6 +37,27 @@ export const WorkoutHistory: React.FC<WorkoutHistoryProps> = ({
 
   // Compute metrics for header
   const userMap = useMemo(() => new Map(users.map(u => [u.id, u])), [users]);
+
+  // Helper to determine effective exercise type with smart keyword detection
+  const getEffectiveType = (w: Workout): 'strength' | 'cardio' | 'hiit' | 'mobility' => {
+    const rawType = String(w.exercise_type || '').toLowerCase().trim();
+    const name = String(w.exercise_name || '').toLowerCase().trim();
+
+    const isWalkOrCardio = /(\bwalk|\bwalking|\btreadmill|\bjog|\bjogging|\brun|\brunning|\bsprint|\bcycle|\bcycling|\bbike|\bbiking|\bspin|\bspinning|\browing|\belliptical|\bstair|\bclimber|\bclimb|\bjump rope|\bswim|\bswimming|\baerobic)/i.test(name);
+    const isHiit = /(\bburpee|\bhiit|\btabata|\bcircuit|\bkettlebell|\bbox jump|\bbattle rope|\bmountain climber|\bjumping jack)/i.test(name);
+    const isMobility = /(\byoga|\bstretch|\bstretching|\bfoam roll|\bmobility|\bpilates|\bwarm up|\bcooldown|\bplank)/i.test(name);
+
+    if (rawType === 'cardio' || (rawType !== 'hiit' && rawType !== 'mobility' && isWalkOrCardio)) {
+      return 'cardio';
+    }
+    if (rawType === 'hiit' || isHiit) {
+      return 'hiit';
+    }
+    if (rawType === 'mobility' || isMobility) {
+      return 'mobility';
+    }
+    return 'strength';
+  };
 
   // Reset clearedAll if new workouts arrive from modal logging
   React.useEffect(() => {
@@ -56,6 +78,11 @@ export const WorkoutHistory: React.FC<WorkoutHistoryProps> = ({
         if (w.is_private && w.user_id !== currentUser.id) return false;
         // Member filter
         if (selectedUserId !== 'all' && w.user_id !== selectedUserId) return false;
+        // Category filter
+        if (selectedCategory !== 'all') {
+          const type = getEffectiveType(w);
+          if (type !== selectedCategory) return false;
+        }
         // Search filter
         if (searchExercise.trim()) {
           const q = searchExercise.toLowerCase().trim();
@@ -66,7 +93,7 @@ export const WorkoutHistory: React.FC<WorkoutHistoryProps> = ({
         return true;
       })
       .sort((a, b) => b.date.localeCompare(a.date) || (b.created_at || '').localeCompare(a.created_at || ''));
-  }, [workouts, currentUser.id, selectedUserId, searchExercise, deletedIds, clearedAll]);
+  }, [workouts, currentUser.id, selectedUserId, selectedCategory, searchExercise, deletedIds, clearedAll]);
 
   const totalMinutes = useMemo(() => {
     return visibleWorkouts.reduce((acc, w) => acc + (Number(w.duration) || 0), 0);
@@ -143,7 +170,7 @@ export const WorkoutHistory: React.FC<WorkoutHistoryProps> = ({
             Workout Sessions
           </h2>
           <p className="text-xs text-[#A1A1AA] mt-1">
-            Browse, manage, and log workout sessions for yourself and your group
+            Browse, manage, and log workout sessions across Strength, Cardio, Walk, HIIT, and Mobility
           </p>
         </div>
 
@@ -208,52 +235,89 @@ export const WorkoutHistory: React.FC<WorkoutHistoryProps> = ({
       </div>
 
       {/* Filters Toolbar */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-[#131316] p-3.5 sm:p-4 rounded-xl border border-[#26262C]">
+      <div className="space-y-3 bg-[#131316] p-3.5 sm:p-4 rounded-xl border border-[#26262C]">
         
-        {/* Member Filter Dropdown */}
-        <div className="flex items-center gap-2">
-          <label className="text-xs font-semibold text-[#A1A1AA] shrink-0">Member:</label>
-          <select
-            value={selectedUserId}
-            onChange={(e) => setSelectedUserId(e.target.value)}
-            className="w-full bg-[#1B1B20] text-[#F4F4F5] text-xs font-medium border border-[#26262C] rounded-lg px-3 py-2 focus:outline-none focus:border-[#D98B4A] cursor-pointer"
-          >
-            <option value="all">🌐 All Members ({users.length})</option>
-            {users.map((u) => (
-              <option key={u.id} value={u.id}>
-                {u.id === currentUser.id ? `👤 You (${u.name})` : `👥 ${u.name}`}
-              </option>
-            ))}
-          </select>
+        {/* Category Filter Pills */}
+        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar">
+          {[
+            { id: 'all' as const, label: 'All Types', icon: Dumbbell },
+            { id: 'strength' as const, label: 'Strength', icon: Dumbbell },
+            { id: 'cardio' as const, label: 'Cardio & Walk', icon: Footprints },
+            { id: 'hiit' as const, label: 'HIIT', icon: Flame },
+            { id: 'mobility' as const, label: 'Mobility', icon: Sparkles },
+          ].map(cat => {
+            const Icon = cat.icon;
+            const isSelected = selectedCategory === cat.id;
+            return (
+              <button
+                key={cat.id}
+                type="button"
+                onClick={() => setSelectedCategory(cat.id)}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 shrink-0 cursor-pointer ${
+                  isSelected
+                    ? cat.id === 'cardio'
+                      ? 'bg-sky-500 text-white shadow-sm'
+                      : cat.id === 'hiit'
+                      ? 'bg-rose-500 text-white shadow-sm'
+                      : cat.id === 'mobility'
+                      ? 'bg-purple-600 text-white shadow-sm'
+                      : 'bg-[#D98B4A] text-[#0B0B0D] shadow-sm'
+                    : 'bg-[#1B1B20] text-[#A1A1AA] hover:text-[#F4F4F5] hover:bg-[#26262C] border border-[#26262C]'
+                }`}
+              >
+                <Icon className="w-3.5 h-3.5" />
+                <span>{cat.label}</span>
+              </button>
+            );
+          })}
         </div>
 
-        {/* Exercise Search Input */}
-        <div className="relative">
-          <Search className="w-4 h-4 text-[#71717A] absolute left-3 top-1/2 -translate-y-1/2" />
-          <input
-            type="text"
-            value={searchExercise}
-            onChange={(e) => setSearchExercise(e.target.value)}
-            placeholder="Filter by exercise name or notes..."
-            className="w-full pl-9 pr-3.5 py-2 bg-[#1B1B20] border border-[#26262C] rounded-lg text-[#F4F4F5] placeholder-[#71717A] text-xs focus:outline-none focus:border-[#D98B4A]"
-          />
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1 border-t border-[#26262C]">
+          {/* Member Filter Dropdown */}
+          <div className="flex items-center gap-2">
+            <label className="text-xs font-semibold text-[#A1A1AA] shrink-0">Member:</label>
+            <select
+              value={selectedUserId}
+              onChange={(e) => setSelectedUserId(e.target.value)}
+              className="w-full bg-[#1B1B20] text-[#F4F4F5] text-xs font-medium border border-[#26262C] rounded-lg px-3 py-2 focus:outline-none focus:border-[#D98B4A] cursor-pointer"
+            >
+              <option value="all">🌐 All Members ({users.length})</option>
+              {users.map((u) => (
+                <option key={u.id} value={u.id}>
+                  {u.id === currentUser.id ? `👤 You (${u.name})` : `👥 ${u.name}`}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Exercise Search Input */}
+          <div className="relative">
+            <Search className="w-4 h-4 text-[#71717A] absolute left-3 top-1/2 -translate-y-1/2" />
+            <input
+              type="text"
+              value={searchExercise}
+              onChange={(e) => setSearchExercise(e.target.value)}
+              placeholder="Filter by exercise name or notes..."
+              className="w-full pl-9 pr-3.5 py-2 bg-[#1B1B20] border border-[#26262C] rounded-lg text-[#F4F4F5] placeholder-[#71717A] text-xs focus:outline-none focus:border-[#D98B4A]"
+            />
+          </div>
         </div>
 
       </div>
 
       {/* Workout Sessions Cards Grid */}
       {visibleWorkouts.length === 0 ? (
-        <div className="bg-white border border-[#E4E7EC] rounded-[14px] p-8 sm:p-12 text-center shadow-[0_1px_3px_rgba(16,24,40,0.06)]">
-          <div className="w-12 h-12 rounded-[10px] bg-[#F1F3F6] border border-[#E4E7EC] flex items-center justify-center mx-auto text-[#667085]">
+        <div className="bg-white dark:bg-[#131316] border border-[#E4E7EC] dark:border-[#26262C] rounded-[14px] p-8 sm:p-12 text-center shadow-[0_1px_3px_rgba(16,24,40,0.06)]">
+          <div className="w-12 h-12 rounded-[10px] bg-[#F1F3F6] dark:bg-[#1B1B20] border border-[#E4E7EC] dark:border-[#26262C] flex items-center justify-center mx-auto text-[#667085] dark:text-[#A1A1AA]">
             <Dumbbell className="w-6 h-6 stroke-[2]" />
           </div>
-          <h3 className="text-base font-bold text-[#111827] mt-3.5">No workouts yet</h3>
-          <p className="text-sm text-[#667085] mt-1 max-w-sm mx-auto">
-            {searchExercise || selectedUserId !== 'all'
-              ? 'No sessions match your current member or exercise filter.'
+          <h3 className="text-base font-bold text-[#111827] dark:text-[#F4F4F5] mt-3.5">No workouts found</h3>
+          <p className="text-sm text-[#667085] dark:text-[#A1A1AA] mt-1 max-w-sm mx-auto">
+            {searchExercise || selectedUserId !== 'all' || selectedCategory !== 'all'
+              ? 'No sessions match your current category, member, or exercise filter.'
               : 'Your first workout starts your streak.'}
           </p>
-          {(!searchExercise && selectedUserId === 'all') && (
+          {(!searchExercise && selectedUserId === 'all' && selectedCategory === 'all') && (
             <button
               onClick={onOpenWorkoutModal}
               className="mt-5 px-5 py-2.5 min-h-[44px] btn-primary rounded-[10px] text-xs sm:text-sm transition inline-flex items-center gap-2 cursor-pointer shadow-sm active:scale-95"
@@ -267,6 +331,9 @@ export const WorkoutHistory: React.FC<WorkoutHistoryProps> = ({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {visibleWorkouts.map((w) => {
             const user = userMap.get(w.user_id) || { name: 'Member' };
+            const effectiveType = getEffectiveType(w);
+            const isWalk = /(\bwalk|\bwalking|\btreadmill)/i.test(w.exercise_name);
+
             return (
               <div
                 key={w.id}
@@ -300,29 +367,82 @@ export const WorkoutHistory: React.FC<WorkoutHistoryProps> = ({
                     </div>
                   </div>
 
-                  {/* Exercise Title & Type Badge */}
+                  {/* Exercise Title & Type Badge with Distinct Category Colors */}
                   <div className="flex items-start justify-between gap-2 mb-3">
                     <h3 className="text-sm sm:text-base font-bold text-[#F4F4F5] leading-snug">
                       {w.exercise_name}
                     </h3>
-                    <span className="text-[10px] font-semibold px-2 py-0.5 rounded-md bg-[#1B1B20] text-[#D98B4A] border border-[#26262C] shrink-0 uppercase tracking-wider">
-                      {w.exercise_type || 'Strength'}
+                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md border shrink-0 uppercase tracking-wider flex items-center gap-1 ${
+                      effectiveType === 'cardio'
+                        ? 'bg-sky-500/10 text-sky-400 border-sky-500/30'
+                        : effectiveType === 'hiit'
+                        ? 'bg-rose-500/10 text-rose-400 border-rose-500/30'
+                        : effectiveType === 'mobility'
+                        ? 'bg-purple-500/10 text-purple-400 border-purple-500/30'
+                        : 'bg-[#1B1B20] text-[#D98B4A] border-[#26262C]'
+                    }`}>
+                      {effectiveType === 'cardio' ? (
+                        <>
+                          <Footprints className="w-3 h-3" />
+                          <span>{isWalk ? 'Walk / Cardio' : 'Cardio'}</span>
+                        </>
+                      ) : effectiveType === 'hiit' ? (
+                        <>
+                          <Flame className="w-3 h-3" />
+                          <span>HIIT</span>
+                        </>
+                      ) : effectiveType === 'mobility' ? (
+                        <>
+                          <Sparkles className="w-3 h-3" />
+                          <span>Mobility</span>
+                        </>
+                      ) : (
+                        <>
+                          <Dumbbell className="w-3 h-3" />
+                          <span>Strength</span>
+                        </>
+                      )}
                     </span>
                   </div>
 
-                  {/* Metric Chips */}
-                  {w.exercise_type === 'cardio' ? (
+                  {/* Metric Chips Adapted to Category */}
+                  {effectiveType === 'cardio' ? (
                     <div className="grid grid-cols-2 gap-2 bg-[#1B1B20] p-2.5 rounded-lg border border-[#26262C] text-center mb-3">
                       <div>
                         <span className="block text-[10px] text-[#71717A] font-medium uppercase">Duration</span>
-                        <strong className="text-sm font-bold text-[#D98B4A] tabular-nums">{w.duration || 30} mins</strong>
+                        <strong className="text-sm font-bold text-sky-400 tabular-nums">{w.duration || 30} mins</strong>
                       </div>
                       <div>
-                        <span className="block text-[10px] text-[#71717A] font-medium uppercase">Type</span>
-                        <strong className="text-sm font-bold text-[#F4F4F5] tabular-nums">Cardio Session</strong>
+                        <span className="block text-[10px] text-[#71717A] font-medium uppercase">Activity</span>
+                        <strong className="text-sm font-bold text-[#F4F4F5] tabular-nums">
+                          {isWalk ? 'Walking Session' : 'Cardio Exercise'}
+                        </strong>
+                      </div>
+                    </div>
+                  ) : effectiveType === 'hiit' ? (
+                    <div className="grid grid-cols-2 gap-2 bg-[#1B1B20] p-2.5 rounded-lg border border-[#26262C] text-center mb-3">
+                      <div>
+                        <span className="block text-[10px] text-[#71717A] font-medium uppercase">Duration</span>
+                        <strong className="text-sm font-bold text-rose-400 tabular-nums">{w.duration || 20} mins</strong>
+                      </div>
+                      <div>
+                        <span className="block text-[10px] text-[#71717A] font-medium uppercase">Rounds / Sets</span>
+                        <strong className="text-sm font-bold text-[#F4F4F5] tabular-nums">{w.sets || 4} rounds</strong>
+                      </div>
+                    </div>
+                  ) : effectiveType === 'mobility' ? (
+                    <div className="grid grid-cols-2 gap-2 bg-[#1B1B20] p-2.5 rounded-lg border border-[#26262C] text-center mb-3">
+                      <div>
+                        <span className="block text-[10px] text-[#71717A] font-medium uppercase">Duration</span>
+                        <strong className="text-sm font-bold text-purple-400 tabular-nums">{w.duration || 15} mins</strong>
+                      </div>
+                      <div>
+                        <span className="block text-[10px] text-[#71717A] font-medium uppercase">Focus</span>
+                        <strong className="text-sm font-bold text-[#F4F4F5] tabular-nums">Recovery & Stretch</strong>
                       </div>
                     </div>
                   ) : (
+                    /* Strength Metrics */
                     <div className="grid grid-cols-3 gap-2 bg-[#1B1B20] p-2.5 rounded-lg border border-[#26262C] text-center mb-3">
                       <div>
                         <span className="block text-[10px] text-[#71717A] font-medium uppercase">Sets</span>

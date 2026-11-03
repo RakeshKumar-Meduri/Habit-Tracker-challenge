@@ -88,7 +88,7 @@ export const workoutItemSchema = z.object({
   id: z.string().optional(),
   date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Date must be YYYY-MM-DD'),
   exercise_name: z.string().min(1, 'Exercise name is required').max(100),
-  exercise_type: z.enum(['strength', 'cardio', 'other']).optional().default('strength'),
+  exercise_type: z.enum(['strength', 'cardio', 'hiit', 'mobility', 'other']).or(z.string()).optional().default('strength'),
   sets: z.coerce.number().min(0).max(200).optional().default(0),
   reps: z.coerce.number().min(0).max(1000).optional().default(0),
   weight: z.coerce.number().min(0).max(1000).optional().default(0),

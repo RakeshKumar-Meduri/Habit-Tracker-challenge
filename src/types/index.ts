@@ -138,7 +138,7 @@ export interface Workout {
   user_id: string;
   date: string; // YYYY-MM-DD
   exercise_name: string;
-  exercise_type?: 'strength' | 'cardio' | 'other';
+  exercise_type?: 'strength' | 'cardio' | 'hiit' | 'mobility' | 'other' | string;
   sets: number;
   reps: number;
   weight?: number; // in kg or lb

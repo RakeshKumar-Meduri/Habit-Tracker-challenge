@@ -41,7 +41,9 @@ export const ActivityFeed: React.FC<ActivityFeedProps> = ({
         userId: w.user_id,
         date: w.date,
         title: `Logged Workout: ${w.exercise_name}`,
-        subtitle: `${w.sets} sets × ${w.reps} reps ${w.weight ? '@ ' + w.weight + 'kg' : ''} (${w.duration} mins)`,
+        subtitle: w.exercise_type === 'cardio' || /(\bwalk|\bwalking|\btreadmill|\bjog|\brun|\bcycle|\bbike)/i.test(w.exercise_name)
+          ? `${w.duration || 30} mins cardio ${w.notes ? '· ' + w.notes : ''}`
+          : `${w.sets} sets × ${w.reps} reps ${w.weight ? '@ ' + w.weight + 'kg' : ''} (${w.duration} mins)`,
       });
     }
   });
